@@ -2,15 +2,20 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/zalando/go-keyring"
 )
 
-var service = "act"
+var (
+	service    = "act"
+	user       = "user"
+	ErrNoToken = errors.New("no token found")
+)
 
-func Set(user, secret string) error {
+func Set(secret string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -29,11 +34,7 @@ func Set(user, secret string) error {
 	}
 }
 
-func Get(user string) (string, error) {
-	if user == "" {
-		return "", fmt.Errorf("service and user must not be empty")
-	}
-
+func Get() (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -45,7 +46,11 @@ func Get(user string) (string, error) {
 		defer close(errCh)
 		secret, err := keyring.Get(service, user)
 		if err != nil {
-			errCh <- err
+			if err == keyring.ErrNotFound {
+				errCh <- ErrNoToken
+			} else {
+				errCh <- err
+			}
 		} else {
 			ch <- secret
 		}
@@ -58,5 +63,24 @@ func Get(user string) (string, error) {
 		return "", err
 	case <-ctx.Done():
 		return "", fmt.Errorf("timeout while trying to get secret in keyring")
+	}
+}
+
+func Delete() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	ch := make(chan error, 1)
+
+	go func() {
+		ch <- keyring.Delete(service, user)
+		close(ch)
+	}()
+
+	select {
+	case err := <-ch:
+		return err
+	case <-ctx.Done():
+		return fmt.Errorf("timeout while trying to delete secret in keyring")
 	}
 }
