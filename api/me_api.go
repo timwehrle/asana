@@ -10,6 +10,7 @@ func (c *Client) Me() (User, error) {
 	if err != nil {
 		return User{}, err
 	}
+	defer resp.Body.Close()
 
 	var result struct {
 		Data User `json:"data"`
