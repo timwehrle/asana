@@ -11,7 +11,7 @@ type Task struct {
 	Name      string `json:"name"`
 	DueOn     string `json:"due_on"`
 	CreatedBy User   `json:"created_by"`
-	HtmlNotes string `json:"html_notes"`
+	HTMLNotes string `json:"html_notes"`
 	Notes     string `json:"notes"`
 	Assignee  User   `json:"assignee"`
 }
