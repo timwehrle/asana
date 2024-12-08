@@ -27,4 +27,4 @@ lint:
 .PHONY: fmt
 fmt:
 	@echo "Formatting code..."
-	$(GOFMT) -w .
+	$(GOFMT) -w -s .
