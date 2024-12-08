@@ -21,6 +21,7 @@ var StatusCmd = &cobra.Command{
 			name     string
 			me       api.User
 			tokenErr error
+			apiErr   error
 		)
 
 		wg.Add(1)
@@ -46,23 +47,32 @@ var StatusCmd = &cobra.Command{
 			client := api.New(token)
 			me, err = client.Me()
 			if err != nil {
-				errCh <- fmt.Errorf("failed to fetch user information: %w", err)
+				apiErr = fmt.Errorf("failed to fetch user information: %w", err)
+				errCh <- apiErr
+				return
 			}
 		}()
 
 		wg.Wait()
 		close(errCh)
 
-		for err := range errCh {
-			fmt.Println("Error:", err)
-		}
-
 		if tokenErr != nil {
+			fmt.Println("You are not logged in.")
 			return
 		}
 
-		fmt.Println("API is operational.")
+		if apiErr != nil {
+			fmt.Println("API is not operational.")
+			return
+		} else {
+			fmt.Println("API is operational.")
+		}
+
 		fmt.Printf("Logged in as: %s (%s)\n", me.Name, me.GID)
-		fmt.Printf("Default workspace: %s (%s)\n", name, gid)
+		if gid == "" || name == "" {
+			fmt.Println("No default workspace set.")
+		} else {
+			fmt.Printf("Default workspace: %s (%s)\n", name, gid)
+		}
 	},
 }
