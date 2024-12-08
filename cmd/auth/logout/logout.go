@@ -22,9 +22,8 @@ var LogoutCmd = &cobra.Command{
 			return
 		}
 
-		var confirm bool
-		confirm, err = prompter.Confirm("Are you sure you want to log out?", confirm)
-
+		confirm := false
+		confirm, err = prompter.Confirm("Are you sure you want to log out?", "No")
 		if err != nil {
 			fmt.Println("Error reading confirmation:", err)
 			return

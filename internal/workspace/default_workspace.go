@@ -10,6 +10,7 @@ import (
 
 type WorkspaceConfig struct {
 	DefaultWorkspace string `json:"default_workspace"`
+	WorkspaceName    string `json:"workspace_name"`
 }
 
 func getConfigFilePath() (string, error) {
@@ -26,13 +27,16 @@ func getConfigFilePath() (string, error) {
 	return filepath.Join(configPath, "act_config.json"), nil
 }
 
-func SaveDefaultWorkspace(workspaceGID string) error {
+func SaveDefaultWorkspace(workspaceGID, workspaceName string) error {
 	path, err := getConfigFilePath()
 	if err != nil {
 		return err
 	}
 
-	config := WorkspaceConfig{DefaultWorkspace: workspaceGID}
+	config := WorkspaceConfig{
+		DefaultWorkspace: workspaceGID,
+		WorkspaceName:    workspaceName,
+	}
 	file, err := os.Create(path)
 	if err != nil {
 		return err
@@ -43,26 +47,26 @@ func SaveDefaultWorkspace(workspaceGID string) error {
 	return encoder.Encode(config)
 }
 
-func LoadDefaultWorkspace() (string, error) {
+func LoadDefaultWorkspace() (string, string, error) {
 	path, err := getConfigFilePath()
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	file, err := os.Open(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return "", errors.New("no default workspace set")
+			return "", "", errors.New("no default workspace set")
 		}
-		return "", fmt.Errorf("failed to open config file: %w", err)
+		return "", "", fmt.Errorf("failed to open config file: %w", err)
 	}
 	defer file.Close()
 
 	var config WorkspaceConfig
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&config); err != nil {
-		return "", fmt.Errorf("failed to decode config file: %w", err)
+		return "", "", fmt.Errorf("failed to decode config file: %w", err)
 	}
 
-	return config.DefaultWorkspace, nil
+	return config.DefaultWorkspace, config.WorkspaceName, nil
 }

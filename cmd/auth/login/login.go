@@ -3,7 +3,8 @@ package login
 import (
 	"fmt"
 
-	"github.com/charmbracelet/huh"
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/act/api"
 	"github.com/timwehrle/act/internal/auth"
@@ -17,14 +18,15 @@ var LoginCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var token string
 
-		token, err := prompter.Input("Please enter your Personal Access Token:", &token)
-
+		fmt.Print(heredoc.Doc(`
+			Tip: You can generate a Personal Access Token here: https://app.asana.com/0/my-apps
+		`))
+		token, err := prompter.Token()
 		if err != nil {
-			fmt.Println("Error reading token:", err)
+			fmt.Println("Error fetching token:", err)
 			return
 		}
 
-		//! Method won't work in WSL2/Linux since it is a bug within zalando/go-keyring
 		err = auth.Set(token)
 		if err != nil {
 			fmt.Println("Error storing credentials:", err)
@@ -46,31 +48,27 @@ var LoginCmd = &cobra.Command{
 			return
 		}
 
-		options := make([]huh.Option[api.Workspace], len(workspaces))
-		for i, workspace := range workspaces {
-			options[i] = huh.Option[api.Workspace]{
-				Key:   workspace.Name,
-				Value: workspace,
-			}
+		names := make([]string, len(workspaces))
+		for i, ws := range workspaces {
+			names[i] = ws.Name
 		}
 
-		var selectedWorkspace api.Workspace
+		prompt := &survey.Select{
+			Message: "Please select your default workspace:",
+			Options: names,
+		}
 
-		huh.NewSelect[api.Workspace]().
-			Title("Please select your default workspace:").
-			Height(4).
-			OptionsFunc(func() []huh.Option[api.Workspace] {
-				return options
-			}, nil).
-			Value(&selectedWorkspace).
-			Run()
+		answerIndex := 0
 
+		err = survey.AskOne(prompt, &answerIndex)
 		if err != nil {
-			fmt.Println("Error selecting workspace:", err)
+			fmt.Println(err.Error())
 			return
 		}
 
-		err = workspace.SaveDefaultWorkspace(selectedWorkspace.GID)
+		selectedWorkspace := workspaces[answerIndex]
+
+		err = workspace.SaveDefaultWorkspace(selectedWorkspace.GID, selectedWorkspace.Name)
 		if err != nil {
 			fmt.Println("Error saving default workspace:", err)
 			return
