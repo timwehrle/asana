@@ -10,6 +10,7 @@ func (c *Client) GetWorkspaces() ([]Workspace, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	var result struct {
 		Data []Workspace `json:"data"`
