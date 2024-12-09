@@ -3,7 +3,6 @@ package login
 import (
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/act/api"
@@ -84,20 +83,13 @@ var LoginCmd = &cobra.Command{
 			names[i] = ws.Name
 		}
 
-		prompt := &survey.Select{
-			Message: "Please select your default workspace:",
-			Options: names,
-		}
-
-		answerIndex := 0
-
-		err = survey.AskOne(prompt, &answerIndex)
+		index, err := prompter.Select("Please select your default workspace:", names)
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Println("Error selecting workspace:", err)
 			return
 		}
 
-		selectedWorkspace := workspaces[answerIndex]
+		selectedWorkspace := workspaces[index]
 
 		err = workspace.SaveDefaultWorkspace(selectedWorkspace.GID, selectedWorkspace.Name)
 		if err != nil {

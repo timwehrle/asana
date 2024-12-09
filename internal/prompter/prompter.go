@@ -36,6 +36,22 @@ func Token() (string, error) {
 	return token, err
 }
 
+func Select(message string, options []string) (int, error) {
+	var answerIndex int
+
+	prompt := &survey.Select{
+		Message: message,
+		Options: options,
+	}
+
+	err := ask(prompt, &answerIndex)
+	if err != nil {
+		return -1, err
+	}
+
+	return answerIndex, nil
+}
+
 func ask(q survey.Prompt, response interface{}, opts ...survey.AskOpt) error {
 	opts = append(opts, survey.WithStdio(os.Stdin, os.Stdout, os.Stderr))
 	if err := survey.AskOne(q, response, opts...); err != nil {
