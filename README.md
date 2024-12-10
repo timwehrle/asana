@@ -13,4 +13,4 @@ I am always happy to get new feature requests and improvement suggestions.
 # License
 This project is licensed under the MIT License. See the [LICENSE][license] file for details.
 
-[license]: ./README.md
+[license]: ./LICENSE
