@@ -1,4 +1,4 @@
-# ACT - The Asana command tool
+# ACT - The Asana command line tool
 
 ACT is a command-line tool designed to interact with the Asana API, allowing users to manage their Asana tasks and workspaces efficiently from the terminal.
 
