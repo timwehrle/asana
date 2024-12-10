@@ -7,13 +7,17 @@ import (
 )
 
 type Task struct {
-	GID       string `json:"gid"`
-	Name      string `json:"name"`
-	DueOn     string `json:"due_on"`
-	CreatedBy User   `json:"created_by"`
-	HTMLNotes string `json:"html_notes"`
-	Notes     string `json:"notes"`
-	Assignee  User   `json:"assignee"`
+	GID          string        `json:"gid"`
+	Name         string        `json:"name"`
+	DueOn        string        `json:"due_on"`
+	CreatedBy    User          `json:"created_by"`
+	HtmlNotes    string        `json:"html_notes"`
+	Notes        string        `json:"notes"`
+	Assignee     User          `json:"assignee"`
+	Tags         []Tag         `json:"tags"`
+	PermaLink    string        `json:"permalink_url"`
+	CustomFields []CustomField `json:"custom_fields"`
+	Projects     []Project     `json:"projects"`
 }
 
 func (c *Client) GetTasks() ([]Task, error) {
