@@ -1,4 +1,4 @@
-module github.com/timwehrle/act
+module github.com/timwehrle/alaric
 
 go 1.23.3
 
