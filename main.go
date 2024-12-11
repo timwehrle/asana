@@ -1,6 +1,6 @@
 package main
 
-import "github.com/timwehrle/alaric/cmd"
+import "github.com/timwehrle/act/cmd"
 
 func main() {
 	cmd.Execute()

@@ -1,6 +1,6 @@
-# Alaric - The Asana command line tool
+# ACT - The Asana command line tool
 
-Alaric is a command-line tool designed to interact with the Asana API, allowing users to manage their Asana tasks and workspaces efficiently from the terminal.
+ACT is a command-line tool designed to interact with the Asana API, allowing users to manage their Asana tasks and workspaces efficiently from the terminal.
 
 # Features
 - **Authentication**: Log in and log out of your Asana account using Personal Access Tokens.

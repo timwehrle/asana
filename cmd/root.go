@@ -4,12 +4,12 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/alaric/cmd/auth"
-	"github.com/timwehrle/alaric/cmd/tasks"
+	"github.com/timwehrle/act/cmd/auth"
+	"github.com/timwehrle/act/cmd/tasks"
 )
 
 var rootCmd = &cobra.Command{
-	Use: "alaric",
+	Use: "act",
 }
 
 func init() {

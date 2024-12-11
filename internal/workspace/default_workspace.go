@@ -24,7 +24,7 @@ func getConfigFilePath() (string, error) {
 		return "", fmt.Errorf("failed to create config dir: %w", err)
 	}
 
-	return filepath.Join(configPath, "alaric_config.json"), nil
+	return filepath.Join(configPath, "act_config.json"), nil
 }
 
 func SaveDefaultWorkspace(workspaceGID, workspaceName string) error {

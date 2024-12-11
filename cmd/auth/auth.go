@@ -2,9 +2,9 @@ package auth
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/alaric/cmd/auth/login"
-	"github.com/timwehrle/alaric/cmd/auth/logout"
-	"github.com/timwehrle/alaric/cmd/auth/status"
+	"github.com/timwehrle/act/cmd/auth/login"
+	"github.com/timwehrle/act/cmd/auth/logout"
+	"github.com/timwehrle/act/cmd/auth/status"
 )
 
 var AuthCmd = &cobra.Command{

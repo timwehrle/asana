@@ -5,10 +5,10 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/alaric/api"
-	"github.com/timwehrle/alaric/internal/auth"
-	"github.com/timwehrle/alaric/internal/prompter"
-	"github.com/timwehrle/alaric/internal/workspace"
+	"github.com/timwehrle/act/api"
+	"github.com/timwehrle/act/internal/auth"
+	"github.com/timwehrle/act/internal/prompter"
+	"github.com/timwehrle/act/internal/workspace"
 )
 
 var LoginCmd = &cobra.Command{

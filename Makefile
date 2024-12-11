@@ -1,5 +1,5 @@
 # Variables
-APP_NAME=alaric
+APP_NAME=act
 BUILD_DIR=
 
 # Commands
