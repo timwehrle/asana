@@ -4,12 +4,12 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/jodot/cmd/auth"
-	"github.com/timwehrle/jodot/cmd/tasks"
+	"github.com/timwehrle/alfie/cmd/auth"
+	"github.com/timwehrle/alfie/cmd/tasks"
 )
 
 var rootCmd = &cobra.Command{
-	Use: "jodot",
+	Use: "alfie",
 }
 
 func init() {

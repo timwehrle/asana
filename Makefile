@@ -1,5 +1,5 @@
 # Variables
-APP_NAME=jodot
+APP_NAME=alfie
 BUILD_DIR=
 
 # Commands

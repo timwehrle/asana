@@ -1,6 +1,6 @@
-# Jo.(dot) - The Asana command line tool
+# Alfie - The Asana command line tool
 
-Jodot is a command-line tool designed to interact with the Asana API, allowing users to manage their Asana tasks and workspaces efficiently from the terminal.
+Alfie is a command-line tool designed to interact with the Asana API, allowing users to manage their Asana tasks and workspaces efficiently from the terminal.
 
 # Features
 - **Authentication**: Log in and log out of your Asana account using Personal Access Tokens.

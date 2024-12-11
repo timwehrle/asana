@@ -5,9 +5,9 @@ import (
 	"sync"
 
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/jodot/api"
-	"github.com/timwehrle/jodot/internal/auth"
-	"github.com/timwehrle/jodot/internal/workspace"
+	"github.com/timwehrle/alfie/api"
+	"github.com/timwehrle/alfie/internal/auth"
+	"github.com/timwehrle/alfie/internal/workspace"
 )
 
 var StatusCmd = &cobra.Command{

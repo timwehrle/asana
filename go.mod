@@ -1,4 +1,4 @@
-module github.com/timwehrle/jodot
+module github.com/timwehrle/alfie
 
 go 1.23.3
 

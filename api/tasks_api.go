@@ -3,7 +3,7 @@ package api
 import (
 	"fmt"
 
-	"github.com/timwehrle/jodot/internal/workspace"
+	"github.com/timwehrle/alfie/internal/workspace"
 )
 
 type Task struct {
