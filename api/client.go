@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 type Client struct {
@@ -15,13 +16,18 @@ type Client struct {
 
 func New(token string) *Client {
 	return &Client{
-		BaseURL: "https://api.asana.com/api/1.0",
+		BaseURL: "https://api.asana.com/api/1.0/",
 		Token:   token,
 	}
 }
 
-func (c *Client) makeRequest(method, endpoint string, body interface{}) (*http.Response, error) {
-	url := c.BaseURL + endpoint
+func (c *Client) makeRequest(method string, endpoint *url.URL, body interface{}) (*http.Response, error) {
+	baseURL, err := url.Parse(c.BaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("invalid base url: %w", err)
+	}
+
+	fullURL := baseURL.ResolveReference(endpoint)
 
 	var reqBody []byte
 	if body != nil {
@@ -32,7 +38,7 @@ func (c *Client) makeRequest(method, endpoint string, body interface{}) (*http.R
 		}
 	}
 
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(reqBody))
+	req, err := http.NewRequest(method, fullURL.String(), bytes.NewBuffer(reqBody))
 	if err != nil {
 		return nil, err
 	}

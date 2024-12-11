@@ -1,7 +1,13 @@
 package api
 
+import "net/url"
+
 func (c *Client) GetMe() (User, error) {
-	resp, err := c.makeRequest("GET", "/users/me", nil)
+	endpoint := &url.URL{
+		Path: "users/me",
+	}
+
+	resp, err := c.makeRequest("GET", endpoint, nil)
 	if err != nil {
 		return User{}, err
 	}

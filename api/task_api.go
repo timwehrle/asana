@@ -1,9 +1,16 @@
 package api
 
-import "fmt"
+import (
+	"fmt"
+	"net/url"
+)
 
 func (c *Client) GetTask(taskGID string) (*Task, error) {
-	resp, err := c.makeRequest("GET", "/tasks/"+taskGID, nil)
+	endpoint := &url.URL{
+		Path: "tasks/" + taskGID,
+	}
+
+	resp, err := c.makeRequest("GET", endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make request: %v", err)
 	}

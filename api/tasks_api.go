@@ -1,7 +1,7 @@
 package api
 
 import (
-	"fmt"
+	"net/url"
 
 	"github.com/timwehrle/alfie/internal/workspace"
 )
@@ -26,10 +26,15 @@ func (c *Client) GetTasks() ([]Task, error) {
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("/tasks?workspace=%s", workspaceGID)
-	endpoint += "&opt_fields=due_on,name,completed"
-	endpoint += "&completed_since=now"
-	endpoint += "&assignee=me"
+	endpoint := &url.URL{
+		Path: "tasks",
+	}
+	query := url.Values{}
+	query.Set("workspace", workspaceGID)
+	query.Set("opt_fields", "due_on,name,completed")
+	query.Set("completed_since", "now")
+	query.Set("assignee", "me")
+	endpoint.RawQuery = query.Encode()
 
 	resp, err := c.makeRequest("GET", endpoint, nil)
 	if err != nil {

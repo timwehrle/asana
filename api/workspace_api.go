@@ -1,12 +1,18 @@
 package api
 
+import "net/url"
+
 type Workspace struct {
 	GID  string `json:"gid"`
 	Name string `json:"name"`
 }
 
 func (c *Client) GetWorkspaces() ([]Workspace, error) {
-	resp, err := c.makeRequest("GET", "/workspaces", nil)
+	endpoint := &url.URL{
+		Path: "workspaces",
+	}
+
+	resp, err := c.makeRequest("GET", endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
