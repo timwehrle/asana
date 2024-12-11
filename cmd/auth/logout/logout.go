@@ -5,8 +5,8 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/act/internal/auth"
-	"github.com/timwehrle/act/internal/prompter"
+	"github.com/timwehrle/jodot/internal/auth"
+	"github.com/timwehrle/jodot/internal/prompter"
 )
 
 var LogoutCmd = &cobra.Command{

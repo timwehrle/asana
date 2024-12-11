@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	service    = "act"
+	service    = "jodot"
 	user       = "user"
 	ErrNoToken = errors.New("no token found")
 )

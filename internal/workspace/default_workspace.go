@@ -19,12 +19,12 @@ func getConfigFilePath() (string, error) {
 		return "", fmt.Errorf("failed to get user config dir: %w", err)
 	}
 
-	configPath := filepath.Join(configDir, "act")
+	configPath := filepath.Join(configDir, "jodot")
 	if err := os.MkdirAll(configPath, 0755); err != nil {
 		return "", fmt.Errorf("failed to create config dir: %w", err)
 	}
 
-	return filepath.Join(configPath, "act_config.json"), nil
+	return filepath.Join(configPath, "jodot_config.json"), nil
 }
 
 func SaveDefaultWorkspace(workspaceGID, workspaceName string) error {

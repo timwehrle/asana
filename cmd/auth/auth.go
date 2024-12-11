@@ -2,14 +2,14 @@ package auth
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/act/cmd/auth/login"
-	"github.com/timwehrle/act/cmd/auth/logout"
-	"github.com/timwehrle/act/cmd/auth/status"
+	"github.com/timwehrle/jodot/cmd/auth/login"
+	"github.com/timwehrle/jodot/cmd/auth/logout"
+	"github.com/timwehrle/jodot/cmd/auth/status"
 )
 
 var AuthCmd = &cobra.Command{
 	Use:   "auth <command>",
-	Short: "Authenticate ACT with Asana",
+	Short: "Authenticate jodot with Asana",
 }
 
 func init() {

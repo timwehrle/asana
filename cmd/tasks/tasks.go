@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/act/api"
-	"github.com/timwehrle/act/internal/auth"
-	"github.com/timwehrle/act/internal/prompter"
-	"github.com/timwehrle/act/utils"
+	"github.com/timwehrle/jodot/api"
+	"github.com/timwehrle/jodot/internal/auth"
+	"github.com/timwehrle/jodot/internal/prompter"
+	"github.com/timwehrle/jodot/utils"
 )
 
 var TasksCmd = &cobra.Command{
