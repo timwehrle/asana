@@ -1,6 +1,6 @@
 package api
 
-func (c *Client) Me() (User, error) {
+func (c *Client) GetMe() (User, error) {
 	resp, err := c.makeRequest("GET", "/users/me", nil)
 	if err != nil {
 		return User{}, err

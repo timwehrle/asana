@@ -10,7 +10,7 @@ import (
 	"github.com/timwehrle/alfie/internal/workspace"
 )
 
-var StatusCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:   "status",
 	Short: "Show the current status of the user.",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -45,7 +45,7 @@ var StatusCmd = &cobra.Command{
 			}
 
 			client := api.New(token)
-			me, err = client.Me()
+			me, err = client.GetMe()
 			if err != nil {
 				apiErr = fmt.Errorf("failed to fetch user information: %w", err)
 				errCh <- apiErr

@@ -1,6 +1,7 @@
 package logout
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc"
@@ -9,7 +10,7 @@ import (
 	"github.com/timwehrle/alfie/internal/prompter"
 )
 
-var LogoutCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:   "logout",
 	Short: "Log out of an Asana account",
 	Long: heredoc.Doc(`
@@ -29,7 +30,7 @@ var LogoutCmd = &cobra.Command{
 	`),
 	Run: func(cmd *cobra.Command, args []string) {
 		_, err := auth.Get()
-		if err == auth.ErrNoToken {
+		if errors.Is(err, auth.ErrNoToken) {
 			fmt.Println("No active session found. You are not logged in.")
 			return
 		}

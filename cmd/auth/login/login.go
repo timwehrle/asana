@@ -11,7 +11,7 @@ import (
 	"github.com/timwehrle/alfie/internal/workspace"
 )
 
-var LoginCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:   "login",
 	Short: "Log in to an Asana account",
 	Long: heredoc.Docf(`

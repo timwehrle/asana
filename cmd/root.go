@@ -13,8 +13,8 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(auth.AuthCmd)
-	rootCmd.AddCommand(tasks.TasksCmd)
+	rootCmd.AddCommand(auth.Cmd)
+	rootCmd.AddCommand(tasks.Cmd)
 }
 
 func Execute() {

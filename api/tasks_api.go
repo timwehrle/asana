@@ -15,7 +15,7 @@ type Task struct {
 	Notes        string        `json:"notes"`
 	Assignee     User          `json:"assignee"`
 	Tags         []Tag         `json:"tags"`
-	PermaLink    string        `json:"permalink_url"`
+	Link         string        `json:"permalink_url"`
 	CustomFields []CustomField `json:"custom_fields"`
 	Projects     []Project     `json:"projects"`
 }

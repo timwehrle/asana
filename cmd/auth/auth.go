@@ -7,13 +7,13 @@ import (
 	"github.com/timwehrle/alfie/cmd/auth/status"
 )
 
-var AuthCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:   "auth <command>",
 	Short: "Authenticate alfie with Asana",
 }
 
 func init() {
-	AuthCmd.AddCommand(login.LoginCmd)
-	AuthCmd.AddCommand(logout.LogoutCmd)
-	AuthCmd.AddCommand(status.StatusCmd)
+	Cmd.AddCommand(login.Cmd)
+	Cmd.AddCommand(logout.Cmd)
+	Cmd.AddCommand(status.Cmd)
 }

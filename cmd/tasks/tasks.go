@@ -11,7 +11,7 @@ import (
 	"github.com/timwehrle/alfie/utils"
 )
 
-var TasksCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:   "tasks",
 	Short: "Manage tasks",
 	Run: func(cmd *cobra.Command, args []string) {
