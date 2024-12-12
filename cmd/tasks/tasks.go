@@ -41,7 +41,7 @@ var Cmd = &cobra.Command{
 
 		today := time.Now()
 
-		selectMessage := fmt.Sprintf("Your Tasks (%s):", today.Format("Jan 02, 2006"))
+		selectMessage := fmt.Sprintf("Your Tasks on %s (Select one for more details):", today.Format("Jan 02, 2006"))
 
 		index, err := prompter.Select(selectMessage, taskNames)
 		if err != nil {
