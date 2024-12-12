@@ -2,6 +2,7 @@ package status
 
 import (
 	"fmt"
+	"github.com/MakeNowJust/heredoc"
 	"sync"
 
 	"github.com/spf13/cobra"
@@ -13,6 +14,16 @@ import (
 var Cmd = &cobra.Command{
 	Use:   "status",
 	Short: "Show the current status of the user.",
+	Long: heredoc.Doc(`
+			Get the status of the current user and API.
+
+			This command displays the API's operational status, 
+			the logged-in user's username, and the default workspace.
+	`),
+	Example: heredoc.Doc(`
+			# Display status 
+			$ act auth status
+	`),
 	Run: func(cmd *cobra.Command, args []string) {
 		var (
 			wg       sync.WaitGroup
