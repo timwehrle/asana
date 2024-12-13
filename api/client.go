@@ -21,7 +21,7 @@ func New(token string) *Client {
 	}
 }
 
-func (c *Client) makeRequest(method string, endpoint *url.URL, body interface{}) (*http.Response, error) {
+func (c *Client) makeRequest(method string, endpoint *url.URL, body any) (*http.Response, error) {
 	baseURL, err := url.Parse(c.BaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("invalid base url: %w", err)
@@ -49,7 +49,7 @@ func (c *Client) makeRequest(method string, endpoint *url.URL, body interface{})
 	return http.DefaultClient.Do(req)
 }
 
-func handleResponse(resp *http.Response, result interface{}) error {
+func handleResponse(resp *http.Response, result any) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {

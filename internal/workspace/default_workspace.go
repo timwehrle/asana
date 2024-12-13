@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-type WorkspaceConfig struct {
+type Config struct {
 	DefaultWorkspace string `json:"default_workspace"`
 	WorkspaceName    string `json:"workspace_name"`
 }
@@ -33,7 +33,7 @@ func SaveDefaultWorkspace(workspaceGID, workspaceName string) error {
 		return err
 	}
 
-	config := WorkspaceConfig{
+	config := Config{
 		DefaultWorkspace: workspaceGID,
 		WorkspaceName:    workspaceName,
 	}
@@ -47,7 +47,7 @@ func SaveDefaultWorkspace(workspaceGID, workspaceName string) error {
 	return encoder.Encode(config)
 }
 
-func LoadDefaultWorkspace() (string, string, error) {
+func LoadDefaultWorkspace() (gid string, name string, loadError error) {
 	path, err := getConfigFilePath()
 	if err != nil {
 		return "", "", err
@@ -62,7 +62,7 @@ func LoadDefaultWorkspace() (string, string, error) {
 	}
 	defer file.Close()
 
-	var config WorkspaceConfig
+	var config Config
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&config); err != nil {
 		return "", "", fmt.Errorf("failed to decode config file: %w", err)

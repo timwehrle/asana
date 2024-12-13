@@ -9,7 +9,7 @@ func FormatDate(date string) string {
 		return "None"
 	}
 
-	parsedDate, err := time.Parse("2006-01-02", date)
+	parsedDate, err := time.Parse(time.DateOnly, date)
 	if err != nil {
 		return "Invalid Date"
 	}

@@ -52,7 +52,7 @@ func Select(message string, options []string) (int, error) {
 	return answerIndex, nil
 }
 
-func ask(q survey.Prompt, response interface{}, opts ...survey.AskOpt) error {
+func ask(q survey.Prompt, response any, opts ...survey.AskOpt) error {
 	opts = append(opts, survey.WithStdio(os.Stdin, os.Stdout, os.Stderr))
 	if err := survey.AskOne(q, response, opts...); err != nil {
 		return fmt.Errorf("could not prompt: %w", err)

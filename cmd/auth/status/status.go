@@ -74,7 +74,6 @@ var Cmd = &cobra.Command{
 
 		if apiErr != nil {
 			fmt.Println("API is not operational.")
-			return
 		} else {
 			fmt.Println("API is operational.")
 		}

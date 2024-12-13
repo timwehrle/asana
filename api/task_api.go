@@ -12,7 +12,7 @@ func (c *Client) GetTask(taskGID string) (*Task, error) {
 
 	resp, err := c.makeRequest("GET", endpoint, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to make request: %v", err)
+		return nil, fmt.Errorf("failed to make request: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -21,7 +21,7 @@ func (c *Client) GetTask(taskGID string) (*Task, error) {
 	}
 
 	if err := handleResponse(resp, &result); err != nil {
-		return nil, fmt.Errorf("failed to handle response: %v", err)
+		return nil, fmt.Errorf("failed to handle response: %w", err)
 	}
 
 	return &result.Data, nil
