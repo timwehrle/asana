@@ -22,9 +22,6 @@ builds:
       - arm64
 
 archives:
-  - format: zip
-    id: zip
-    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
   - format: tar.gz
     id: tar
     name_template: >-
