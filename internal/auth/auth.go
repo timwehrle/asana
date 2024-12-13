@@ -46,7 +46,7 @@ func Get() (string, error) {
 		defer close(errCh)
 		secret, err := keyring.Get(service, user)
 		if err != nil {
-			if err == keyring.ErrNotFound {
+			if errors.Is(err, keyring.ErrNotFound) {
 				errCh <- ErrNoToken
 			} else {
 				errCh <- err
