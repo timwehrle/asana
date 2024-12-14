@@ -60,6 +60,23 @@ var Cmd = &cobra.Command{
 		fmt.Printf("%s [%s], %s\n", utils.BoldUnderline.Sprint(task.Name), utils.FormatDate(task.DueOn), displayProjects(task.Projects))
 		fmt.Println(displayTags(task.Tags))
 		fmt.Print(displayNotes(task.Notes))
+
+		confirm := false
+		confirm, err = prompter.Confirm("Do you want to mark the task as done?", "No")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		if confirm {
+			err := client.MarkTaskAsDone(selectedTask.GID)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			fmt.Println("Task successfully marked as done.")
+		}
 	},
 }
 

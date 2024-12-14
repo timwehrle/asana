@@ -2,7 +2,6 @@ package login
 
 import (
 	"fmt"
-
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/alfie/api"
