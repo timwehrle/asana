@@ -1,5 +1,9 @@
 # Alfie - The Asana command line tool
 
+<a href="https://pkg.go.dev/github.com/timwehrle/alfie">
+    <img src="https://pkg.go.dev/badge/github.com/timwehrle/alfie.svg" alt="Go Reference">
+</a>
+
 <p align="left">
     <img width="400" alt="Picture of Alfred Pennyworth" src="./static/Alfred_Pennyworth.webp">
 </p>
