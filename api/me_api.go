@@ -1,13 +1,20 @@
 package api
 
-import "net/url"
+import (
+	"context"
+	"net/url"
+	"time"
+)
 
 func (c *Client) GetMe() (User, error) {
 	endpoint := &url.URL{
 		Path: "users/me",
 	}
 
-	resp, err := c.makeRequest("GET", endpoint, nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	resp, err := c.makeRequest(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return User{}, err
 	}

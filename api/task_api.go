@@ -1,8 +1,10 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"net/url"
+	"time"
 )
 
 func (c *Client) GetTask(taskGID string) (*Task, error) {
@@ -10,7 +12,10 @@ func (c *Client) GetTask(taskGID string) (*Task, error) {
 		Path: "tasks/" + taskGID,
 	}
 
-	resp, err := c.makeRequest("GET", endpoint, nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	resp, err := c.makeRequest(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make request: %w", err)
 	}

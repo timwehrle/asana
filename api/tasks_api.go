@@ -1,7 +1,9 @@
 package api
 
 import (
+	"context"
 	"net/url"
+	"time"
 
 	"github.com/timwehrle/alfie/internal/workspace"
 )
@@ -36,7 +38,10 @@ func (c *Client) GetTasks() ([]Task, error) {
 	query.Set("assignee", "me")
 	endpoint.RawQuery = query.Encode()
 
-	resp, err := c.makeRequest("GET", endpoint, nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	resp, err := c.makeRequest(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
