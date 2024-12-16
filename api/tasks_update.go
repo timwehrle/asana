@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"net/url"
 	"time"
 )
@@ -15,8 +16,8 @@ func (c *Client) MarkTaskAsDone(taskGID string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	payload := map[string]interface{}{
-		"data": map[string]interface{}{
+	payload := map[string]any{
+		"data": map[string]any{
 			"completed": true,
 		},
 	}
@@ -27,7 +28,7 @@ func (c *Client) MarkTaskAsDone(taskGID string) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to mark task %s as done: status code %d", taskGID, resp.StatusCode)
 	}
 	return nil
