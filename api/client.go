@@ -76,11 +76,7 @@ func (c *Client) Request(ctx context.Context, method string, endpoint *url.URL, 
 
 // Response handles the HTTP response, checking status and decoding result
 func (c *Client) Response(resp *http.Response, result any) (err error) {
-	defer func() {
-		if cerr := resp.Body.Close(); cerr != nil && err == nil {
-			err = fmt.Errorf("failed to close response body: %w", cerr)
-		}
-	}()
+	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return c.handleErrorResponse(resp)
