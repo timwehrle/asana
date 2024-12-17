@@ -8,26 +8,50 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 )
 
 type Client struct {
 	BaseURL    string
 	Token      string
-	HTTPClient *http.Client
+	httpClient *http.Client
+	once       sync.Once
 }
 
-// New creates a new API client with the provided token.
+// New creates a new API client with the provided token
 func New(token string) *Client {
 	return &Client{
-		BaseURL:    "https://api.asana.com/api/1.0/",
-		Token:      token,
-		HTTPClient: &http.Client{Timeout: 30 * time.Second},
+		BaseURL: "https://api.asana.com/api/1.0/",
+		Token:   token,
 	}
 }
 
-// makeRequest sends an HTTP request to the Asana API and returns the response.
-func (c *Client) makeRequest(ctx context.Context, method string, endpoint *url.URL, body any) (*http.Response, error) {
+// WithHTTPCLient allows customizing the HTTP client
+func (c *Client) WithHTTPCLient(client *http.Client) *Client {
+	c.httpClient = client
+	return c
+}
+
+// getHTTPClient ensures a default client is created if not provided
+func (c *Client) getHTTPClient() *http.Client {
+	c.once.Do(func() {
+		if c.httpClient == nil {
+			c.httpClient = &http.Client{
+				Timeout: 30 * time.Second,
+				Transport: &http.Transport{
+					MaxIdleConns:        10,
+					MaxIdleConnsPerHost: 5,
+					IdleConnTimeout:     90 * time.Second,
+				},
+			}
+		}
+	})
+	return c.httpClient
+}
+
+// Request sends an HTTP request to the Asana API and returns the response
+func (c *Client) Request(ctx context.Context, method string, endpoint *url.URL, body any) (*http.Response, error) {
 	fullURL, err := c.buildFullURL(endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build full URL: %w", err)
@@ -45,24 +69,37 @@ func (c *Client) makeRequest(ctx context.Context, method string, endpoint *url.U
 
 	req.Header.Set("Authorization", "Bearer "+c.Token)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
 
-	return http.DefaultClient.Do(req)
+	return c.getHTTPClient().Do(req)
 }
 
-func handleResponse(resp *http.Response, result any) error {
-	defer resp.Body.Close()
+// Response handles the HTTP response, checking status and decoding result
+func (c *Client) Response(resp *http.Response, result any) (err error) {
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil && err == nil {
+			err = fmt.Errorf("failed to close response body: %w", cerr)
+		}
+	}()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		bodyBytes, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return fmt.Errorf("API request failed with status: %s, but failed to read response body: %w", resp.Status, err)
-		}
-		return fmt.Errorf("API request failed with status: %s, body: %s", resp.Status, string(bodyBytes))
+		return c.handleErrorResponse(resp)
 	}
 
 	return json.NewDecoder(resp.Body).Decode(result)
 }
 
+// handleErrorResponse provides detailed error information
+func (c *Client) handleErrorResponse(resp *http.Response) error {
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("API request failed with status %s, and error reading response body: %w", resp.Status, err)
+	}
+
+	return fmt.Errorf("API request failed with status %s, body: %s", resp.Status, string(bodyBytes))
+}
+
+// buildFullURL constructs the full URL for the API request
 func (c *Client) buildFullURL(endpoint *url.URL) (string, error) {
 	baseURL, err := url.Parse(c.BaseURL)
 	if err != nil {
@@ -71,6 +108,7 @@ func (c *Client) buildFullURL(endpoint *url.URL) (string, error) {
 	return baseURL.ResolveReference(endpoint).String(), nil
 }
 
+// marshalBody converts the request body to JSON
 func (c *Client) marshalBody(body any) ([]byte, error) {
 	if body == nil {
 		return nil, nil

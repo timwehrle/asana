@@ -19,7 +19,7 @@ func (c *Client) GetWorkspaces() ([]Workspace, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	resp, err := c.makeRequest(ctx, "GET", endpoint, nil)
+	resp, err := c.Request(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func (c *Client) GetWorkspaces() ([]Workspace, error) {
 		Data []Workspace `json:"data"`
 	}
 
-	if err := handleResponse(resp, &result); err != nil {
+	if err := c.Response(resp, &result); err != nil {
 		return nil, err
 	}
 

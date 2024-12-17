@@ -14,7 +14,7 @@ func (c *Client) GetMe() (User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	resp, err := c.makeRequest(ctx, "GET", endpoint, nil)
+	resp, err := c.Request(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return User{}, err
 	}
@@ -24,7 +24,7 @@ func (c *Client) GetMe() (User, error) {
 		Data User `json:"data"`
 	}
 
-	if err := handleResponse(resp, &result); err != nil {
+	if err := c.Response(resp, &result); err != nil {
 		return User{}, err
 	}
 
