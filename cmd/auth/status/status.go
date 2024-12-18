@@ -3,8 +3,6 @@ package status
 import (
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
-	"sync"
-
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/alfie/api"
 	"github.com/timwehrle/alfie/internal/auth"
@@ -24,56 +22,23 @@ var Cmd = &cobra.Command{
 			# Display status 
 			$ act auth status
 	`),
-	Run: func(cmd *cobra.Command, args []string) {
-		var (
-			wg       sync.WaitGroup
-			errCh    = make(chan error, 2)
-			gid      string
-			name     string
-			me       api.User
-			tokenErr error
-			apiErr   error
-		)
-
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			var err error
-			gid, name, err = workspace.LoadDefaultWorkspace()
-			if err != nil {
-				errCh <- fmt.Errorf("failed to load default workspace: %w", err)
-			}
-		}()
-
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			token, err := auth.Get()
-			if err != nil {
-				tokenErr = fmt.Errorf("failed to get token: %w", err)
-				errCh <- tokenErr
-				return
-			}
-
-			client := api.New(token)
-			me, err = client.GetMe()
-			if err != nil {
-				apiErr = fmt.Errorf("failed to fetch user information: %w", err)
-				errCh <- apiErr
-				return
-			}
-		}()
-
-		wg.Wait()
-		close(errCh)
-
-		if tokenErr != nil {
-			fmt.Println("You are not logged in.")
-			return
+	RunE: func(cmd *cobra.Command, args []string) error {
+		gid, name, err := workspace.LoadDefaultWorkspace()
+		if err != nil {
+			return err
 		}
 
-		if apiErr != nil {
-			fmt.Println("API is not operational.")
+		token, err := auth.Get()
+		if err != nil {
+			fmt.Println("You are not logged in.")
+			return nil
+		}
+
+		client := api.New(token)
+
+		me, err := client.GetMe()
+		if err != nil {
+			return err
 		} else {
 			fmt.Println("API is operational.")
 		}
@@ -84,5 +49,7 @@ var Cmd = &cobra.Command{
 		} else {
 			fmt.Printf("Default workspace: %s (%s)\n", name, gid)
 		}
+
+		return nil
 	},
 }
