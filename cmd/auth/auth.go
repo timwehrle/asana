@@ -9,7 +9,7 @@ import (
 
 var Cmd = &cobra.Command{
 	Use:   "auth <command>",
-	Short: "Authenticate alfie with Asana",
+	Short: "Authenticate Alfie with Asana",
 }
 
 func init() {

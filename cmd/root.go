@@ -9,7 +9,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use: "alfie",
+	Use:   "alfie <command> <subcommand> [flags]",
+	Short: "Alfie is a CLI tool for Asana",
+	Long:  `Work with Asana from the command line.`,
 }
 
 func init() {
