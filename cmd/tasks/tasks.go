@@ -2,7 +2,6 @@ package tasks
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -15,34 +14,34 @@ import (
 var Cmd = &cobra.Command{
 	Use:   "tasks",
 	Short: "Manage tasks",
-	Run:   run,
-}
+	RunE: func(cmd *cobra.Command, args []string) error {
+		token, err := auth.Get()
+		if err != nil {
+			return err
+		}
 
-func run(cmd *cobra.Command, args []string) {
-	token, err := auth.Get()
-	if err != nil {
-		log.Printf("Failed to authenticate: %v", err)
-	}
+		client := api.New(token)
 
-	client := api.New(token)
+		tasks, err := fetchTasks(client)
+		if err != nil {
+			return err
+		}
 
-	tasks, err := fetchTasks(client)
-	if err != nil {
-		log.Printf("Failed to fetch tasks: %v", err)
-	}
+		selectedTask, err := promptForTaskSelection(tasks)
+		if err != nil {
+			return err
+		}
 
-	selectedTask, err := promptForTaskSelection(tasks)
-	if err != nil {
-		log.Printf("Failed to select a task: %v", err)
-	}
+		if err := displayTaskDetails(client, selectedTask); err != nil {
+			return err
+		}
 
-	if err := displayTaskDetails(client, selectedTask); err != nil {
-		log.Printf("Failed to display task details: %v", err)
-	}
+		if err := handleTaskCompletion(client, selectedTask); err != nil {
+			return err
+		}
 
-	if err := handleTaskCompletion(client, selectedTask); err != nil {
-		log.Printf("Failed to mark task as done: %v", err)
-	}
+		return nil
+	},
 }
 
 func fetchTasks(client *api.Client) ([]api.Task, error) {
@@ -87,7 +86,8 @@ func displayTaskDetails(client *api.Client, task *api.Task) error {
 		return err
 	}
 
-	fmt.Printf("%s [%s], %s\n", utils.BoldUnderline.Sprint(detailedTask.Name), utils.FormatDate(detailedTask.DueOn), formatProjects(detailedTask.Projects))
+	fmt.Printf("%s [%s], %s\n", utils.BoldUnderline.Sprint(detailedTask.Name),
+		utils.FormatDate(detailedTask.DueOn), formatProjects(detailedTask.Projects))
 	fmt.Println(formatTags(detailedTask.Tags))
 	fmt.Print(formatNotes(detailedTask.Notes))
 
