@@ -38,13 +38,13 @@ var Cmd = &cobra.Command{
 		# Start login process
 		$ act auth login
 	`),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		var token string
 
 		_, err := auth.Get()
 		if err == nil {
 			fmt.Println("You are already logged in.")
-			return
+			return nil
 		}
 
 		fmt.Print(heredoc.Doc(`
@@ -52,14 +52,12 @@ var Cmd = &cobra.Command{
 		`))
 		token, err = prompter.Token()
 		if err != nil {
-			fmt.Println("Error fetching token:", err)
-			return
+			return err
 		}
 
 		err = auth.Set(token)
 		if err != nil {
-			fmt.Println("Error storing credentials:", err)
-			return
+			return err
 		}
 
 		fmt.Println("Successfully logged in.")
@@ -68,13 +66,12 @@ var Cmd = &cobra.Command{
 
 		workspaces, err := client.GetWorkspaces()
 		if err != nil {
-			fmt.Println("Error fetching workspaces:", err)
-			return
+			return err
 		}
 
 		if len(workspaces) == 0 {
 			fmt.Println("No workspaces found.")
-			return
+			return nil
 		}
 
 		names := make([]string, len(workspaces))
@@ -84,18 +81,18 @@ var Cmd = &cobra.Command{
 
 		index, err := prompter.Select("Please select your default workspace:", names)
 		if err != nil {
-			fmt.Println("Error selecting workspace:", err)
-			return
+			return err
 		}
 
 		selectedWorkspace := workspaces[index]
 
 		err = workspace.SaveDefaultWorkspace(selectedWorkspace.GID, selectedWorkspace.Name)
 		if err != nil {
-			fmt.Println("Error saving default workspace:", err)
-			return
+			return err
 		}
 
 		fmt.Printf("Default workspace set to '%s'.\n", selectedWorkspace.Name)
+
+		return nil
 	},
 }
