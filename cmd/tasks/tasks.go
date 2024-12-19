@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"fmt"
+	"github.com/timwehrle/alfie/pkg"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -36,7 +37,7 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
-		if err := handleTaskCompletion(client, selectedTask); err != nil {
+		if err := pkg.HandleTaskAction(client, selectedTask); err != nil {
 			return err
 		}
 
@@ -94,21 +95,6 @@ func displayTaskDetails(client *api.Client, task *api.Task) error {
 	return nil
 }
 
-func handleTaskCompletion(client *api.Client, task *api.Task) error {
-	confirm, err := prompter.Confirm("Do you want to mark the task as done?", "No")
-	if err != nil {
-		return err
-	}
-
-	if confirm {
-		if err := client.MarkTaskAsDone(task.GID); err != nil {
-			return err
-		}
-		fmt.Println("Task successfully marked as done.")
-	}
-	return nil
-}
-
 func formatProjects(projects []api.Project) string {
 	if len(projects) > 0 {
 		projectNames := make([]string, len(projects))
@@ -133,7 +119,7 @@ func formatTags(tags []api.Tag) string {
 
 func formatNotes(notes string) string {
 	if notes != "" {
-		return fmt.Sprintf("\n%s\n", notes)
+		return utils.BoldUnderline.Sprintf("Description:") + "\n" + notes + "\n"
 	}
 	return ""
 }
