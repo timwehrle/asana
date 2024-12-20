@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/alfie/cmd/auth"
-	"github.com/timwehrle/alfie/cmd/tasks"
+	"github.com/timwehrle/alfie/pkg/cmd/tasks"
 )
 
 var rootCmd = &cobra.Command{
@@ -16,7 +16,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(auth.Cmd)
-	rootCmd.AddCommand(tasks.Cmd)
+	rootCmd.AddCommand(tasks.NewCmdTasks())
 }
 
 func Execute() {
