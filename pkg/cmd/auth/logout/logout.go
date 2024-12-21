@@ -29,7 +29,7 @@ func NewCmdLogout() *cobra.Command {
 			# Start logout process
 			$ act auth logout
 		`),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			return logoutRun()
 		},
 	}

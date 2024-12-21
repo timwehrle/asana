@@ -40,8 +40,8 @@ func NewCmdLogin() *cobra.Command {
 			# Start login process
 			$ act auth login
 		`),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return loginRun();
+		RunE: func(_ *cobra.Command, _ []string) error {
+			return loginRun()
 		},
 	}
 
@@ -105,4 +105,3 @@ func loginRun() error {
 
 	return nil
 }
-

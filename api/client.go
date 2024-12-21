@@ -86,7 +86,7 @@ func (c *Client) Response(resp *http.Response, result any) (err error) {
 }
 
 // handleErrorResponse provides detailed error information
-func (c *Client) handleErrorResponse(resp *http.Response) error {
+func (*Client) handleErrorResponse(resp *http.Response) error {
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("API request failed with status %s, and error reading response body: %w", resp.Status, err)
@@ -105,7 +105,7 @@ func (c *Client) buildFullURL(endpoint *url.URL) (string, error) {
 }
 
 // marshalBody converts the request body to JSON
-func (c *Client) marshalBody(body any) ([]byte, error) {
+func (*Client) marshalBody(body any) ([]byte, error) {
 	if body == nil {
 		return nil, nil
 	}

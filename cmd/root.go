@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/alfie/pkg/cmd/auth"
 	"github.com/timwehrle/alfie/pkg/cmd/tasks"
@@ -19,9 +17,10 @@ func init() {
 	rootCmd.AddCommand(tasks.NewCmdTasks())
 }
 
-func Execute() {
+func Execute() error {
 	err := rootCmd.Execute()
 	if err != nil {
-		os.Exit(1)
+		return err
 	}
+	return nil
 }

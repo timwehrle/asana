@@ -2,18 +2,19 @@ package tasks
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/alfie/api"
 	"github.com/timwehrle/alfie/internal/auth"
 	"github.com/timwehrle/alfie/internal/prompter"
 	"github.com/timwehrle/alfie/utils"
-	"time"
 )
 
 func NewCmdTasks() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "tasks",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			return tasksRun()
 		},
 	}
@@ -43,7 +44,8 @@ func tasksRun() error {
 		return err
 	}
 
-	if err := handleAction(client, selectedTask); err != nil {
+	err = handleAction(client, selectedTask)
+	if err != nil {
 		return err
 	}
 
@@ -139,7 +141,7 @@ func handleAction(client *api.Client, task *api.Task) error {
 
 	switch selectedAction {
 	case 0:
-		return markTaskAsDone(client, task)
+		return completeTask(client, task)
 	case 3:
 		fmt.Println("Action cancelled.")
 		return nil
@@ -148,20 +150,11 @@ func handleAction(client *api.Client, task *api.Task) error {
 	return nil
 }
 
-func markTaskAsDone(client *api.Client, task *api.Task) error {
-	confirm, err := prompter.Confirm("Do you want to mark the task as done?", "No")
-	if err != nil {
+func completeTask(client *api.Client, task *api.Task) error {
+	if err := client.UpdateTask(task.GID, map[string]any{"completed": true}); err != nil {
 		return err
 	}
-
-	if confirm {
-		if err := client.MarkTaskAsDone(task.GID); err != nil {
-			return err
-		}
-		fmt.Println("Task successfully marked as done.")
-	} else {
-		fmt.Println("Task not marked as done.")
-	}
+	fmt.Println("Task successfully marked as done.")
 
 	return nil
 }

@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (c *Client) MarkTaskAsDone(taskGID string) error {
+func (c *Client) UpdateTask(taskGID string, updates map[string]any) error {
 	endpoint := &url.URL{
 		Path: fmt.Sprintf("tasks/%s", taskGID),
 	}
@@ -17,19 +17,18 @@ func (c *Client) MarkTaskAsDone(taskGID string) error {
 	defer cancel()
 
 	payload := map[string]any{
-		"data": map[string]any{
-			"completed": true,
-		},
+		"data": updates,
 	}
 
 	resp, err := c.Request(ctx, "PUT", endpoint, payload)
 	if err != nil {
-		return fmt.Errorf("failed to mark task %s as done: %w", taskGID, err)
+		return fmt.Errorf("failed to mark task %s: %w", taskGID, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to mark task %s as done: status code %d", taskGID, resp.StatusCode)
+		return fmt.Errorf("failed to mark task %s: status code %d", taskGID, resp.StatusCode)
 	}
+	
 	return nil
 }

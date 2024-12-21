@@ -1,7 +1,15 @@
 package main
 
-import "github.com/timwehrle/alfie/cmd"
+import (
+	"fmt"
+	"os"
+
+	"github.com/timwehrle/alfie/cmd"
+)
 
 func main() {
-	cmd.Execute()
+	if err := cmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }
