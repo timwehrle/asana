@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/alfie/cmd/auth"
+	"github.com/timwehrle/alfie/pkg/cmd/auth"
 	"github.com/timwehrle/alfie/pkg/cmd/tasks"
 )
 
@@ -15,7 +15,7 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(auth.Cmd)
+	rootCmd.AddCommand(auth.NewCmdAuth())
 	rootCmd.AddCommand(tasks.NewCmdTasks())
 }
 
