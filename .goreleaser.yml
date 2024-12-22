@@ -40,19 +40,35 @@ changelog:
   format: "{{.SHA}}: {{.Message}} by @{{.AuthorUsername}}"
   abbrev: -1
   sort: asc
-  groups:
-    - title: Features
-      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
-      order: 0
-    - title: Bug fixes
-      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
-      order: 1
-    - title: Others
-      order: 999
   filters:
     exclude:
-      - "^docs:"
       - "^tests:"
+      - "^test:"
+      - "^test\\("
+      - "merge conflict"
+      - "Merge pull request"
+      - "Merge branch"
+  groups:
+    - title: "Features"
+      regexp: '^.*?feat(\(.+\))??!?:.+$'
+      order: 0
+    - title: "Bug fixes"
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: "Security updates"
+      regexp: '^.*?sec(\(.+\))??!?:.+$'
+      order: 2
+    - title: "Build process updates"
+      regexp: '^.*?(build|ci)(\(.+\))??!?:.+$S'
+      order: 3
+    - title: "Dependency updates"
+      regexp: '^.*?(.+)\(deps\)!?:.+$'
+      order: 4
+    - title: "Documentation updates"
+      regexp: '^.*?docs?(\(.+\))??!?:.+$'
+      order: 5
+    - title: "Other updates"
+      order: 999
 
 checksum:
   name_template: "{{ .ProjectName }}_checksums.txt"
