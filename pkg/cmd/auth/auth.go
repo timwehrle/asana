@@ -9,7 +9,7 @@ import (
 
 func NewCmdAuth() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "auth <command>",
+		Use:   "auth <command>",
 		Short: "Authenticate Alfie with Asana",
 	}
 

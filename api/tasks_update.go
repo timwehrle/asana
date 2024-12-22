@@ -29,6 +29,6 @@ func (c *Client) UpdateTask(taskGID string, updates map[string]any) error {
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to mark task %s: status code %d", taskGID, resp.StatusCode)
 	}
-	
+
 	return nil
 }

@@ -132,7 +132,7 @@ func formatNotes(notes string) string {
 }
 
 func handleAction(client *api.Client, task *api.Task) error {
-	actions := []string{"Mark as Done", "Delete Task", "Edit Task", "Cancel"}
+	actions := []string{"Mark as Completed", "Edit Task Name", "Cancel"}
 
 	selectedAction, err := prompter.Select("What would you like to do with this task?", actions)
 	if err != nil {
@@ -142,7 +142,9 @@ func handleAction(client *api.Client, task *api.Task) error {
 	switch selectedAction {
 	case 0:
 		return completeTask(client, task)
-	case 3:
+	case 1:
+		return editTask(client, task)
+	case 2:
 		fmt.Println("Action cancelled.")
 		return nil
 	}
@@ -156,5 +158,18 @@ func completeTask(client *api.Client, task *api.Task) error {
 	}
 	fmt.Println("Task successfully marked as done.")
 
+	return nil
+}
+
+func editTask(client *api.Client, task *api.Task) error {
+	input, err := prompter.Input("What is the new name for the task?", "")
+	if err != nil {
+		return err
+	}
+
+	if err := client.UpdateTask(task.GID, map[string]any{"name": input}); err != nil {
+		return err
+	}
+	fmt.Println("Task successfully edited.")
 	return nil
 }
