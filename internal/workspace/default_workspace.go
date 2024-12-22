@@ -9,8 +9,8 @@ import (
 )
 
 type Config struct {
-	DefaultWorkspace string `json:"default_workspace"`
-	WorkspaceName    string `json:"workspace_name"`
+	WorkspaceGID  string `json:"workspace_gid"`
+	WorkspaceName string `json:"workspace_name"`
 }
 
 func getConfigFilePath() (string, error) {
@@ -34,8 +34,8 @@ func SaveDefaultWorkspace(workspaceGID, workspaceName string) error {
 	}
 
 	config := Config{
-		DefaultWorkspace: workspaceGID,
-		WorkspaceName:    workspaceName,
+		WorkspaceGID:  workspaceGID,
+		WorkspaceName: workspaceName,
 	}
 	file, err := os.Create(path)
 	if err != nil {
@@ -68,5 +68,5 @@ func LoadDefaultWorkspace() (gid string, name string, loadError error) {
 		return "", "", fmt.Errorf("failed to decode config file: %w", err)
 	}
 
-	return config.DefaultWorkspace, config.WorkspaceName, nil
+	return config.WorkspaceGID, config.WorkspaceName, nil
 }
