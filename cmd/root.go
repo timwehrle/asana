@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/alfie/pkg/cmd/auth"
-	"github.com/timwehrle/alfie/pkg/cmd/tasks"
+	"github.com/timwehrle/alfie/pkg/cmd/brief"
 )
 
 var rootCmd = &cobra.Command{
@@ -14,7 +14,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(auth.NewCmdAuth())
-	rootCmd.AddCommand(tasks.NewCmdTasks())
+	rootCmd.AddCommand(brief.NewCmdBrief())
 }
 
 func Execute() error {

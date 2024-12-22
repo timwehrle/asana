@@ -1,4 +1,4 @@
-package tasks
+package brief
 
 import (
 	"fmt"
@@ -11,18 +11,18 @@ import (
 	"github.com/timwehrle/alfie/utils"
 )
 
-func NewCmdTasks() *cobra.Command {
+func NewCmdBrief() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "tasks",
+		Use: "brief",
 		RunE: func(_ *cobra.Command, _ []string) error {
-			return tasksRun()
+			return briefRun()
 		},
 	}
 
 	return cmd
 }
 
-func tasksRun() error {
+func briefRun() error {
 	token, err := auth.Get()
 	if err != nil {
 		return err
@@ -80,55 +80,18 @@ func prompt(tasks []api.Task) (*api.Task, error) {
 	return &tasks[index], nil
 }
 
-func formatNames(tasks []api.Task) []string {
-	taskNames := make([]string, len(tasks))
-	for i, task := range tasks {
-		taskNames[i] = fmt.Sprintf("[%s] %s", utils.FormatDate(task.DueOn), task.Name)
-	}
-	return taskNames
-}
-
 func displayDetails(client *api.Client, task *api.Task) error {
 	detailedTask, err := client.GetTask(task.GID)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("%s [%s], %s\n", utils.BoldUnderline.Sprint(detailedTask.Name),
+	fmt.Printf("%s | Due: %s | %s\n", utils.BoldUnderline.Sprint(detailedTask.Name),
 		utils.FormatDate(detailedTask.DueOn), formatProjects(detailedTask.Projects))
 	fmt.Println(formatTags(detailedTask.Tags))
 	fmt.Print(formatNotes(detailedTask.Notes))
 
 	return nil
-}
-
-func formatProjects(projects []api.Project) string {
-	if len(projects) > 0 {
-		projectNames := make([]string, len(projects))
-		for i, project := range projects {
-			projectNames[i] = project.Name
-		}
-		return "Projects: " + fmt.Sprintf("%s", projectNames)
-	}
-	return "Projects: None"
-}
-
-func formatTags(tags []api.Tag) string {
-	if len(tags) > 0 {
-		tagNames := make([]string, len(tags))
-		for i, tag := range tags {
-			tagNames[i] = tag.Name
-		}
-		return "Tags: " + fmt.Sprintf("%s", tagNames)
-	}
-	return "Tags: None"
-}
-
-func formatNotes(notes string) string {
-	if notes != "" {
-		return utils.BoldUnderline.Sprintf("Description:") + "\n" + notes + "\n"
-	}
-	return ""
 }
 
 func handleAction(client *api.Client, task *api.Task) error {
