@@ -37,7 +37,7 @@ archives:
 
 changelog:
   use: github
-  format: "{{.SHA}}: {{.Message}} by (@{{.AuthorUsername}})"
+  format: "{{.SHA}}: {{.Message}} by @{{.AuthorUsername}}"
   abbrev: -1
   sort: asc
   groups:
