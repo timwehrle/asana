@@ -2,6 +2,7 @@ package status
 
 import (
 	"fmt"
+	"github.com/MakeNowJust/heredoc"
 
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/alfie/api"
@@ -11,7 +12,18 @@ import (
 
 func NewCmdStatus() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "status",
+		Use:   "status",
+		Short: "Display the current user's status and API health",
+		Long: heredoc.Doc(`
+				Display the status of the current logged-in user and the API.
+
+				This command shows whether the API is running, the current
+				user and the default workspace.
+		`),
+		Example: heredoc.Doc(`
+				# Start status process
+				$ alfie auth status
+		`),
 		RunE: func(_ *cobra.Command, _ []string) error {
 			return statusRun()
 		},
