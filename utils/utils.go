@@ -9,20 +9,23 @@ func FormatDate(date string) string {
 		return "None"
 	}
 
-	parsedDate, err := time.Parse(time.DateOnly, date)
+	location := time.Now().Location()
+
+	parsedDate, err := time.ParseInLocation(time.DateOnly, date, location)
 	if err != nil {
 		return "Invalid Date"
 	}
 
-	today := time.Now()
+	now := time.Now().In(location)
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, location)
 	tomorrow := today.Add(24 * time.Hour)
 	weekLater := today.Add(6 * 24 * time.Hour)
 
-	if parsedDate.Equal(today.Truncate(24 * time.Hour)) {
+	if parsedDate.Equal(today) {
 		return "Today"
 	}
 
-	if parsedDate.Equal(tomorrow.Truncate(24 * time.Hour)) {
+	if parsedDate.Equal(tomorrow) {
 		return "Tomorrow"
 	}
 
