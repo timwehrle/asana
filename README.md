@@ -1,10 +1,13 @@
 # Alfie - The Asana command line tool
 
-<a href="https://pkg.go.dev/github.com/timwehrle/alfie">
-    <img src="https://pkg.go.dev/badge/github.com/timwehrle/alfie.svg" alt="Go Reference">
-</a>
+<div>
+    <a href="https://pkg.go.dev/github.com/timwehrle/alfie">
+        <img src="https://pkg.go.dev/badge/github.com/timwehrle/alfie.svg" alt="Go Reference">
+    </a>
+    <img src="static/coverage-badge.svg" alt="Code coverage">
+</div>
 
-<p align="left">
+<p>
     <img width="400" alt="Picture of Alfred Pennyworth" src="./static/Alfred_Pennyworth.webp">
 </p>
 
