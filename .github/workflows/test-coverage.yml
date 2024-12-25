@@ -33,6 +33,7 @@ jobs:
           COVERAGE: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit badge
+        if: github.event_name == 'push'
         run: |
           git config --local user.name "GitHub Action"
           git config --local user.email "action@github.com"
