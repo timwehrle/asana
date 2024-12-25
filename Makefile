@@ -15,7 +15,13 @@ GOFMT := gofmt
 .PHONY: test
 test:
 	@echo "Running tests..."
-	$(GOTEST) ./...
+	$(GOTEST) -v -coverprofile=c.out ./...
+	$(GOCMD) tool cover -html=c.out
+
+.PHONY: test/cover
+test/cover:
+	go test -v -coverprofile=c.out ./...
+	go tool cover -html=c.out
 
 # Run linter
 .PHONY: lint
