@@ -54,4 +54,13 @@ func TestFormatDate(t *testing.T) {
 			t.Errorf("Expected '%s', got '%s'", expected, result)
 		}
 	})
+
+	t.Run("Date Before Today", func(t *testing.T) {
+		pastDate := time.Now().Add(8 * (-24) * time.Hour)
+		expected := pastDate.Format("Jan 02, 2006")
+		result := utils.FormatDate(pastDate.Format(time.DateOnly))
+		if result != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, result)
+		}
+	})
 }
