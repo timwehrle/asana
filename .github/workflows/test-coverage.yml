@@ -27,16 +27,19 @@ jobs:
 
       - name: Generate coverage badge
         run: |
-          COVERAGE=$(cat coverage.txt | tr -d '%')
-          curl -o static/coverage-badge.svg "https://img.shields.io/badge/coverage-${COVERAGE}%25-brightgreen"
-        env:
-          COVERAGE: ${{ secrets.GITHUB_TOKEN }}
+          mkdir -p static
+          if [ -s coverage.txt ]; then
+            COVERAGE=$(cat coverage.txt | tr -d '%')
+          else 
+            COVERAGE="0"
+          fi
+          curl -f -o static/coverage-badge.svg "https://img.shields.io/badge/coverage-${COVERAGE}%25-brightgreen" || echo "Failed to generate badge"
 
-      - name: Commit badge
-        if: github.event_name == 'push'
+      - name: Commit coverage badge
+        if: ${{ github.event_name == 'push' && success() }}
         run: |
           git config --local user.name "GitHub Action"
           git config --local user.email "action@github.com"
           git add static/coverage-badge.svg
-          git commit -m "chore: update test coverage badge" || echo "No changes to commit"
+          git diff --cached --exit-code --quiet || git commit -m "chore: update test coverage badge"
           git push
