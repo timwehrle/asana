@@ -7,8 +7,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/api"
 	"github.com/timwehrle/asana/internal/auth"
+	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/internal/prompter"
-	"github.com/timwehrle/asana/internal/workspace"
 )
 
 func NewCmdLogin() *cobra.Command {
@@ -96,12 +96,16 @@ func loginRun() error {
 
 	selectedWorkspace := workspaces[index]
 
-	err = workspace.SaveDefaultWorkspace(selectedWorkspace.GID, selectedWorkspace.Name)
+	cfg := config.Config{
+		Username:  "Test",
+		Workspace: selectedWorkspace.ToYaml(),
+	}
+	err = config.SaveConfig(cfg)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Default workspace set to '%s'.\n", selectedWorkspace.Name)
+	fmt.Printf("Default config set to '%s'.\n", selectedWorkspace.Name)
 
 	return nil
 }

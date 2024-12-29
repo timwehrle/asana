@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/timwehrle/asana/internal/workspace"
+	"github.com/timwehrle/asana/internal/config"
 )
 
 type Task struct {
@@ -24,7 +24,7 @@ type Task struct {
 }
 
 func (c *Client) GetTasks() ([]Task, error) {
-	workspaceGID, _, err := workspace.LoadDefaultWorkspace()
+	config, err := config.LoadConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func (c *Client) GetTasks() ([]Task, error) {
 		Path: "tasks",
 	}
 	query := url.Values{}
-	query.Set("workspace", workspaceGID)
+	query.Set("config", config.Workspace.GID)
 	query.Set("opt_fields", "due_on,name,completed")
 	query.Set("completed_since", "now")
 	query.Set("assignee", "me")

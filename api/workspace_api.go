@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"github.com/timwehrle/asana/internal/config"
 	"net/url"
 	"time"
 )
@@ -9,6 +10,13 @@ import (
 type Workspace struct {
 	GID  string `json:"gid"`
 	Name string `json:"name"`
+}
+
+func (w Workspace) ToYaml() config.DefaultWorkspace {
+	return config.DefaultWorkspace{
+		GID:  w.GID,
+		Name: w.Name,
+	}
 }
 
 func (c *Client) GetWorkspaces() ([]Workspace, error) {

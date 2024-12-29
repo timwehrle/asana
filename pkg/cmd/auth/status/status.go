@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/api"
 	"github.com/timwehrle/asana/internal/auth"
-	"github.com/timwehrle/asana/internal/workspace"
+	"github.com/timwehrle/asana/internal/config"
 )
 
 func NewCmdStatus() *cobra.Command {
@@ -18,7 +18,7 @@ func NewCmdStatus() *cobra.Command {
 				Display the status of the current logged-in user and the API.
 
 				This command shows whether the API is running, the current
-				user and the default workspace.
+				user and the default config.
 		`),
 		Example: heredoc.Doc(`
 				# Start status process
@@ -33,7 +33,7 @@ func NewCmdStatus() *cobra.Command {
 }
 
 func statusRun() error {
-	gid, name, err := workspace.LoadDefaultWorkspace()
+	config, err := config.LoadConfig()
 	if err != nil {
 		return err
 	}
@@ -53,10 +53,10 @@ func statusRun() error {
 	fmt.Println("API is operational.")
 
 	fmt.Printf("Logged in as: %s (%s)\n", me.Name, me.GID)
-	if gid == "" || name == "" {
-		fmt.Println("No default workspace set.")
+	if config.Workspace.GID == "" || config.Workspace.Name == "" {
+		fmt.Println("No default config set.")
 	} else {
-		fmt.Printf("Default workspace: %s (%s)\n", name, gid)
+		fmt.Printf("Default config: %s (%s)\n", config.Workspace.Name, config.Workspace.GID)
 	}
 
 	return nil
