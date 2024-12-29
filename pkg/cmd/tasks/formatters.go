@@ -1,4 +1,4 @@
-package brief
+package tasks
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 func formatNames(tasks []api.Task) []string {
 	names := make([]string, len(tasks))
 	for i, task := range tasks {
-		names[i] = fmt.Sprintf("[%s] %s", utils.FormatDate(task.DueOn), task.Name)
+		names[i] = fmt.Sprintf("%d, [%s] %s", i+1, utils.FormatDate(task.DueOn), task.Name)
 	}
 	return names
 }

@@ -1,4 +1,4 @@
-package brief
+package tasks
 
 import (
 	"fmt"
@@ -11,18 +11,18 @@ import (
 	"github.com/timwehrle/asana/utils"
 )
 
-func NewCmdBrief() *cobra.Command {
+func NewCmdTasks() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "brief",
+		Use: "tasks",
 		RunE: func(_ *cobra.Command, _ []string) error {
-			return briefRun()
+			return tasksRun()
 		},
 	}
 
 	return cmd
 }
 
-func briefRun() error {
+func tasksRun() error {
 	token, err := auth.Get()
 	if err != nil {
 		return err
@@ -40,11 +40,7 @@ func briefRun() error {
 		return err
 	}
 
-	if err := displayDetails(client, selectedTask); err != nil {
-		return err
-	}
-
-	err = handleAction(client, selectedTask)
+	err = displayDetails(client, selectedTask)
 	if err != nil {
 		return err
 	}
