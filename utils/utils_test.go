@@ -1,7 +1,7 @@
 package utils_test
 
 import (
-	"github.com/timwehrle/alfie/utils"
+	"github.com/timwehrle/asana/utils"
 	"testing"
 	"time"
 )

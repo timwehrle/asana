@@ -1,4 +1,4 @@
-module github.com/timwehrle/alfie
+module github.com/timwehrle/asana
 
 go 1.23.3
 

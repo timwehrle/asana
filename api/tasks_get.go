@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/timwehrle/alfie/internal/workspace"
+	"github.com/timwehrle/asana/internal/workspace"
 )
 
 type Task struct {

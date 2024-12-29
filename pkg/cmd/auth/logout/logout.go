@@ -6,8 +6,8 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/alfie/internal/auth"
-	"github.com/timwehrle/alfie/internal/prompter"
+	"github.com/timwehrle/asana/internal/auth"
+	"github.com/timwehrle/asana/internal/prompter"
 )
 
 func NewCmdLogout() *cobra.Command {
@@ -27,7 +27,7 @@ func NewCmdLogout() *cobra.Command {
 		`),
 		Example: heredoc.Doc(`
 			# Start logout process
-			$ act auth logout
+			$ asana auth logout
 		`),
 		RunE: func(_ *cobra.Command, _ []string) error {
 			return logoutRun()

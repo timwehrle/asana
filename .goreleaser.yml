@@ -1,4 +1,4 @@
-project_name: alfie
+project_name: asana
 version: 2
 
 before:
@@ -8,7 +8,7 @@ before:
 
 release:
   prerelease: auto
-  name_template: "Alfie {{ .Version }}"
+  name_template: "Asana CLI {{ .Version }}"
 
 builds:
   - env:

@@ -5,10 +5,10 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/alfie/api"
-	"github.com/timwehrle/alfie/internal/auth"
-	"github.com/timwehrle/alfie/internal/prompter"
-	"github.com/timwehrle/alfie/internal/workspace"
+	"github.com/timwehrle/asana/api"
+	"github.com/timwehrle/asana/internal/auth"
+	"github.com/timwehrle/asana/internal/prompter"
+	"github.com/timwehrle/asana/internal/workspace"
 )
 
 func NewCmdLogin() *cobra.Command {
@@ -38,7 +38,7 @@ func NewCmdLogin() *cobra.Command {
 		`),
 		Example: heredoc.Doc(`
 			# Start login process
-			$ act auth login
+			$ asana auth login
 		`),
 		RunE: func(_ *cobra.Command, _ []string) error {
 			return loginRun()

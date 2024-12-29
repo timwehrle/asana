@@ -2,8 +2,8 @@ package brief
 
 import (
 	"fmt"
-	"github.com/timwehrle/alfie/api"
-	"github.com/timwehrle/alfie/utils"
+	"github.com/timwehrle/asana/api"
+	"github.com/timwehrle/asana/utils"
 	"strings"
 )
 

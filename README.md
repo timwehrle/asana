@@ -1,21 +1,17 @@
-# Alfie - The Asana command line tool
+# Asana CLI | Use Asana from the command line
 
 <div>
-    <a href="https://pkg.go.dev/github.com/timwehrle/alfie">
-        <img src="https://pkg.go.dev/badge/github.com/timwehrle/alfie.svg" alt="Go Reference">
+    <a href="https://pkg.go.dev/github.com/timwehrle/asana">
+        <img src="https://pkg.go.dev/badge/github.com/timwehrle/asana.svg" alt="Go Reference">
     </a>
     <img src="static/coverage-badge.svg" alt="Code coverage">
 </div>
 
-<p>
-    <img width="400" alt="Picture of Alfred Pennyworth" src="./static/Alfred_Pennyworth.webp">
-</p>
-
-<i>Alfie, inspired by Alfred Pennyworth—the loyal butler of Batman—brings efficiency and order to your Asana workflow.</i>
-
 ## About
 
-Alfie is a powerful and intuitive command-line tool designed to streamline your interaction with the Asana API. With Alfie, you can manage your tasks, projects, and workspaces directly from the terminal, boosting your productivity and reducing your reliance on the Asana web interface.
+This CLI is a powerful and intuitive command-line tool designed to streamline your interaction with the Asana API. 
+You can manage your tasks, projects, and workspaces directly from the terminal, boosting your productivity and reducing 
+your reliance on the Asana web interface.
 
 # Features
 
@@ -25,7 +21,7 @@ Alfie is a powerful and intuitive command-line tool designed to streamline your 
 
 # Usage
 
-Since Alfie is in the early state, you can get the binary from the release page.
+Since the Asana CLI is in the early state, you can get the binary from the release page.
 
 # Contributing
 

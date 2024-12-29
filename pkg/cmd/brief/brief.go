@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/alfie/api"
-	"github.com/timwehrle/alfie/internal/auth"
-	"github.com/timwehrle/alfie/internal/prompter"
-	"github.com/timwehrle/alfie/utils"
+	"github.com/timwehrle/asana/api"
+	"github.com/timwehrle/asana/internal/auth"
+	"github.com/timwehrle/asana/internal/prompter"
+	"github.com/timwehrle/asana/utils"
 )
 
 func NewCmdBrief() *cobra.Command {

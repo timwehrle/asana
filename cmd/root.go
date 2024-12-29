@@ -3,15 +3,15 @@ package cmd
 import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/alfie/pkg/cmd/auth"
-	"github.com/timwehrle/alfie/pkg/cmd/brief"
+	"github.com/timwehrle/asana/pkg/cmd/auth"
+	"github.com/timwehrle/asana/pkg/cmd/brief"
 	"regexp"
 	"strings"
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "alfie <command> <subcommand> [flags]",
-	Short: "Alfie is a CLI tool for Asana",
+	Use:   "asana <command> <subcommand> [flags]",
+	Short: "The Asana CLI tool",
 	Long:  `Work with Asana from the command line.`,
 }
 

@@ -1,5 +1,5 @@
 # Variables
-APP_NAME=alfie
+APP_NAME=asana
 BUILD_DIR=
 
 # Commands

@@ -5,9 +5,9 @@ import (
 	"github.com/MakeNowJust/heredoc"
 
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/alfie/api"
-	"github.com/timwehrle/alfie/internal/auth"
-	"github.com/timwehrle/alfie/internal/workspace"
+	"github.com/timwehrle/asana/api"
+	"github.com/timwehrle/asana/internal/auth"
+	"github.com/timwehrle/asana/internal/workspace"
 )
 
 func NewCmdStatus() *cobra.Command {
@@ -22,7 +22,7 @@ func NewCmdStatus() *cobra.Command {
 		`),
 		Example: heredoc.Doc(`
 				# Start status process
-				$ alfie auth status
+				$ asana auth status
 		`),
 		RunE: func(_ *cobra.Command, _ []string) error {
 			return statusRun()
