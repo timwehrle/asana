@@ -33,7 +33,7 @@ func NewCmdStatus() *cobra.Command {
 }
 
 func statusRun() error {
-	config, err := config.LoadConfig()
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		return err
 	}
@@ -52,11 +52,11 @@ func statusRun() error {
 	}
 	fmt.Println("API is operational.")
 
-	fmt.Printf("Logged in as: %s (%s)\n", me.Name, me.GID)
-	if config.Workspace.GID == "" || config.Workspace.Name == "" {
+	fmt.Printf("Logged in as: %s (%s)\n", me.Username(), me.GID())
+	if cfg.Workspace.GID == "" || cfg.Workspace.Name == "" {
 		fmt.Println("No default config set.")
 	} else {
-		fmt.Printf("Default config: %s (%s)\n", config.Workspace.Name, config.Workspace.GID)
+		fmt.Printf("Default config: %s (%s)\n", cfg.Workspace.Name, cfg.Workspace.GID)
 	}
 
 	return nil

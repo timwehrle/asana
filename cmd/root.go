@@ -3,8 +3,9 @@ package cmd
 import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	service "github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/pkg/cmd/auth"
-	"github.com/timwehrle/asana/pkg/cmd/brief"
+	"github.com/timwehrle/asana/pkg/cmd/tasks"
 	"regexp"
 	"strings"
 )
@@ -13,11 +14,26 @@ var rootCmd = &cobra.Command{
 	Use:   "asana <command> <subcommand> [flags]",
 	Short: "The Asana CLI tool",
 	Long:  `Work with Asana from the command line.`,
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if cmd.HasParent() && cmd.Parent().Name() == "auth" {
+			return nil
+		}
+
+		err := service.Check()
+		if err != nil {
+			return err
+		}
+
+		return nil
+	},
 }
 
 func init() {
 	rootCmd.AddCommand(auth.NewCmdAuth())
-	rootCmd.AddCommand(brief.NewCmdBrief())
+	rootCmd.AddCommand(tasks.NewCmdTasks())
+
+	rootCmd.SilenceErrors = true
+	rootCmd.SilenceUsage = true
 
 	// Colorize output
 	rootCmd.SetOut(color.Output)
@@ -36,9 +52,5 @@ func init() {
 }
 
 func Execute() error {
-	err := rootCmd.Execute()
-	if err != nil {
-		return err
-	}
-	return nil
+	return rootCmd.Execute()
 }

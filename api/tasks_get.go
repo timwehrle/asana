@@ -24,7 +24,7 @@ type Task struct {
 }
 
 func (c *Client) GetTasks() ([]Task, error) {
-	config, err := config.LoadConfig()
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func (c *Client) GetTasks() ([]Task, error) {
 		Path: "tasks",
 	}
 	query := url.Values{}
-	query.Set("config", config.Workspace.GID)
+	query.Set("workspace", cfg.Workspace.GID)
 	query.Set("opt_fields", "due_on,name,completed")
 	query.Set("completed_since", "now")
 	query.Set("assignee", "me")

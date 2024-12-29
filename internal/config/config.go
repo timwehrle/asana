@@ -47,7 +47,8 @@ func SaveConfig(config Config) error {
 	encoder := yaml.NewEncoder(file)
 	defer encoder.Close()
 
-	if err := encoder.Encode(&config); err != nil {
+	err = encoder.Encode(&config)
+	if err != nil {
 		return err
 	}
 

@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+type User struct {
+	ID   string `json:"gid"`
+	Name string `json:"name"`
+}
+
 func (c *Client) GetMe() (User, error) {
 	endpoint := &url.URL{
 		Path: "users/me",
@@ -29,4 +34,12 @@ func (c *Client) GetMe() (User, error) {
 	}
 
 	return result.Data, nil
+}
+
+func (u User) Username() string {
+	return u.Name
+}
+
+func (u User) GID() string {
+	return u.ID
 }

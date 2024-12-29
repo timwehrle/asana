@@ -40,7 +40,7 @@ func NewCmdLogin() *cobra.Command {
 			# Start login process
 			$ asana auth login
 		`),
-		RunE: func(_ *cobra.Command, _ []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			return loginRun()
 		},
 	}
@@ -96,8 +96,13 @@ func loginRun() error {
 
 	selectedWorkspace := workspaces[index]
 
+	user, err := client.GetMe()
+	if err != nil {
+		return err
+	}
+
 	cfg := config.Config{
-		Username:  "Test",
+		Username:  user.Username(),
 		Workspace: selectedWorkspace.ToYaml(),
 	}
 	err = config.SaveConfig(cfg)

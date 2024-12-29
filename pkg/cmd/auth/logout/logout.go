@@ -1,7 +1,6 @@
 package logout
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc"
@@ -39,10 +38,6 @@ func NewCmdLogout() *cobra.Command {
 
 func logoutRun() error {
 	_, err := auth.Get()
-	if errors.Is(err, auth.ErrNoToken) {
-		fmt.Println("No active session found. You are not logged in.")
-		return nil
-	}
 	if err != nil {
 		return err
 	}
