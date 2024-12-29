@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -10,9 +9,8 @@ import (
 )
 
 var (
-	service    = "asana"
-	user       = "user"
-	ErrNoToken = errors.New("no token found")
+	service = "asana"
+	user    = "user"
 )
 
 func Set(secret string) error {
@@ -46,11 +44,7 @@ func Get() (string, error) {
 		defer close(errCh)
 		secret, err := keyring.Get(service, user)
 		if err != nil {
-			if errors.Is(err, keyring.ErrNotFound) {
-				errCh <- ErrNoToken
-			} else {
-				errCh <- err
-			}
+			errCh <- err
 		} else {
 			ch <- secret
 		}
