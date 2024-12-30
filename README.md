@@ -4,7 +4,6 @@
     <a href="https://pkg.go.dev/github.com/timwehrle/asana">
         <img src="https://pkg.go.dev/badge/github.com/timwehrle/asana.svg" alt="Go Reference">
     </a>
-    <img src="static/coverage-badge.svg" alt="Code coverage">
 </div>
 
 ## About
