@@ -78,7 +78,7 @@ func loginRun() error {
 		return err
 	}
 
-	fmt.Printf("%s Logged in\n", utils.Success)
+	fmt.Println(utils.Success(), "Logged in")
 
 	if len(workspaces) == 0 {
 		fmt.Println("No workspaces found.")
@@ -111,7 +111,7 @@ func loginRun() error {
 		return err
 	}
 
-	fmt.Printf("%s Default config set to '%s'.\n", utils.Success, selectedWorkspace.Name)
+	fmt.Printf("%s Default workspace set to '%s'\n", utils.Success(), selectedWorkspace.Name)
 
 	return nil
 }

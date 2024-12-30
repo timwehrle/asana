@@ -42,5 +42,5 @@ func formatNotes(notes string) string {
 	if notes == "" {
 		return ""
 	}
-	return utils.BoldUnderline.Sprintf("Description:") + "\n" + notes + "\n"
+	return utils.BoldUnderline().Sprint("Description:") + "\n" + notes + "\n"
 }

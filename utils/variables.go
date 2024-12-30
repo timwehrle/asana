@@ -2,18 +2,44 @@ package utils
 
 import "github.com/fatih/color"
 
-// Color and style variables
-var (
-	Green         = color.New(color.FgGreen)
-	Blue          = color.New(color.FgBlue)
-	Red           = color.New(color.FgRed)
-	White         = color.New(color.FgWhite)
-	Yellow        = color.New(color.FgYellow)
-	Faint         = color.New(color.Faint)
-	Bold          = color.New(color.Bold)
-	Underline     = color.New(color.Underline)
-	BoldUnderline = color.New(color.Bold, color.Underline)
-	Success       = Green.Sprintf("✓")
-	Warning       = Yellow.Sprintf("!")
-	Error         = Red.Sprintf("X")
-)
+// Colors
+
+func Red() *color.Color {
+	return color.New(color.FgRed)
+}
+
+func Yellow() *color.Color {
+	return color.New(color.FgYellow)
+}
+
+func Green() *color.Color {
+	return color.New(color.FgGreen)
+}
+
+// Styling
+
+func Bold() *color.Color {
+	return color.New(color.Bold)
+}
+
+func Underline() *color.Color {
+	return color.New(color.Underline)
+}
+
+func BoldUnderline() *color.Color {
+	return color.New(color.Bold, color.Underline)
+}
+
+// Status symbols
+
+func Success() string {
+	return Green().Sprintf("✓")
+}
+
+func Error() string {
+	return Red().Sprintf("✗")
+}
+
+func Warning() string {
+	return Yellow().Sprintf("!")
+}

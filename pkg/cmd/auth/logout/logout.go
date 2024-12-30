@@ -54,7 +54,7 @@ func logoutRun() error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%s Logged out\n", utils.Success)
+		fmt.Println(utils.Success(), "Logged out")
 	} else {
 		fmt.Println("Logout aborted.")
 	}

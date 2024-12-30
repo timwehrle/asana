@@ -82,7 +82,7 @@ func displayDetails(client *api.Client, task *api.Task) error {
 		return err
 	}
 
-	fmt.Printf("%s | Due: %s | %s\n", utils.BoldUnderline.Sprint(detailedTask.Name),
+	fmt.Printf("%s | Due: %s | %s\n", utils.BoldUnderline().Sprint(detailedTask.Name),
 		utils.FormatDate(detailedTask.DueOn), formatProjects(detailedTask.Projects))
 	fmt.Println(formatTags(detailedTask.Tags))
 	fmt.Print(formatNotes(detailedTask.Notes))
