@@ -54,9 +54,9 @@ func statusRun() error {
 
 	fmt.Printf("Logged in as: %s (%s)\n", me.Username(), me.GID())
 	if cfg.Workspace.GID == "" || cfg.Workspace.Name == "" {
-		fmt.Println("No default config set.")
+		fmt.Println("No default workspace set.")
 	} else {
-		fmt.Printf("Default config: %s (%s)\n", cfg.Workspace.Name, cfg.Workspace.GID)
+		fmt.Printf("Default workspace: %s (%s)\n", cfg.Workspace.Name, cfg.Workspace.GID)
 	}
 
 	return nil
