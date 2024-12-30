@@ -1,8 +1,8 @@
 package config
 
 import (
-	"errors"
 	"fmt"
+	"github.com/MakeNowJust/heredoc"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
@@ -16,6 +16,14 @@ type Config struct {
 type DefaultWorkspace struct {
 	GID  string `yaml:"gid"`
 	Name string `yaml:"name"`
+}
+
+type ConfigError struct {
+	Message string
+}
+
+func (e ConfigError) Error() string {
+	return e.Message
 }
 
 func getConfigFilePath() (string, error) {
@@ -64,7 +72,7 @@ func LoadConfig() (config Config, err error) {
 	file, err := os.Open(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return Config{}, errors.New("no config file found")
+			return Config{}, ConfigError{Message: heredoc.Docf(`No configuration file found. Please run %[1]sasana auth login%[1]s to authenticate.`, "`")}
 		}
 		return Config{}, err
 	}

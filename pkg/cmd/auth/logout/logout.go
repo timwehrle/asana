@@ -2,6 +2,7 @@ package logout
 
 import (
 	"fmt"
+	"github.com/timwehrle/asana/utils"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -53,7 +54,7 @@ func logoutRun() error {
 		if err != nil {
 			return err
 		}
-		fmt.Println("Successfully logged out.")
+		fmt.Printf("%s Logged out\n", utils.Success)
 	} else {
 		fmt.Println("Logout aborted.")
 	}

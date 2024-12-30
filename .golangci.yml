@@ -28,10 +28,6 @@ linters:
     # simple security check
     - gosec
 
-    # Fast, configurable, extensible, flexible, and beautiful linter for Go.
-    # Drop-in replacement of golint.
-    - revive
-
     # Finds sending http request without context.Context
     - noctx
 

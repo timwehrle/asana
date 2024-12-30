@@ -2,6 +2,7 @@ package login
 
 import (
 	"fmt"
+	"github.com/timwehrle/asana/utils"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -70,14 +71,14 @@ func loginRun() error {
 		return err
 	}
 
-	fmt.Println("Successfully logged in.")
-
 	client := api.New(token)
 
 	workspaces, err := client.GetWorkspaces()
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("%s Logged in\n", utils.Success)
 
 	if len(workspaces) == 0 {
 		fmt.Println("No workspaces found.")
@@ -110,7 +111,7 @@ func loginRun() error {
 		return err
 	}
 
-	fmt.Printf("Default config set to '%s'.\n", selectedWorkspace.Name)
+	fmt.Printf("%s Default config set to '%s'.\n", utils.Success, selectedWorkspace.Name)
 
 	return nil
 }
