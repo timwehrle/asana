@@ -10,7 +10,7 @@ import (
 
 type Config struct {
 	Username  string           `yaml:"username"`
-	Workspace DefaultWorkspace `yaml:"workspace"`
+	Workspace DefaultWorkspace `yaml:"workspaces"`
 }
 
 type DefaultWorkspace struct {
@@ -84,4 +84,22 @@ func LoadConfig() (config Config, err error) {
 	}
 
 	return config, nil
+}
+
+func UpdateDefaultWorkspace(gid, name string) error {
+	config, err := LoadConfig()
+	if err != nil {
+		return fmt.Errorf("failed to load configuration: %w", err)
+	}
+
+	config.Workspace = DefaultWorkspace{
+		GID:  gid,
+		Name: name,
+	}
+
+	if err := SaveConfig(config); err != nil {
+		return fmt.Errorf("failed to save updated configuration: %w", err)
+	}
+
+	return nil
 }
