@@ -1,7 +1,8 @@
-package update
+package default_workspace
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/api"
 	"github.com/timwehrle/asana/internal/auth"
@@ -10,19 +11,20 @@ import (
 	"github.com/timwehrle/asana/utils"
 )
 
-func NewCmdUpdate() *cobra.Command {
+func NewCmdDefaultWorkspace() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "update",
-		Short: "Update a workspace",
+		Use:     "default-workspace",
+		Aliases: []string{"dw"},
+		Short:   "Set the default workspace",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return updateRun()
+			return defaultWorkspaceRun()
 		},
 	}
 
 	return cmd
 }
 
-func updateRun() error {
+func defaultWorkspaceRun() error {
 	token, err := auth.Get()
 	if err != nil {
 		return err
@@ -45,7 +47,7 @@ func updateRun() error {
 		names[i] = ws.Name
 	}
 
-	index, err := prompter.Select("Please select the the new default workspace:", names)
+	index, err := prompter.Select("Select a new default workspace:", names)
 	if err != nil {
 		return err
 	}
