@@ -103,3 +103,12 @@ func UpdateDefaultWorkspace(gid, name string) error {
 
 	return nil
 }
+
+func GetDefaultWorkspace() (DefaultWorkspace, error) {
+	config, err := LoadConfig()
+	if err != nil {
+		return DefaultWorkspace{}, err
+	}
+
+	return config.Workspace, nil
+}
