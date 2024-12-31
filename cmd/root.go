@@ -6,6 +6,7 @@ import (
 	service "github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/pkg/cmd/auth"
 	"github.com/timwehrle/asana/pkg/cmd/tasks"
+	"github.com/timwehrle/asana/pkg/cmd/workspaces"
 	"regexp"
 	"strings"
 )
@@ -31,6 +32,7 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(auth.NewCmdAuth())
 	rootCmd.AddCommand(tasks.NewCmdTasks())
+	rootCmd.AddCommand(workspaces.NewCmdWorkspace())
 
 	rootCmd.SilenceErrors = true
 	rootCmd.SilenceUsage = true
