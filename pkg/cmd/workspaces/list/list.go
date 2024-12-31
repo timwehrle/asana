@@ -2,9 +2,11 @@ package list
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/api"
 	"github.com/timwehrle/asana/internal/auth"
+	"github.com/timwehrle/asana/utils"
 )
 
 func NewCmdList() *cobra.Command {
@@ -37,7 +39,7 @@ func listRun() error {
 		return nil
 	}
 
-	fmt.Println("Your Workspaces:")
+	fmt.Println(utils.BoldUnderline().Sprint("Your Workspaces:"))
 	for i, ws := range workspaces {
 		fmt.Printf("%d. %s\n", i+1, ws.Name)
 	}

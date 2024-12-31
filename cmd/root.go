@@ -1,14 +1,16 @@
 package cmd
 
 import (
+	"regexp"
+	"strings"
+
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	service "github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/pkg/cmd/auth"
+	"github.com/timwehrle/asana/pkg/cmd/config"
 	"github.com/timwehrle/asana/pkg/cmd/tasks"
 	"github.com/timwehrle/asana/pkg/cmd/workspaces"
-	"regexp"
-	"strings"
 )
 
 var rootCmd = &cobra.Command{
@@ -33,6 +35,7 @@ func init() {
 	rootCmd.AddCommand(auth.NewCmdAuth())
 	rootCmd.AddCommand(tasks.NewCmdTasks())
 	rootCmd.AddCommand(workspaces.NewCmdWorkspace())
+	rootCmd.AddCommand(config.NewCmdConfig())
 
 	rootCmd.SilenceErrors = true
 	rootCmd.SilenceUsage = true

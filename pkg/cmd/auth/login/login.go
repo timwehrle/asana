@@ -90,7 +90,7 @@ func loginRun() error {
 		names[i] = ws.Name
 	}
 
-	index, err := prompter.Select("Please select your default workspace:", names)
+	index, err := prompter.Select("Select a default workspace:", names)
 	if err != nil {
 		return err
 	}
@@ -111,7 +111,7 @@ func loginRun() error {
 		return err
 	}
 
-	fmt.Printf("%s Default workspace set to '%s'\n", utils.Success(), selectedWorkspace.Name)
+	fmt.Printf("%s Default workspace set to %s\n", utils.Success(), utils.Bold().Sprint(selectedWorkspace.Name))
 
 	return nil
 }
