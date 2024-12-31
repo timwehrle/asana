@@ -9,7 +9,7 @@ require (
 	github.com/zalando/go-keyring v0.2.6
 )
 
-require gopkg.in/yaml.v3 v3.0.1 // indirect
+require gopkg.in/yaml.v3 v3.0.1
 
 require (
 	al.essio.dev/pkg/shellescape v1.5.1 // indirect
