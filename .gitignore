@@ -4,6 +4,7 @@
 
 # Temporary files
 *.txt
+/completions
 
 # Binaries for programs and plugins
 *.exe
