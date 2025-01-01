@@ -27,8 +27,8 @@ func New(token string) *Client {
 	}
 }
 
-// WithHTTPCLient allows customizing the HTTP client
-func (c *Client) WithHTTPCLient(client *http.Client) *Client {
+// WithHTTPClient allows customizing the HTTP client
+func (c *Client) WithHTTPClient(client *http.Client) *Client {
 	c.httpClient = client
 	return c
 }
