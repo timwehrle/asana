@@ -13,15 +13,14 @@ import (
 func NewCmdStatus() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status",
-		Short: "Display the current user's status and API health",
+		Short: "View current authentication status",
 		Long: heredoc.Doc(`
-				Display the status of the current logged-in user and the API.
-
-				This command shows whether the API is running, the current
-				user and the default config.
+				Display the current authentication status, including 
+				the logged-in user and API health. This command helps 
+				verify connectivity and user identity.
 		`),
 		Example: heredoc.Doc(`
-				# Start status process
+				# Check authentication status
 				$ asana auth status
 		`),
 		RunE: func(_ *cobra.Command, _ []string) error {

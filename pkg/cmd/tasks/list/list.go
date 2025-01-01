@@ -2,6 +2,7 @@ package list
 
 import (
 	"fmt"
+	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/api"
 	"github.com/timwehrle/asana/internal/auth"
@@ -11,7 +12,10 @@ import (
 func NewCmdList() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "List your tasks",
+		Short: "List all tasks",
+		Long: heredoc.Doc(`
+			Retrieve and display a list of all tasks assigned to your Asana account.
+		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return listRun()
 		},

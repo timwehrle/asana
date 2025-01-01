@@ -2,6 +2,7 @@ package view
 
 import (
 	"fmt"
+	"github.com/MakeNowJust/heredoc"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -14,7 +15,11 @@ import (
 func NewCmdView() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "view",
-		Short: "View your tasks and select one for more details",
+		Short: "View details of a specific task",
+		Long: heredoc.Doc(`
+				Display detailed information about a specific task, 
+				allowing you to analyze and manage it effectively.
+		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return viewRun()
 		},

@@ -2,6 +2,7 @@ package list
 
 import (
 	"fmt"
+	"github.com/MakeNowJust/heredoc"
 
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/api"
@@ -12,7 +13,11 @@ import (
 func NewCmdList() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "List your workspaces",
+		Short: "List available workspaces",
+		Long: heredoc.Doc(`
+				Retrieve and display a list of all workspaces associated 
+				with your Asana account.
+		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return listRun()
 		},

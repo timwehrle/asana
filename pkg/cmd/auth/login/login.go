@@ -15,30 +15,14 @@ import (
 func NewCmdLogin() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "login",
-		Short: "Log in to an Asana account",
+		Short: "Log in to your Asana account",
 		Long: heredoc.Docf(`
-				Authenticate with Asana using a Personal Access Token.
-				
-				To use this command, you'll need to generate a Personal Access Token from 
-				your Asana account. Visit the settings in your Asana account, navigate to 
-				the "Apps" tab, and create a new token. Ensure you store this token 
-				securely and copy it for use in this command.
-
-				Once you have the token, run the "login" command and provide the token 
-				when prompted. This will save the token locally, enabling the application 
-				to interact with the Asana API on your behalf. The token is securely stored 
-				and used for authenticating subsequent API requests.
-
-				If you encounter issues during the login process, double-check your token's 
-				validity and ensure you have the necessary permissions granted for the 
-				operations you intend to perform in Asana. If your token expires or is revoked, 
-				you can generate a new one and repeat the login process.
-
-				Note: Do not share your Personal Access Token with anyone, as it provides 
-				full access to your account.
+				Authenticate with Asana using a Personal Access Token. 
+				Follow the steps in your Asana account to generate a token 
+				and use it with this command to enable CLI access.
 		`),
 		Example: heredoc.Doc(`
-			# Start login process
+			# Log in to Asana
 			$ asana auth login
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {

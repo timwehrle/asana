@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/pkg/cmd/auth/login"
 	"github.com/timwehrle/asana/pkg/cmd/auth/logout"
@@ -10,7 +11,11 @@ import (
 func NewCmdAuth() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "auth <command>",
-		Short: "Authenticate the CLI with Asana",
+		Short: "Authenticate with Asana",
+		Long: heredoc.Doc(`
+			Manage authentication for the Asana CLI, including login
+			logout and checking authentication status.
+		`),
 	}
 
 	cmd.AddCommand(status.NewCmdStatus())
