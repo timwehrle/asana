@@ -1,30 +1,81 @@
-# Asana CLI | Use Asana from the command line
+# Asana CLI
+
+A command-line interface to manage your Asana tasks and projects directly from your terminal.
 
 <div>
     <a href="https://pkg.go.dev/github.com/timwehrle/asana">
         <img src="https://pkg.go.dev/badge/github.com/timwehrle/asana.svg" alt="Go Reference">
     </a>
+    <a href="https://github.com/timwehrle/asana/blob/main/LICENSE">
+        <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
+    </a>
 </div>
 
-## About
+# Installation
 
-This CLI is a powerful and intuitive command-line tool designed to streamline your interaction with the Asana API. 
-You can manage your tasks, projects, and workspaces directly from the terminal, boosting your productivity and reducing 
-your reliance on the Asana web interface.
+## Pre-built binaries
 
-# Features
+Download the latest binary for your platform from the [releases page](https://github.com/timwehrle/asana/releases).
 
-- **Authentication**: Log in and log out of your Asana account using Personal Access Tokens.
-- **Task Management**: View tasks within your Asana workspaces.
-- **Workspace Configuration**: Save and load default workspace settings.
+## From Source
 
-# Usage
+```shell
+go install github.com/timwehrle/asana@latest
+```
 
-Since the Asana CLI is in the early state, you can get the binary from the release page.
+# Getting started
+
+## Authentication
+
+1. Get your Personal Access Token from Asana (Settings > Apps > Developer Apps)
+2. Run the login command:
+   ```shell
+   asana auth login
+   ```
+3. Follow the prompts to paste your token and select your default workspace.
+
+## Configuration
+
+Set or get your default workspace:
+
+```shell
+asana config set default-workspace # or the shorter alias
+asana config set dw
+
+asana config get default-workspace # or the shorter alias
+asana config get dw
+```
+
+## Basic Commands
+
+View your tasks:
+
+```shell
+asana tasks list # List all your tasks
+asana tasks view # Interactive task viewer with details
+```
+
+## Advanced Usage
+
+```shell
+asana help # Show all available commands
+asana workspaces list # List all workspaces
+```
 
 # Contributing
 
-I am always happy to get new feature requests and improvement suggestions.
+Contributions are welcome! Here's how you can help:
+
+- Report bugs and feature requests through issues
+- Submit pull requests for bug fixes or new features
+- Improve documentation
+- Share feedback on usability
+
+Please ensure your pull requests adhere to the following:
+
+- Follow the existing code style
+- Include tests for new functionality
+- Update documentation as needed
 
 # License
 
