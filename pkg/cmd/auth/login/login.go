@@ -50,6 +50,11 @@ func loginRun() error {
 		return err
 	}
 
+	err = auth.ValidateToken(token)
+	if err != nil {
+		return err
+	}
+
 	err = auth.Set(token)
 	if err != nil {
 		return err
