@@ -1,5 +1,16 @@
 package api
 
+import "fmt"
+
+type Error struct {
+	StatusCode int
+	Message    string
+}
+
+func (e *Error) Error() string {
+	return fmt.Sprintf("API error with status code %d: %s", e.StatusCode, e.Message)
+}
+
 type Tag struct {
 	GID  string `json:"gid"`
 	Name string `json:"name"`

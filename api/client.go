@@ -89,10 +89,16 @@ func (c *Client) Response(resp *http.Response, result any) (err error) {
 func (*Client) handleErrorResponse(resp *http.Response) error {
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("API request failed with status %s, and error reading response body: %w", resp.Status, err)
+		return &Error{
+			StatusCode: resp.StatusCode,
+			Message:    fmt.Sprintf("Error reading response body: %v", err),
+		}
 	}
 
-	return fmt.Errorf("API request failed with status %s, body: %s", resp.Status, string(bodyBytes))
+	return &Error{
+		StatusCode: resp.StatusCode,
+		Message:    string(bodyBytes),
+	}
 }
 
 // buildFullURL constructs the full URL for the API request
