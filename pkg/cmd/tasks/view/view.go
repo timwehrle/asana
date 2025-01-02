@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/timwehrle/asana/internal/config"
+	"github.com/timwehrle/asana/pkg/cmd/tasks/shared"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -35,7 +36,7 @@ func viewRun() error {
 		return err
 	}
 
-	workspace, err := config.GetDefaultWorkspace()
+	defaultWorkspace, err := config.GetDefaultWorkspace()
 	if err != nil {
 		return err
 	}
@@ -44,7 +45,7 @@ func viewRun() error {
 
 	allTasks, _, err := client.QueryTasks(&asana.TaskQuery{
 		Assignee:       "me",
-		Workspace:      workspace.ID,
+		Workspace:      defaultWorkspace.ID,
 		CompletedSince: "now",
 	}, &asana.Options{
 		Fields: []string{"due_on", "name"},
@@ -67,7 +68,7 @@ func viewRun() error {
 }
 
 func prompt(allTasks []*asana.Task) (*asana.Task, error) {
-	taskNames := FormatNames(allTasks)
+	taskNames := shared.FormatTasks(allTasks)
 
 	today := time.Now()
 	selectMessage := fmt.Sprintf("Your Tasks on %s (Select one for more details):", today.Format("Jan 02, 2006"))
@@ -87,53 +88,9 @@ func displayDetails(client *asana.Client, task *asana.Task) error {
 	}
 
 	fmt.Printf("%s | Due: %s | %s\n", utils.BoldUnderline().Sprint(task.Name),
-		utils.FormatDate(task.DueOn), FormatProjects(task.Projects))
-	fmt.Println(FormatTags(task.Tags))
-	fmt.Print(FormatNotes(task.Notes))
+		utils.FormatDate(task.DueOn), shared.FormatProjects(task.Projects))
+	fmt.Println(shared.FormatTags(task.Tags))
+	fmt.Print(shared.FormatNotes(task.Notes))
 
 	return nil
 }
-
-/*func handleAction(client *api.Client, task *api.Task) error {
-	actions := []string{"Mark as Completed", "Edit Task Name", "Cancel"}
-
-	selectedAction, err := prompter.Select("What would you like to do with this task?", actions)
-	if err != nil {
-		return err
-	}
-
-	switch selectedAction {
-	case 0:
-		return completeTask(client, task)
-	case 1:
-		return editTask(client, task)
-	case 2:
-		fmt.Println("Action cancelled.")
-		return nil
-	}
-
-	return nil
-}
-
-func completeTask(client *api.Client, task *api.Task) error {
-	if err := client.UpdateTask(task.GID, map[string]any{"completed": true}); err != nil {
-		return err
-	}
-	fmt.Println("Task successfully marked as done.")
-
-	return nil
-}
-
-func editTask(client *api.Client, task *api.Task) error {
-	input, err := prompter.Input("What is the new name for the task?", "")
-	if err != nil {
-		return err
-	}
-
-	if err := client.UpdateTask(task.GID, map[string]any{"name": input}); err != nil {
-		return err
-	}
-	fmt.Println("Task successfully edited.")
-	return nil
-}
-*/

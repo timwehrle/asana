@@ -12,8 +12,9 @@ import (
 
 func NewCmdList() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "List available workspaces",
+		Use:     "list",
+		Aliases: []string{"ls"},
+		Short:   "List available workspaces",
 		Long: heredoc.Doc(`
 				Retrieve and display a list of all workspaces associated 
 				with your Asana account.
