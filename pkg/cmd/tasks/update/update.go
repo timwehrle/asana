@@ -1,9 +1,9 @@
 package update
 
 import (
-	"bitbucket.org/mikehouston/asana-go"
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/timwehrle/asana-go"
 	"github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/internal/prompter"

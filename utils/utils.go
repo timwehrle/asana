@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"bitbucket.org/mikehouston/asana-go"
+	"github.com/timwehrle/asana-go"
 	"time"
 )
 

@@ -1,7 +1,6 @@
 package view
 
 import (
-	"bitbucket.org/mikehouston/asana-go"
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/timwehrle/asana/internal/config"
@@ -9,6 +8,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/timwehrle/asana-go"
 	"github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/internal/prompter"
 	"github.com/timwehrle/asana/utils"

@@ -1,9 +1,9 @@
 package status
 
 import (
-	"bitbucket.org/mikehouston/asana-go"
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
+	"github.com/timwehrle/asana-go"
 	"github.com/timwehrle/asana/utils"
 
 	"github.com/spf13/cobra"

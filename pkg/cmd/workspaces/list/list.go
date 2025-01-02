@@ -1,9 +1,9 @@
 package list
 
 import (
-	"bitbucket.org/mikehouston/asana-go"
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
+	"github.com/timwehrle/asana-go"
 
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/internal/auth"

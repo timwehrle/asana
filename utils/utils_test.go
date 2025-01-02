@@ -1,7 +1,7 @@
 package utils_test
 
 import (
-	"bitbucket.org/mikehouston/asana-go"
+	"github.com/timwehrle/asana-go"
 	"github.com/timwehrle/asana/utils"
 	"testing"
 	"time"

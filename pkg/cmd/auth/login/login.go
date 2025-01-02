@@ -1,8 +1,8 @@
 package login
 
 import (
-	"bitbucket.org/mikehouston/asana-go"
 	"fmt"
+	"github.com/timwehrle/asana-go"
 	"github.com/timwehrle/asana/utils"
 
 	"github.com/MakeNowJust/heredoc"

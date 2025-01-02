@@ -1,6 +1,6 @@
 package auth
 
-import "bitbucket.org/mikehouston/asana-go"
+import "github.com/timwehrle/asana-go"
 
 func ValidateToken(token string) error {
 	if len(token) < 6 {

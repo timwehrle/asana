@@ -1,8 +1,8 @@
 package shared
 
 import (
-	"bitbucket.org/mikehouston/asana-go"
 	"github.com/stretchr/testify/assert"
+	"github.com/timwehrle/asana-go"
 	"testing"
 	"time"
 )
