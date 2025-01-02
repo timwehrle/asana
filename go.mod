@@ -11,7 +11,7 @@ require (
 
 require (
 	github.com/stretchr/testify v1.9.0
-	github.com/timwehrle/asana-go v0.0.0-20250102172945-99823c91b019
+	github.com/timwehrle/asana-go v0.1.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
