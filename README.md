@@ -64,21 +64,13 @@ asana workspaces list # List all workspaces
 
 # Contributing
 
-Contributions are welcome! Here's how you can help:
-
-- Report bugs and feature requests through issues
-- Submit pull requests for bug fixes or new features
-- Improve documentation
-- Share feedback on usability
-
-Please ensure your pull requests adhere to the following:
-
-- Follow the existing code style
-- Include tests for new functionality
-- Update documentation as needed
+If something feels off, you see an opportunity to improve performance, or think some
+functionality is missing, we’d love to hear from you! Please review our [contributing docs][contributing] for
+detailed instructions on how to provide feedback or submit a pull request. Thank you!
 
 # License
 
 This project is licensed under the MIT License. See the [LICENSE][license] file for details.
 
+[contributing]: ./.github/CONTRIBUTING.md
 [license]: ./LICENSE
