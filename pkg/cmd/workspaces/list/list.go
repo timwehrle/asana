@@ -1,11 +1,11 @@
 package list
 
 import (
+	"bitbucket.org/mikehouston/asana-go"
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
 
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/asana/api"
 	"github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/utils"
 )
@@ -32,9 +32,9 @@ func listRun() error {
 		return err
 	}
 
-	client := api.New(token)
+	client := asana.NewClientWithAccessToken(token)
 
-	workspaces, err := client.GetWorkspaces()
+	workspaces, err := client.AllWorkspaces()
 	if err != nil {
 		return err
 	}

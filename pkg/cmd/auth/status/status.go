@@ -1,11 +1,12 @@
 package status
 
 import (
+	"bitbucket.org/mikehouston/asana-go"
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
+	"github.com/timwehrle/asana/utils"
 
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/asana/api"
 	"github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/internal/config"
 )
@@ -43,19 +44,19 @@ func statusRun() error {
 		return nil
 	}
 
-	client := api.New(token)
+	client := asana.NewClientWithAccessToken(token)
 
-	me, err := client.GetMe()
+	me, err := client.CurrentUser()
 	if err != nil {
 		return err
 	}
 	fmt.Println("API is operational.")
+	fmt.Printf("Logged in as %s (%s)\n", utils.Bold().Sprintf(me.Name), me.ID)
 
-	fmt.Printf("Logged in as: %s (%s)\n", me.Username(), me.GID())
-	if cfg.Workspace.GID == "" || cfg.Workspace.Name == "" {
+	if cfg.Workspace.ID == "" || cfg.Workspace.Name == "" {
 		fmt.Println("No default workspace set.")
 	} else {
-		fmt.Printf("Default workspace: %s (%s)\n", cfg.Workspace.Name, cfg.Workspace.GID)
+		fmt.Printf("Default workspace is %s (%s)\n", utils.Bold().Sprintf(cfg.Workspace.Name), cfg.Workspace.ID)
 	}
 
 	return nil

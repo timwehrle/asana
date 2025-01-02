@@ -1,30 +1,19 @@
 package auth
 
-import (
-	"errors"
-	"github.com/timwehrle/asana/api"
-	"net/http"
-)
+import "bitbucket.org/mikehouston/asana-go"
 
 func ValidateToken(token string) error {
 	if len(token) < 6 {
 		return AuthenticationError{Message: "The token is not long enough. Please provide a correct token."}
 	}
 
-	client := api.New(token)
+	client := asana.NewClientWithAccessToken(token)
 
-	_, err := client.GetMe()
+	_, err := client.CurrentUser()
 	if err != nil {
-		var respErr *api.Error
-		if errors.As(err, &respErr) {
-			if respErr.StatusCode == http.StatusUnauthorized {
-				return AuthenticationError{Message: "Your token is invalid. Please ensure you have a correct token."}
-			}
-
-			return respErr
+		if asana.IsAuthError(err) {
+			return AuthenticationError{Message: "Authentication failed. Please provide a valid token."}
 		}
-
-		return err
 	}
 
 	return nil

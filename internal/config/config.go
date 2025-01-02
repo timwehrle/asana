@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bitbucket.org/mikehouston/asana-go"
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
 	"gopkg.in/yaml.v3"
@@ -10,19 +11,19 @@ import (
 
 type Config struct {
 	Username  string           `yaml:"username"`
-	Workspace DefaultWorkspace `yaml:"workspaces"`
+	Workspace *asana.Workspace `yaml:"workspace"`
 }
 
 type DefaultWorkspace struct {
-	GID  string `yaml:"gid"`
+	ID   string `yaml:"gid"`
 	Name string `yaml:"name"`
 }
 
-type ConfigError struct {
+type Error struct {
 	Message string
 }
 
-func (e ConfigError) Error() string {
+func (e Error) Error() string {
 	return e.Message
 }
 
@@ -72,7 +73,7 @@ func LoadConfig() (config Config, err error) {
 	file, err := os.Open(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return Config{}, ConfigError{Message: heredoc.Docf(`No configuration file found. Please run %[1]sasana auth login%[1]s to authenticate.`, "`")}
+			return Config{}, Error{Message: heredoc.Docf(`No configuration file found. Please run %[1]sasana auth login%[1]s to authenticate.`, "`")}
 		}
 		return Config{}, err
 	}
@@ -92,8 +93,8 @@ func UpdateDefaultWorkspace(gid, name string) error {
 		return fmt.Errorf("failed to load configuration: %w", err)
 	}
 
-	config.Workspace = DefaultWorkspace{
-		GID:  gid,
+	config.Workspace = &asana.Workspace{
+		ID:   gid,
 		Name: name,
 	}
 
@@ -104,10 +105,10 @@ func UpdateDefaultWorkspace(gid, name string) error {
 	return nil
 }
 
-func GetDefaultWorkspace() (DefaultWorkspace, error) {
+func GetDefaultWorkspace() (*asana.Workspace, error) {
 	config, err := LoadConfig()
 	if err != nil {
-		return DefaultWorkspace{}, err
+		return &asana.Workspace{}, err
 	}
 
 	return config.Workspace, nil

@@ -34,7 +34,7 @@ func runConfigGet(key string) error {
 			return err
 		}
 
-		fmt.Printf("Default workspace is %s (%s)\n", utils.Bold().Sprintf(defaultWorkspace.Name), defaultWorkspace.GID)
+		fmt.Printf("Default workspace is %s (%s)\n", utils.Bold().Sprintf(defaultWorkspace.Name), defaultWorkspace.ID)
 		return nil
 
 	default:

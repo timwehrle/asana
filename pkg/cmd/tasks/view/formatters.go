@@ -1,13 +1,13 @@
 package view
 
 import (
+	"bitbucket.org/mikehouston/asana-go"
 	"fmt"
-	"github.com/timwehrle/asana/api"
 	"github.com/timwehrle/asana/utils"
 	"strings"
 )
 
-func FormatNames(tasks []api.Task) []string {
+func FormatNames(tasks []*asana.Task) []string {
 	names := make([]string, len(tasks))
 	for i, task := range tasks {
 		names[i] = fmt.Sprintf("%d. [%s] %s", i+1, utils.FormatDate(task.DueOn), task.Name)
@@ -22,7 +22,7 @@ func FormatList(prefix string, items []string) string {
 	return prefix + strings.Join(items, ", ")
 }
 
-func FormatProjects(projects []api.Project) string {
+func FormatProjects(projects []*asana.Project) string {
 	names := make([]string, len(projects))
 	for i, project := range projects {
 		names[i] = project.Name
@@ -30,7 +30,7 @@ func FormatProjects(projects []api.Project) string {
 	return FormatList("Projects: ", names)
 }
 
-func FormatTags(tags []api.Tag) string {
+func FormatTags(tags []*asana.Tag) string {
 	names := make([]string, len(tags))
 	for i, tag := range tags {
 		names[i] = tag.Name

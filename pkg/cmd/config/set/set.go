@@ -1,10 +1,10 @@
 package set
 
 import (
+	"bitbucket.org/mikehouston/asana-go"
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/asana/api"
 	"github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/internal/prompter"
@@ -44,9 +44,9 @@ func setDefaultWorkspace() error {
 		return err
 	}
 
-	client := api.New(token)
+	client := asana.NewClientWithAccessToken(token)
 
-	workspaces, err := client.GetWorkspaces()
+	workspaces, err := client.AllWorkspaces()
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func setDefaultWorkspace() error {
 
 	selectedWorkspace := workspaces[index]
 
-	err = config.UpdateDefaultWorkspace(selectedWorkspace.GID, selectedWorkspace.Name)
+	err = config.UpdateDefaultWorkspace(selectedWorkspace.ID, selectedWorkspace.Name)
 	if err != nil {
 		return err
 	}

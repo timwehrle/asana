@@ -1,12 +1,13 @@
 package view
 
 import (
+	"bitbucket.org/mikehouston/asana-go"
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
+	"github.com/timwehrle/asana/internal/config"
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/asana/api"
 	"github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/internal/prompter"
 	"github.com/timwehrle/asana/utils"
@@ -17,7 +18,7 @@ func NewCmdView() *cobra.Command {
 		Use:   "view",
 		Short: "View details of a specific task",
 		Long: heredoc.Doc(`
-				Display detailed information about a specific task, 
+				Display detailed information about a specific task,
 				allowing you to analyze and manage it effectively.
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -34,9 +35,20 @@ func viewRun() error {
 		return err
 	}
 
-	client := api.New(token)
+	workspace, err := config.GetDefaultWorkspace()
+	if err != nil {
+		return err
+	}
 
-	allTasks, err := fetch(client)
+	client := asana.NewClientWithAccessToken(token)
+
+	allTasks, _, err := client.QueryTasks(&asana.TaskQuery{
+		Assignee:       "me",
+		Workspace:      workspace.ID,
+		CompletedSince: "now",
+	}, &asana.Options{
+		Fields: []string{"due_on", "name"},
+	})
 	if err != nil {
 		return err
 	}
@@ -54,21 +66,7 @@ func viewRun() error {
 	return nil
 }
 
-func fetch(client *api.Client) ([]api.Task, error) {
-	allTasks, err := client.GetTasks()
-	if err != nil {
-		return nil, err
-	}
-
-	if len(allTasks) == 0 {
-		fmt.Println("No tasks found.")
-		return nil, nil
-	}
-
-	return allTasks, nil
-}
-
-func prompt(allTasks []api.Task) (*api.Task, error) {
+func prompt(allTasks []*asana.Task) (*asana.Task, error) {
 	taskNames := FormatNames(allTasks)
 
 	today := time.Now()
@@ -79,24 +77,24 @@ func prompt(allTasks []api.Task) (*api.Task, error) {
 		return nil, err
 	}
 
-	return &allTasks[index], nil
+	return allTasks[index], nil
 }
 
-func displayDetails(client *api.Client, task *api.Task) error {
-	detailedTask, err := client.GetTask(task.GID)
+func displayDetails(client *asana.Client, task *asana.Task) error {
+	err := task.Fetch(client)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("%s | Due: %s | %s\n", utils.BoldUnderline().Sprint(detailedTask.Name),
-		utils.FormatDate(detailedTask.DueOn), FormatProjects(detailedTask.Projects))
-	fmt.Println(FormatTags(detailedTask.Tags))
-	fmt.Print(FormatNotes(detailedTask.Notes))
+	fmt.Printf("%s | Due: %s | %s\n", utils.BoldUnderline().Sprint(task.Name),
+		utils.FormatDate(task.DueOn), FormatProjects(task.Projects))
+	fmt.Println(FormatTags(task.Tags))
+	fmt.Print(FormatNotes(task.Notes))
 
 	return nil
 }
 
-func handleAction(client *api.Client, task *api.Task) error {
+/*func handleAction(client *api.Client, task *api.Task) error {
 	actions := []string{"Mark as Completed", "Edit Task Name", "Cancel"}
 
 	selectedAction, err := prompter.Select("What would you like to do with this task?", actions)
@@ -138,3 +136,4 @@ func editTask(client *api.Client, task *api.Task) error {
 	fmt.Println("Task successfully edited.")
 	return nil
 }
+*/

@@ -1,18 +1,20 @@
 package list
 
 import (
+	"bitbucket.org/mikehouston/asana-go"
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/asana/api"
 	"github.com/timwehrle/asana/internal/auth"
+	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/utils"
 )
 
 func NewCmdList() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "List all tasks",
+		Use:     "list",
+		Aliases: []string{"ls"},
+		Short:   "List all tasks",
 		Long: heredoc.Doc(`
 			Retrieve and display a list of all tasks assigned to your Asana account.
 		`),
@@ -30,9 +32,20 @@ func listRun() error {
 		return err
 	}
 
-	client := api.New(token)
+	workspace, err := config.GetDefaultWorkspace()
+	if err != nil {
+		return err
+	}
 
-	tasks, err := client.GetTasks()
+	client := asana.NewClientWithAccessToken(token)
+
+	tasks, _, err := client.QueryTasks(&asana.TaskQuery{
+		Assignee:       "me",
+		Workspace:      workspace.ID,
+		CompletedSince: "now",
+	}, &asana.Options{
+		Fields: []string{"due_on", "name"},
+	})
 	if err != nil {
 		return err
 	}
