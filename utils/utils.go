@@ -1,20 +1,20 @@
 package utils
 
 import (
+	"bitbucket.org/mikehouston/asana-go"
 	"time"
 )
 
-func FormatDate(date string) string {
-	if date == "" {
+func FormatDate(date *asana.Date) string {
+
+	if date == nil {
 		return "None"
 	}
 
+	parsedDate := time.Time(*date)
 	location := time.Now().Location()
 
-	parsedDate, err := time.ParseInLocation(time.DateOnly, date, location)
-	if err != nil {
-		return "Invalid Date"
-	}
+	parsedDate = time.Date(parsedDate.Year(), parsedDate.Month(), parsedDate.Day(), 0, 0, 0, 0, location)
 
 	now := time.Now().In(location)
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, location)
