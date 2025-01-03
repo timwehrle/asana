@@ -52,6 +52,22 @@ func Select(message string, options []string) (int, error) {
 	return answerIndex, nil
 }
 
+func Editor(message, existingDescription string) (string, error) {
+	var input string
+
+	err := ask(&survey.Editor{
+		Message:       message,
+		Default:       existingDescription,
+		AppendDefault: true,
+		HideDefault:   true,
+	}, &input)
+	if err != nil {
+		return "", err
+	}
+
+	return input, nil
+}
+
 func ask(q survey.Prompt, response any, opts ...survey.AskOpt) error {
 	opts = append(opts, survey.WithStdio(os.Stdin, os.Stdout, os.Stderr))
 	if err := survey.AskOne(q, response, opts...); err != nil {
