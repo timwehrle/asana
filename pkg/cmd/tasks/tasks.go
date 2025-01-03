@@ -9,9 +9,10 @@ import (
 
 func NewCmdTasks() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "tasks",
-		Short: "Manage your Asana tasks",
-		Long:  "Perform operations related to your Asana tasks.",
+		Use:     "tasks <subcommand>",
+		Aliases: []string{"ts"},
+		Short:   "Manage your Asana tasks",
+		Long:    "Perform operations related to your Asana tasks.",
 	}
 
 	cmd.AddCommand(list.NewCmdList())

@@ -8,8 +8,9 @@ import (
 
 func NewCmdWorkspace() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "workspaces",
-		Short: "Manage your Asana workspaces",
+		Use:     "workspaces <subcommand>",
+		Aliases: []string{"ws"},
+		Short:   "Manage your Asana workspaces",
 		Long: heredoc.Doc(`
 				Perform operations related to your Asana workspaces.
 		`),

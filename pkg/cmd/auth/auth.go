@@ -11,7 +11,7 @@ import (
 
 func NewCmdAuth() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "auth <command>",
+		Use:   "auth <subcommand>",
 		Short: "Authenticate with Asana",
 		Long: heredoc.Doc(`
 			Manage authentication for the Asana CLI, including login

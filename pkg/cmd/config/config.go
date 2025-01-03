@@ -9,7 +9,7 @@ import (
 
 func NewCmdConfig() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "config",
+		Use:   "config <subcommand>",
 		Short: "Manage Asana CLI configuration",
 		Long: heredoc.Doc(`
 				Set and retrieve configuration settings for the Asana CLI tool.
