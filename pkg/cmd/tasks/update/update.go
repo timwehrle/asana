@@ -9,6 +9,7 @@ import (
 	"github.com/timwehrle/asana/internal/prompter"
 	"github.com/timwehrle/asana/pkg/cmd/tasks/shared"
 	"github.com/timwehrle/asana/utils"
+	"strings"
 )
 
 func NewCmdUpdate() *cobra.Command {
@@ -58,7 +59,13 @@ func updateRun() error {
 		return err
 	}
 
-	actions := []string{"Mark as Completed", "Edit Task Name", "Cancel"}
+	actions := []string{
+		"Mark as Completed",
+		"Edit Task Name",
+		"Edit Description",
+		"Set Due Date",
+		"Cancel",
+	}
 	selectedAction, err := prompter.Select("What do you want to do with this task:", actions)
 
 	switch selectedAction {
@@ -67,8 +74,68 @@ func updateRun() error {
 	case 1:
 		return editTask(client, selectedTask)
 	case 2:
-		fmt.Println(utils.Success(), "Cancelled")
+		return editDescription(client, selectedTask)
+	case 3:
+		return setDueDate(client, selectedTask)
+	case 4:
+		fmt.Println(utils.Success(), "Operation canceled. You can rerun the command to try again.")
 		return nil
+	}
+
+	return nil
+}
+
+func setDueDate(client *asana.Client, task *asana.Task) error {
+	input, err := prompter.Input("Enter the new due date (YYYY-MM-DD):", "")
+	if err != nil {
+		return err
+	}
+
+	dueDate, err := utils.StringToDate(input, "2006-01-02")
+	if err != nil {
+		return fmt.Errorf("failed parsing the date: %v", err)
+	}
+
+	updateRequest := &asana.UpdateTaskRequest{
+		TaskBase: asana.TaskBase{
+			DueOn: dueDate,
+		},
+	}
+
+	err = task.Update(client, updateRequest)
+	if err != nil {
+		return fmt.Errorf("failed updating task due date: %v", err)
+	}
+
+	fmt.Println(utils.Success(), "Due date updated")
+
+	return nil
+}
+
+func editDescription(client *asana.Client, task *asana.Task) error {
+	existingDescription := strings.TrimSpace(task.Notes)
+
+	newDescription, err := prompter.Editor("Edit the description:", existingDescription)
+	if err != nil {
+		return err
+	}
+	newDescription = strings.TrimSpace(newDescription)
+
+	if newDescription != existingDescription {
+		updateRequest := &asana.UpdateTaskRequest{
+			TaskBase: asana.TaskBase{
+				Notes: newDescription,
+			},
+		}
+
+		err = task.Update(client, updateRequest)
+		if err != nil {
+			return fmt.Errorf("failed to update task notes: %v", err)
+		}
+
+		fmt.Println(utils.Success(), "Description updated")
+	} else {
+		fmt.Println("No changes made to description")
 	}
 
 	return nil
@@ -86,7 +153,7 @@ func completeTask(client *asana.Client, task *asana.Task) error {
 
 	err := task.Update(client, updateRequest)
 	if err != nil {
-		return fmt.Errorf("failed to update task: %v", err)
+		return fmt.Errorf("failed to update task completion: %v", err)
 	}
 
 	fmt.Println(utils.Success(), "Task completed")
