@@ -51,12 +51,12 @@ func statusRun() error {
 		return err
 	}
 	fmt.Println("API is operational.")
-	fmt.Printf("Logged in as %s (%s)\n", utils.Bold().Sprintf(me.Name), me.ID)
+	fmt.Printf("Logged in as %s (%s)\n", utils.Bold().Sprint(me.Name), me.ID)
 
 	if cfg.Workspace.ID == "" || cfg.Workspace.Name == "" {
 		fmt.Println("No default workspace set.")
 	} else {
-		fmt.Printf("Default workspace is %s (%s)\n", utils.Bold().Sprintf(cfg.Workspace.Name), cfg.Workspace.ID)
+		fmt.Printf("Default workspace is %s (%s)\n", utils.Bold().Sprint(cfg.Workspace.Name), cfg.Workspace.ID)
 	}
 
 	return nil

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/timwehrle/asana/internal/config"
-	"github.com/timwehrle/asana/pkg/cmd/tasks/shared"
+	"github.com/timwehrle/asana/pkg/format"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -68,7 +68,7 @@ func viewRun() error {
 }
 
 func prompt(allTasks []*asana.Task) (*asana.Task, error) {
-	taskNames := shared.FormatTasks(allTasks)
+	taskNames := format.Tasks(allTasks)
 
 	today := time.Now()
 	selectMessage := fmt.Sprintf("Your Tasks on %s (Select one for more details):", today.Format("Jan 02, 2006"))
@@ -88,9 +88,9 @@ func displayDetails(client *asana.Client, task *asana.Task) error {
 	}
 
 	fmt.Printf("%s | Due: %s | %s\n", utils.BoldUnderline().Sprint(task.Name),
-		utils.FormatDate(task.DueOn), shared.FormatProjects(task.Projects))
-	fmt.Println(shared.FormatTags(task.Tags))
-	fmt.Print(shared.FormatNotes(task.Notes))
+		format.Date(task.DueOn), format.Projects(task.Projects))
+	fmt.Println(format.Tags(task.Tags))
+	fmt.Print(format.Notes(task.Notes))
 
 	return nil
 }

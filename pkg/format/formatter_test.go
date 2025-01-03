@@ -1,4 +1,4 @@
-package shared
+package format
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -22,7 +22,7 @@ func TestFormatItems(t *testing.T) {
 	})
 
 	assert.Equal(t, []string{"item1", "item2"}, result)
-	assert.Equal(t, 0, len(formatItems([]*mockStruct{}, func(m *mockStruct) string { return m.name })))
+	assert.Empty(t, 0, len(formatItems([]*mockStruct{}, func(m *mockStruct) string { return m.name })))
 }
 
 func TestFormatList(t *testing.T) {
@@ -60,7 +60,7 @@ func TestFormatList(t *testing.T) {
 	}
 }
 
-func TestFormatTasks(t *testing.T) {
+func TestTasks(t *testing.T) {
 	now := time.Now()
 	dueDate := asana.Date(now)
 	tasks := []*asana.Task{
@@ -78,7 +78,7 @@ func TestFormatTasks(t *testing.T) {
 		},
 	}
 
-	result := FormatTasks(tasks)
+	result := Tasks(tasks)
 	assert.Len(t, result, 2)
 	for _, formattedTask := range result {
 		assert.Contains(t, formattedTask, "]")
@@ -86,7 +86,7 @@ func TestFormatTasks(t *testing.T) {
 	}
 }
 
-func TestFormatProjects(t *testing.T) {
+func TestProjects(t *testing.T) {
 	projects := []*asana.Project{
 		{
 			ProjectBase: asana.ProjectBase{
@@ -100,12 +100,12 @@ func TestFormatProjects(t *testing.T) {
 		},
 	}
 
-	result := FormatProjects(projects)
+	result := Projects(projects)
 	assert.Equal(t, "Projects: Project 1, Project 2", result)
-	assert.Equal(t, "Projects: None", FormatProjects([]*asana.Project{}))
+	assert.Equal(t, "Projects: None", Projects([]*asana.Project{}))
 }
 
-func TestFormatTags(t *testing.T) {
+func TestTags(t *testing.T) {
 	tags := []*asana.Tag{
 		{
 			TagBase: asana.TagBase{
@@ -119,12 +119,12 @@ func TestFormatTags(t *testing.T) {
 		},
 	}
 
-	result := FormatTags(tags)
+	result := Tags(tags)
 	assert.Equal(t, "Tags: Tag 1, Tag 2", result)
-	assert.Equal(t, "Tags: None", FormatTags([]*asana.Tag{}))
+	assert.Equal(t, "Tags: None", Tags([]*asana.Tag{}))
 }
 
-func TestFormatNotes(t *testing.T) {
+func TestNotes(t *testing.T) {
 	tests := []struct {
 		name     string
 		notes    string
@@ -144,8 +144,66 @@ func TestFormatNotes(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := FormatNotes(tt.notes)
+			result := Notes(tt.notes)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
+}
+
+func TestDate(t *testing.T) {
+	t.Run("Empty Date", func(t *testing.T) {
+		result := Date(nil)
+		if result != "None" {
+			t.Errorf("Expected 'None', got '%s'", result)
+		}
+	})
+
+	t.Run("Today", func(t *testing.T) {
+		now := time.Now()
+		today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		date := asana.Date(today)
+		result := Date(&date)
+		if result != "Today" {
+			t.Errorf("Expected 'Today', got '%s'", result)
+		}
+	})
+
+	t.Run("Tomorrow", func(t *testing.T) {
+		tomorrow := time.Now().Add(24 * time.Hour)
+		date := asana.Date(tomorrow)
+		result := Date(&date)
+		if result != "Tomorrow" {
+			t.Errorf("Expected 'Tomorrow', got '%s'", result)
+		}
+	})
+
+	t.Run("Date Within a Week", func(t *testing.T) {
+		date := time.Now().Add(3 * 24 * time.Hour)
+		expected := date.Format("Mon")
+		asanaDate := asana.Date(date)
+		result := Date(&asanaDate)
+		if result != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, result)
+		}
+	})
+
+	t.Run("Date After a Week", func(t *testing.T) {
+		futureDate := time.Now().Add(8 * 24 * time.Hour)
+		expected := futureDate.Format("Jan 02, 2006")
+		asanaDate := asana.Date(futureDate)
+		result := Date(&asanaDate)
+		if result != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, result)
+		}
+	})
+
+	t.Run("Date Before Today", func(t *testing.T) {
+		pastDate := time.Now().Add(8 * (-24) * time.Hour)
+		expected := pastDate.Format("Jan 02, 2006")
+		asanaDate := asana.Date(pastDate)
+		result := Date(&asanaDate)
+		if result != expected {
+			t.Errorf("Expected '%s', got '%s'", expected, result)
+		}
+	})
 }

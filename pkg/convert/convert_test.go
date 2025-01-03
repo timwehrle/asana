@@ -1,71 +1,12 @@
-package utils_test
+package convert
 
 import (
 	"github.com/timwehrle/asana-go"
-	"github.com/timwehrle/asana/utils"
 	"testing"
 	"time"
 )
 
-func TestFormatDate(t *testing.T) {
-	t.Run("Empty Date", func(t *testing.T) {
-		result := utils.FormatDate(nil)
-		if result != "None" {
-			t.Errorf("Expected 'None', got '%s'", result)
-		}
-	})
-
-	t.Run("Today", func(t *testing.T) {
-		now := time.Now()
-		today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-		date := asana.Date(today)
-		result := utils.FormatDate(&date)
-		if result != "Today" {
-			t.Errorf("Expected 'Today', got '%s'", result)
-		}
-	})
-
-	t.Run("Tomorrow", func(t *testing.T) {
-		tomorrow := time.Now().Add(24 * time.Hour)
-		date := asana.Date(tomorrow)
-		result := utils.FormatDate(&date)
-		if result != "Tomorrow" {
-			t.Errorf("Expected 'Tomorrow', got '%s'", result)
-		}
-	})
-
-	t.Run("Date Within a Week", func(t *testing.T) {
-		date := time.Now().Add(3 * 24 * time.Hour)
-		expected := date.Format("Mon")
-		asanaDate := asana.Date(date)
-		result := utils.FormatDate(&asanaDate)
-		if result != expected {
-			t.Errorf("Expected '%s', got '%s'", expected, result)
-		}
-	})
-
-	t.Run("Date After a Week", func(t *testing.T) {
-		futureDate := time.Now().Add(8 * 24 * time.Hour)
-		expected := futureDate.Format("Jan 02, 2006")
-		asanaDate := asana.Date(futureDate)
-		result := utils.FormatDate(&asanaDate)
-		if result != expected {
-			t.Errorf("Expected '%s', got '%s'", expected, result)
-		}
-	})
-
-	t.Run("Date Before Today", func(t *testing.T) {
-		pastDate := time.Now().Add(8 * (-24) * time.Hour)
-		expected := pastDate.Format("Jan 02, 2006")
-		asanaDate := asana.Date(pastDate)
-		result := utils.FormatDate(&asanaDate)
-		if result != expected {
-			t.Errorf("Expected '%s', got '%s'", expected, result)
-		}
-	})
-}
-
-func TestStringToDate(t *testing.T) {
+func TestToDate(t *testing.T) {
 	tests := []struct {
 		name    string
 		dateStr string
@@ -76,7 +17,7 @@ func TestStringToDate(t *testing.T) {
 		{
 			name:    "Valid date with 2006-01-02 layout",
 			dateStr: "2024-01-15",
-			layout:  "2006-01-02",
+			layout:  time.DateOnly,
 			want: func() *asana.Date {
 				loc := time.Now().Location()
 				d := asana.Date(time.Date(2024, 1, 15, 0, 0, 0, 0, loc))
@@ -98,21 +39,21 @@ func TestStringToDate(t *testing.T) {
 		{
 			name:    "None string returns nil",
 			dateStr: "None",
-			layout:  "2006-01-02",
+			layout:  time.DateOnly,
 			want:    nil,
 			wantErr: false,
 		},
 		{
 			name:    "Invalid date format",
 			dateStr: "2024-13-45",
-			layout:  "2006-01-02",
+			layout:  time.DateOnly,
 			want:    nil,
 			wantErr: true,
 		},
 		{
 			name:    "Empty string",
 			dateStr: "",
-			layout:  "2006-01-02",
+			layout:  time.DateOnly,
 			want:    nil,
 			wantErr: true,
 		},
@@ -127,7 +68,7 @@ func TestStringToDate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := utils.StringToDate(tt.dateStr, tt.layout)
+			got, err := ToDate(tt.dateStr, tt.layout)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("StringToDate() error = %v, wantErr %v", err, tt.wantErr)

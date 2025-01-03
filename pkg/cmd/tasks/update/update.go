@@ -7,9 +7,11 @@ import (
 	"github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/internal/prompter"
-	"github.com/timwehrle/asana/pkg/cmd/tasks/shared"
+	"github.com/timwehrle/asana/pkg/convert"
+	"github.com/timwehrle/asana/pkg/format"
 	"github.com/timwehrle/asana/utils"
 	"strings"
+	"time"
 )
 
 func NewCmdUpdate() *cobra.Command {
@@ -48,9 +50,12 @@ func updateRun() error {
 		return err
 	}
 
-	taskNames := shared.FormatTasks(tasks)
+	taskNames := format.Tasks(tasks)
 
 	index, err := prompter.Select("Select the task to update", taskNames)
+	if err != nil {
+		return err
+	}
 
 	selectedTask := tasks[index]
 
@@ -67,6 +72,9 @@ func updateRun() error {
 		"Cancel",
 	}
 	selectedAction, err := prompter.Select("What do you want to do with this task:", actions)
+	if err != nil {
+		return fmt.Errorf("failed selecting an action: %w", err)
+	}
 
 	switch selectedAction {
 	case 0:
@@ -91,9 +99,9 @@ func setDueDate(client *asana.Client, task *asana.Task) error {
 		return err
 	}
 
-	dueDate, err := utils.StringToDate(input, "2006-01-02")
+	dueDate, err := convert.ToDate(input, time.DateOnly)
 	if err != nil {
-		return fmt.Errorf("failed parsing the date: %v", err)
+		return fmt.Errorf("failed parsing the date: %w", err)
 	}
 
 	updateRequest := &asana.UpdateTaskRequest{
@@ -104,7 +112,7 @@ func setDueDate(client *asana.Client, task *asana.Task) error {
 
 	err = task.Update(client, updateRequest)
 	if err != nil {
-		return fmt.Errorf("failed updating task due date: %v", err)
+		return fmt.Errorf("failed updating task due date: %w", err)
 	}
 
 	fmt.Println(utils.Success(), "Due date updated")
@@ -130,7 +138,7 @@ func editDescription(client *asana.Client, task *asana.Task) error {
 
 		err = task.Update(client, updateRequest)
 		if err != nil {
-			return fmt.Errorf("failed to update task notes: %v", err)
+			return fmt.Errorf("failed to update task notes: %w", err)
 		}
 
 		fmt.Println(utils.Success(), "Description updated")
@@ -153,7 +161,7 @@ func completeTask(client *asana.Client, task *asana.Task) error {
 
 	err := task.Update(client, updateRequest)
 	if err != nil {
-		return fmt.Errorf("failed to update task completion: %v", err)
+		return fmt.Errorf("failed to update task completion: %w", err)
 	}
 
 	fmt.Println(utils.Success(), "Task completed")

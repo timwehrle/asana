@@ -7,6 +7,7 @@ import (
 	"github.com/timwehrle/asana-go"
 	"github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/internal/config"
+	"github.com/timwehrle/asana/pkg/format"
 	"github.com/timwehrle/asana/utils"
 )
 
@@ -57,7 +58,7 @@ func listRun() error {
 
 	fmt.Println(utils.BoldUnderline().Sprintf("Your Tasks:"))
 	for i, task := range tasks {
-		fmt.Printf("%d. [%s] %s\n", i+1, utils.FormatDate(task.DueOn), task.Name)
+		fmt.Printf("%d. [%s] %s\n", i+1, format.Date(task.DueOn), task.Name)
 	}
 
 	return nil
