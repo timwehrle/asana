@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"github.com/timwehrle/asana/pkg/version"
 	"regexp"
 	"strings"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+
 	service "github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/pkg/cmd/auth"
 	"github.com/timwehrle/asana/pkg/cmd/config"
@@ -16,7 +18,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:     "asana <command> <subcommand> [flags]",
 	Short:   "The Asana CLI tool",
-	Version: "v0.1.0",
+	Version: version.Version,
 	Long:    `Work with Asana from the command line.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if cmd.HasParent() && cmd.Parent().Name() == "auth" {

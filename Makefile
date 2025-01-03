@@ -1,6 +1,8 @@
 # Variables
 APP_NAME=asana
-BUILD_DIR=
+BUILD_DIR=build
+VERSION := $(shell git describe --tags --abbrev=0 --always)
+LDFLAGS := -ldflags "-X github.com/timwehrle/asana/pkg/version.Version=${VERSION}"
 
 # Commands
 GOCMD := go
@@ -14,44 +16,41 @@ LINT := golangci-lint run
 GOFMT := gofmt
 VULN := golang.org/x/vuln/cmd/govulncheck@latest
 
-# Run tests
+.PHONY: build
+build: ## Run build
+	@echo "Running build"
+	$(GOBUILD) ${LDFLAGS} -o $(BUILD_DIR)/$(APP_NAME)
+
 .PHONY: test
-test:
+test: ## Run tests
 	@echo "Running tests..."
 	$(GOTEST) -v -coverprofile=c.out ./...
 	$(GOCMD) tool cover -html=c.out
 
-.PHONY: test/cover
-test/cover:
-	go test -v -coverprofile=c.out ./...
-	go tool cover -html=c.out
-
-# Run linter
 .PHONY: lint
-lint:
+lint: ## Run linter
 	@echo "Running lint..."
 	$(LINT)
 
-# Run formatter
 .PHONY: fmt
-fmt:
+fmt: ## Run formatter
 	@echo "Formatting code..."
 	$(GOFMT) -w -s .
 
-# Audit code
 .PHONY: audit
-audit:
+audit: ## Audit code
 	@echo "Running audit..."
 	$(GOMOD) tidy
 	$(GOMOD) verify
 	$(GOVET) ./...
 	$(GORUN) $(VULN) ./...
 
-# Show available commands
+.PHONY: release
+release: ## Run GoReleaser
+	@echo "Releasing..."
+	goreleaser release --clean
+
 .PHONY: help
-help:
-	@echo "Available commands:"
-	@echo "  make test       Run tests and generate coverage report"
-	@echo "  make lint       Run linter"
-	@echo "  make fmt        Format code"
-	@echo "  make audit      Audit code for issues"
+help: ## Show available commands
+	@grep -E '^[a-zA-Z_/.-]+:.*?##' $(MAKEFILE_LIST) | \
+	awk 'BEGIN {FS = "##"}; {printf "%-20s %s\n", $$1, $$2}'
