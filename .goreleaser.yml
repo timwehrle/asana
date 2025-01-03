@@ -14,7 +14,7 @@ builds:
   - env:
       - CGO_ENABLED=0
     ldflags:
-      - -s -w -X github.com/timwehrle/asana/pkg/version.Version={{ .Version }}
+      - -s -w -X github.com/timwehrle/asana/internal/version.Version={{ .Version }}
     goos:
       - linux
       - windows

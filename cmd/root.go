@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/timwehrle/asana/pkg/version"
+	"github.com/timwehrle/asana/internal/version"
 	"regexp"
 	"strings"
 
