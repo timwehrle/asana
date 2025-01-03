@@ -53,6 +53,7 @@ View your tasks:
 ```shell
 asana tasks list # List all your tasks
 asana tasks view # Interactive task viewer with details
+asana tasks update # Interactive task updater
 ```
 
 ## Advanced Usage
