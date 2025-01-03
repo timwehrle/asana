@@ -73,7 +73,7 @@ func setDefaultWorkspace() error {
 		return err
 	}
 
-	fmt.Printf("%s Default workspace set to %s\n", utils.Success(), utils.Bold().Sprintf(selectedWorkspace.Name))
+	fmt.Printf("%s Default workspace set to %s\n", utils.Success(), utils.Bold().Sprint(selectedWorkspace.Name))
 
 	return nil
 }
