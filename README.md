@@ -20,7 +20,7 @@ Download the latest binary for your platform from the [releases page](https://gi
 ## From Source
 
 ```shell
-go install github.com/timwehrle/asana
+go install github.com/timwehrle/asana@v0.1.0
 ```
 
 # Getting started
