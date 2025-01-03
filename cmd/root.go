@@ -16,7 +16,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:     "asana <command> <subcommand> [flags]",
 	Short:   "The Asana CLI tool",
-	Version: "v0.0.2",
+	Version: "v0.1.0",
 	Long:    `Work with Asana from the command line.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if cmd.HasParent() && cmd.Parent().Name() == "auth" {
