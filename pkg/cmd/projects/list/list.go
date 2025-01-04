@@ -26,9 +26,10 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 	opts := &options{}
 
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "List projects from your default workspace",
-		Long:  heredoc.Doc(`Retrieve and display a list of all projects under your default workspace.`),
+		Use:     "list",
+		Aliases: []string{"ls"},
+		Short:   "List projects from your default workspace",
+		Long:    heredoc.Doc(`Retrieve and display a list of all projects under your default workspace.`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if opts.Limit < 0 {
 				return fmt.Errorf("invalid limit: %v", opts.Limit)
