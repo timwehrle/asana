@@ -18,12 +18,13 @@ func New() *DefaultFactory {
 }
 
 func (f *DefaultFactory) Config() (*config.Config, error) {
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		return &config.Config{}, err
+	cfg := &config.Config{}
+
+	if err := cfg.Load(); err != nil {
+		return nil, err
 	}
 
-	return &cfg, nil
+	return cfg, nil
 }
 
 func (f *DefaultFactory) NewAsanaClient() (*asana.Client, error) {

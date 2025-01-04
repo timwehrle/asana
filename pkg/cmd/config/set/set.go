@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/internal/prompter"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/utils"
@@ -65,7 +64,14 @@ func setDefaultWorkspace(f factory.Factory) error {
 
 	selectedWorkspace := workspaces[index]
 
-	err = config.UpdateDefaultWorkspace(selectedWorkspace.ID, selectedWorkspace.Name)
+	cfg, err := f.Config()
+	if err != nil {
+		return err
+	}
+
+	// Workspace must be uppercase here since the Set function works with the
+	// interface names and workspace is uppercased.
+	err = cfg.Set("Workspace", selectedWorkspace)
 	if err != nil {
 		return err
 	}

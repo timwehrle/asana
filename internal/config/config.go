@@ -7,17 +7,21 @@ import (
 	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
+	"reflect"
+	"runtime"
+	"sync"
 )
 
 type Config struct {
 	Username  string           `yaml:"username"`
 	Workspace *asana.Workspace `yaml:"workspace"`
+	mu        sync.RWMutex
 }
 
-type DefaultWorkspace struct {
-	ID   string `yaml:"gid"`
-	Name string `yaml:"name"`
-}
+const (
+	appData       = "AppData"
+	xdgConfigHome = "XDG_CONFIG_HOME"
+)
 
 type Error struct {
 	Message string
@@ -27,13 +31,24 @@ func (e Error) Error() string {
 	return e.Message
 }
 
-func getConfigFilePath() (string, error) {
-	configDir, err := os.UserConfigDir()
-	if err != nil {
-		return "", fmt.Errorf("failed to get user config dir: %w", err)
-	}
+// configDir determines the directory for storing configuration files
+func configDir() string {
+	var path string
 
-	configPath := filepath.Join(configDir, "asana")
+	if a := os.Getenv(xdgConfigHome); a != "" {
+		path = filepath.Join(a, "asana-cli")
+	} else if b := os.Getenv(appData); runtime.GOOS == "windows" && b != "" {
+		path = filepath.Join(b, "Asana CLI")
+	} else {
+		d, _ := os.UserHomeDir()
+		path = filepath.Join(d, ".config", "asana-cli")
+	}
+	return path
+}
+
+func getConfigFilePath() (string, error) {
+	configPath := configDir()
+
 	if err := os.MkdirAll(configPath, 0755); err != nil {
 		return "", fmt.Errorf("failed to create config dir: %w", err)
 	}
@@ -41,7 +56,10 @@ func getConfigFilePath() (string, error) {
 	return filepath.Join(configPath, "config.yml"), nil
 }
 
-func SaveConfig(config Config) error {
+func (c *Config) Save() error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	path, err := getConfigFilePath()
 	if err != nil {
 		return err
@@ -49,67 +67,67 @@ func SaveConfig(config Config) error {
 
 	file, err := os.Create(path)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create config file: %w", err)
 	}
 	defer file.Close()
 
 	encoder := yaml.NewEncoder(file)
 	defer encoder.Close()
 
-	err = encoder.Encode(&config)
+	err = encoder.Encode(c)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to encode config: %w", err)
 	}
 
 	return nil
 }
 
-func LoadConfig() (config Config, err error) {
+func (c *Config) Load() error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	path, err := getConfigFilePath()
 	if err != nil {
-		return Config{}, err
+		return err
 	}
 
 	file, err := os.Open(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return Config{}, Error{Message: heredoc.Docf(`No configuration file found. Please run %[1]sasana auth login%[1]s to authenticate.`, "`")}
+			return Error{Message: heredoc.Docf(`
+				No configuration file found.
+				Please run %[1]sasana auth login%[1]s to authenticate.
+			`, "`")}
 		}
-		return Config{}, err
+		return fmt.Errorf("failed to open config file: %w", err)
 	}
 	defer file.Close()
 
 	decoder := yaml.NewDecoder(file)
-	if err := decoder.Decode(&config); err != nil {
-		return Config{}, err
-	}
-
-	return config, nil
-}
-
-func UpdateDefaultWorkspace(gid, name string) error {
-	config, err := LoadConfig()
-	if err != nil {
-		return fmt.Errorf("failed to load configuration: %w", err)
-	}
-
-	config.Workspace = &asana.Workspace{
-		ID:   gid,
-		Name: name,
-	}
-
-	if err := SaveConfig(config); err != nil {
-		return fmt.Errorf("failed to save updated configuration: %w", err)
+	if err := decoder.Decode(c); err != nil {
+		return fmt.Errorf("failed to decode config: %w", err)
 	}
 
 	return nil
 }
 
-func GetDefaultWorkspace() (*asana.Workspace, error) {
-	config, err := LoadConfig()
-	if err != nil {
-		return &asana.Workspace{}, err
+func (c *Config) Set(field string, value interface{}) error {
+	rv := reflect.ValueOf(c).Elem()
+	f := rv.FieldByName(field)
+
+	if !f.IsValid() {
+		return fmt.Errorf("field '%s' does not exist in config", field)
 	}
 
-	return config.Workspace, nil
+	if !f.CanSet() {
+		return fmt.Errorf("field '%s' cannot be set", field)
+	}
+
+	fv := reflect.ValueOf(value)
+	if f.Kind() != fv.Kind() {
+		return fmt.Errorf("value type mismatch for field '%s'", field)
+	}
+
+	f.Set(fv)
+	return c.Save()
 }

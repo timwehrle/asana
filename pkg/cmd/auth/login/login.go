@@ -3,12 +3,12 @@ package login
 import (
 	"fmt"
 	"github.com/timwehrle/asana-go"
+	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/utils"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/internal/auth"
-	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/internal/prompter"
 )
 
@@ -91,11 +91,12 @@ func loginRun() error {
 		return err
 	}
 
-	cfg := config.Config{
+	cfg := &config.Config{
 		Username:  user.Name,
 		Workspace: selectedWorkspace,
 	}
-	err = config.SaveConfig(cfg)
+
+	err = cfg.Save()
 	if err != nil {
 		return err
 	}
