@@ -9,6 +9,9 @@ A command-line interface to manage your Asana tasks and projects directly from y
     <a href="https://github.com/timwehrle/asana/blob/main/LICENSE">
         <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
     </a>
+   <a href="https://github.com/timwehrle/asana/actions/workflows/go.yml">
+      <img src="https://github.com/timwehrle/asana/actions/workflows/go.yml/badge.svg" alt="Go Pipeline">
+   </a>
 </div>
 
 # Installation

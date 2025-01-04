@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  download:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
@@ -21,51 +21,19 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
+          cache: true
 
       - name: Download dependencies
         run: go mod download
-
-  lint:
-    needs: download
-    runs-on: ubuntu-latest
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@v2.10.2
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: "go.mod"
 
       - name: Running Linter
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.60
+          args: --timeout=5m
 
       - name: Check Formatting
         run: test -z "$(gofmt -s -l -e .)"
 
-  test:
-    needs: download
-    runs-on: ubuntu-latest
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@v2.10.2
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: "go.mod"
-
       - name: Running Tests
         run: make test
-
-
