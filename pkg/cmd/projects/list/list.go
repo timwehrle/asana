@@ -2,6 +2,7 @@ package list
 
 import (
 	"fmt"
+	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana-go"
 	"github.com/timwehrle/asana/pkg/factory"
@@ -25,7 +26,9 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 	opts := &options{}
 
 	cmd := &cobra.Command{
-		Use: "list",
+		Use:   "list",
+		Short: "List projects from your default workspace",
+		Long:  heredoc.Doc(`Retrieve and display a list of all projects under your default workspace.`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if opts.Limit < 0 {
 				return fmt.Errorf("invalid limit: %v", opts.Limit)

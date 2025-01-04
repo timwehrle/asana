@@ -8,7 +8,9 @@ import (
 
 func NewCmdProjects(f factory.Factory) *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "projects <subcommand>",
+		Use:   "projects <subcommand>",
+		Short: "Manage your Asana projects",
+		Long:  "Perform operations related to your Asana projects.",
 	}
 
 	cmd.AddCommand(list.NewCmdList(f))
