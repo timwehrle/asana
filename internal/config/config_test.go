@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/timwehrle/asana-go"
 	"os"
 	"path/filepath"
@@ -26,16 +27,16 @@ func TestConfig(t *testing.T) {
 
 		// Test save
 		err := cfg.Save()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		// Verify file exists
 		configPath := filepath.Join(tmpDir, "asana-cli", "config.yml")
 		_, err = os.Stat(configPath)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		newCfg := &Config{}
 		err = newCfg.Load()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, cfg.Username, newCfg.Username)
 		assert.Equal(t, cfg.Workspace.Name, newCfg.Workspace.Name)
 		assert.Equal(t, cfg.Workspace.ID, newCfg.Workspace.ID)
@@ -47,28 +48,28 @@ func TestConfig(t *testing.T) {
 
 		cfg := &Config{}
 		err := cfg.Load()
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Contains(t, err.Error(), "No configuration file found")
 	})
 
 	t.Run("Set Valid Field", func(t *testing.T) {
 		cfg := &Config{}
 		err := cfg.Set("Username", "newuser")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "newuser", cfg.Username)
 	})
 
 	t.Run("Set Invalid Field", func(t *testing.T) {
 		cfg := &Config{}
 		err := cfg.Set("Nonexistentfield", "value")
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Contains(t, err.Error(), "does not exist in config")
 	})
 
 	t.Run("Set Field Type Mismatch", func(t *testing.T) {
 		cfg := &Config{}
 		err := cfg.Set("Username", 123)
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Contains(t, err.Error(), "value type mismatch")
 	})
 
@@ -78,15 +79,21 @@ func TestConfig(t *testing.T) {
 
 		go func() {
 			for i := 0; i < 100; i++ {
-				cfg.Save()
-				cfg.Load()
+				if err := cfg.Save(); err != nil {
+					t.Error("Save failed:", err)
+				}
+				if err := cfg.Load(); err != nil {
+					t.Error("Load failed:", err)
+				}
 			}
 			done <- true
 		}()
 
 		go func() {
 			for i := 0; i < 100; i++ {
-				cfg.Set("Username", "user"+string(rune(i)))
+				if err := cfg.Set("Username", "user"+string(rune(i))); err != nil {
+					t.Error("Set failed:", err)
+				}
 			}
 			done <- true
 		}()
@@ -95,7 +102,7 @@ func TestConfig(t *testing.T) {
 		<-done
 
 		err := cfg.Load()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }
 
