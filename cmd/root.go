@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/timwehrle/asana/internal/version"
+	"github.com/timwehrle/asana/pkg/cmd/projects"
 	"github.com/timwehrle/asana/pkg/factory"
 	"regexp"
 	"strings"
@@ -40,6 +41,7 @@ func init() {
 
 	rootCmd.AddCommand(auth.NewCmdAuth(cmdFactory))
 	rootCmd.AddCommand(tasks.NewCmdTasks(cmdFactory))
+	rootCmd.AddCommand(projects.NewCmdProjects(cmdFactory))
 	rootCmd.AddCommand(workspaces.NewCmdWorkspace(cmdFactory))
 	rootCmd.AddCommand(config.NewCmdConfig(cmdFactory))
 

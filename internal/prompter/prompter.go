@@ -2,9 +2,8 @@ package prompter
 
 import (
 	"fmt"
-	"os"
-
 	"github.com/AlecAivazis/survey/v2"
+	"os"
 )
 
 func Input(title, defaultValue string) (string, error) {
