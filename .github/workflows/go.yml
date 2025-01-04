@@ -42,7 +42,7 @@ jobs:
           go-version-file: "go.mod"
 
       - name: Running Linter
-        uses: golanci/golanci-lint-action@v6
+        uses: golangci/golangci-lint-action@v6
         with:
           version: v1.60
 
