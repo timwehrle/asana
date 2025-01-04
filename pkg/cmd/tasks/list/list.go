@@ -53,9 +53,9 @@ func listRun(f factory.Factory) error {
 		return nil
 	}
 
-	fmt.Println(utils.BoldUnderline().Sprintf("Your Tasks:"))
+	fmt.Printf("\nTasks of %s:\n\n", utils.Bold().Sprint(cfg.Username))
 	for i, task := range tasks {
-		fmt.Printf("%d. [%s] %s\n", i+1, format.Date(task.DueOn), task.Name)
+		fmt.Printf("%d. [%s] %s\n", i+1, format.Date(task.DueOn), utils.Bold().Sprint(task.Name))
 	}
 
 	return nil
