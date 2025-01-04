@@ -47,7 +47,7 @@ jobs:
           version: v1.60
 
       - name: Check Formatting
-        run: test -z "make fmt"
+        run: test -z "$(make fmt)"
 
   test:
     needs: download
