@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/timwehrle/asana/internal/version"
+	"github.com/timwehrle/asana/pkg/factory"
 	"regexp"
 	"strings"
 
@@ -35,10 +36,12 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(auth.NewCmdAuth())
-	rootCmd.AddCommand(tasks.NewCmdTasks())
-	rootCmd.AddCommand(workspaces.NewCmdWorkspace())
-	rootCmd.AddCommand(config.NewCmdConfig())
+	cmdFactory := factory.New()
+
+	rootCmd.AddCommand(auth.NewCmdAuth(cmdFactory))
+	rootCmd.AddCommand(tasks.NewCmdTasks(cmdFactory))
+	rootCmd.AddCommand(workspaces.NewCmdWorkspace(cmdFactory))
+	rootCmd.AddCommand(config.NewCmdConfig(cmdFactory))
 
 	rootCmd.SilenceErrors = true
 	rootCmd.SilenceUsage = true

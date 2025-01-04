@@ -3,15 +3,14 @@ package status
 import (
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/timwehrle/asana-go"
+	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/utils"
 
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/internal/auth"
-	"github.com/timwehrle/asana/internal/config"
 )
 
-func NewCmdStatus() *cobra.Command {
+func NewCmdStatus(f factory.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status",
 		Short: "View current authentication status",
@@ -25,26 +24,29 @@ func NewCmdStatus() *cobra.Command {
 				$ asana auth status
 		`),
 		RunE: func(_ *cobra.Command, _ []string) error {
-			return statusRun()
+			return statusRun(f)
 		},
 	}
 
 	return cmd
 }
 
-func statusRun() error {
-	cfg, err := config.LoadConfig()
+func statusRun(f factory.Factory) error {
+	cfg, err := f.Config()
 	if err != nil {
 		return err
 	}
 
-	token, err := auth.Get()
+	_, err = auth.Get()
 	if err != nil {
 		fmt.Println("You are not logged in.")
 		return nil
 	}
 
-	client := asana.NewClientWithAccessToken(token)
+	client, err := f.NewAsanaClient()
+	if err != nil {
+		return err
+	}
 
 	me, err := client.CurrentUser()
 	if err != nil {

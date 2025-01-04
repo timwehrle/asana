@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/asana-go"
-	"github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/internal/prompter"
+	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/utils"
 )
 
-func NewCmdConfigSet() *cobra.Command {
+func NewCmdConfigSet(f factory.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set <key>",
 		Short: "Update configuration with a value",
@@ -22,29 +21,27 @@ func NewCmdConfigSet() *cobra.Command {
 				$ asana config set dw
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runConfigSet(args[0])
+			return runConfigSet(f, args[0])
 		},
 	}
 
 	return cmd
 }
 
-func runConfigSet(key string) error {
+func runConfigSet(f factory.Factory, key string) error {
 	switch key {
 	case "default-workspace", "dw":
-		return setDefaultWorkspace()
+		return setDefaultWorkspace(f)
 	default:
 		return fmt.Errorf("unknown configuration key: %s. Available keys are: default-workspace (dw)", key)
 	}
 }
 
-func setDefaultWorkspace() error {
-	token, err := auth.Get()
+func setDefaultWorkspace(f factory.Factory) error {
+	client, err := f.NewAsanaClient()
 	if err != nil {
 		return err
 	}
-
-	client := asana.NewClientWithAccessToken(token)
 
 	workspaces, err := client.AllWorkspaces()
 	if err != nil {

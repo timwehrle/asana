@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/asana/internal/config"
+	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/utils"
 )
 
-func NewCmdGet() *cobra.Command {
+func NewCmdGet(f factory.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get <key>",
 		Short: "Print the value of a given configuration key",
@@ -19,22 +19,22 @@ func NewCmdGet() *cobra.Command {
 		`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runConfigGet(args[0])
+			return runConfigGet(f, args[0])
 		},
 	}
 
 	return cmd
 }
 
-func runConfigGet(key string) error {
+func runConfigGet(f factory.Factory, key string) error {
 	switch key {
 	case "default-workspace", "dw":
-		defaultWorkspace, err := config.GetDefaultWorkspace()
+		cfg, err := f.Config()
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("Default workspace is %s (%s)\n", utils.Bold().Sprint(defaultWorkspace.Name), defaultWorkspace.ID)
+		fmt.Printf("Default workspace is %s (%s)\n", utils.Bold().Sprint(cfg.Workspace.Name), cfg.Workspace.ID)
 		return nil
 
 	default:

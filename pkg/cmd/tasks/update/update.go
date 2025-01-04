@@ -4,44 +4,41 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana-go"
-	"github.com/timwehrle/asana/internal/auth"
-	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/internal/prompter"
 	"github.com/timwehrle/asana/pkg/convert"
+	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/format"
 	"github.com/timwehrle/asana/utils"
 	"strings"
 	"time"
 )
 
-func NewCmdUpdate() *cobra.Command {
+func NewCmdUpdate(f factory.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update",
 		Short: "Update details of a specific task",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return updateRun()
+			return updateRun(f)
 		},
 	}
 
 	return cmd
 }
 
-func updateRun() error {
-	token, err := auth.Get()
+func updateRun(f factory.Factory) error {
+	cfg, err := f.Config()
 	if err != nil {
 		return err
 	}
 
-	defaultWorkspace, err := config.GetDefaultWorkspace()
+	client, err := f.NewAsanaClient()
 	if err != nil {
 		return err
 	}
-
-	client := asana.NewClientWithAccessToken(token)
 
 	tasks, _, err := client.QueryTasks(&asana.TaskQuery{
 		Assignee:       "me",
-		Workspace:      defaultWorkspace.ID,
+		Workspace:      cfg.Workspace.ID,
 		CompletedSince: "now",
 	}, &asana.Options{
 		Fields: []string{"due_on", "name"},

@@ -3,18 +3,17 @@ package view
 import (
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/timwehrle/asana/internal/config"
+	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/format"
 	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana-go"
-	"github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/internal/prompter"
 	"github.com/timwehrle/asana/utils"
 )
 
-func NewCmdView() *cobra.Command {
+func NewCmdView(f factory.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "view",
 		Short: "View details of a specific task",
@@ -23,29 +22,27 @@ func NewCmdView() *cobra.Command {
 				allowing you to analyze and manage it effectively.
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return viewRun()
+			return viewRun(f)
 		},
 	}
 
 	return cmd
 }
 
-func viewRun() error {
-	token, err := auth.Get()
+func viewRun(f factory.Factory) error {
+	cfg, err := f.Config()
 	if err != nil {
 		return err
 	}
 
-	defaultWorkspace, err := config.GetDefaultWorkspace()
+	client, err := f.NewAsanaClient()
 	if err != nil {
 		return err
 	}
-
-	client := asana.NewClientWithAccessToken(token)
 
 	allTasks, _, err := client.QueryTasks(&asana.TaskQuery{
 		Assignee:       "me",
-		Workspace:      defaultWorkspace.ID,
+		Workspace:      cfg.Workspace.ID,
 		CompletedSince: "now",
 	}, &asana.Options{
 		Fields: []string{"due_on", "name"},

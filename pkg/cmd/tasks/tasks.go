@@ -5,9 +5,10 @@ import (
 	"github.com/timwehrle/asana/pkg/cmd/tasks/list"
 	"github.com/timwehrle/asana/pkg/cmd/tasks/update"
 	"github.com/timwehrle/asana/pkg/cmd/tasks/view"
+	"github.com/timwehrle/asana/pkg/factory"
 )
 
-func NewCmdTasks() *cobra.Command {
+func NewCmdTasks(f factory.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "tasks <subcommand>",
 		Aliases: []string{"ts"},
@@ -15,9 +16,9 @@ func NewCmdTasks() *cobra.Command {
 		Long:    "Perform operations related to your Asana tasks.",
 	}
 
-	cmd.AddCommand(list.NewCmdList())
-	cmd.AddCommand(view.NewCmdView())
-	cmd.AddCommand(update.NewCmdUpdate())
+	cmd.AddCommand(list.NewCmdList(f))
+	cmd.AddCommand(view.NewCmdView(f))
+	cmd.AddCommand(update.NewCmdUpdate(f))
 
 	return cmd
 }

@@ -5,9 +5,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/pkg/cmd/config/get"
 	"github.com/timwehrle/asana/pkg/cmd/config/set"
+	"github.com/timwehrle/asana/pkg/factory"
 )
 
-func NewCmdConfig() *cobra.Command {
+func NewCmdConfig(f factory.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "config <subcommand>",
 		Short: "Manage Asana CLI configuration",
@@ -16,8 +17,8 @@ func NewCmdConfig() *cobra.Command {
 		`),
 	}
 
-	cmd.AddCommand(set.NewCmdConfigSet())
-	cmd.AddCommand(get.NewCmdGet())
+	cmd.AddCommand(set.NewCmdConfigSet(f))
+	cmd.AddCommand(get.NewCmdGet(f))
 
 	return cmd
 }

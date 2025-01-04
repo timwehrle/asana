@@ -5,13 +5,12 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana-go"
-	"github.com/timwehrle/asana/internal/auth"
-	"github.com/timwehrle/asana/internal/config"
+	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/format"
 	"github.com/timwehrle/asana/utils"
 )
 
-func NewCmdList() *cobra.Command {
+func NewCmdList(f factory.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
@@ -20,29 +19,27 @@ func NewCmdList() *cobra.Command {
 			Retrieve and display a list of all tasks assigned to your Asana account.
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return listRun()
+			return listRun(f)
 		},
 	}
 
 	return cmd
 }
 
-func listRun() error {
-	token, err := auth.Get()
+func listRun(f factory.Factory) error {
+	cfg, err := f.Config()
 	if err != nil {
 		return err
 	}
 
-	workspace, err := config.GetDefaultWorkspace()
+	client, err := f.NewAsanaClient()
 	if err != nil {
 		return err
 	}
-
-	client := asana.NewClientWithAccessToken(token)
 
 	tasks, _, err := client.QueryTasks(&asana.TaskQuery{
 		Assignee:       "me",
-		Workspace:      workspace.ID,
+		Workspace:      cfg.Workspace.ID,
 		CompletedSince: "now",
 	}, &asana.Options{
 		Fields: []string{"due_on", "name"},
