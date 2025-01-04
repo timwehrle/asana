@@ -1,0 +1,71 @@
+name: Go Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.10.2
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+
+      - name: Download dependencies
+        run: go mod download
+
+  lint:
+    needs: download
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.10.2
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+
+      - name: Running Linter
+        uses: golanci/golanci-lint-action@v6
+        with:
+          version: v1.60
+
+      - name: Check Formatting
+        run: test -z "make fmt"
+
+  test:
+    needs: download
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.10.2
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+
+      - name: Running Tests
+        run: make test
+
+
