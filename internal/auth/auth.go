@@ -17,16 +17,19 @@ func Set(secret string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	ch := make(chan error, 1)
+	errCh := make(chan error, 1)
 
 	go func() {
-		ch <- keyring.Set(service, user, secret)
-		close(ch)
+		errCh <- keyring.Set(service, user, secret)
+		close(errCh)
 	}()
 
 	select {
-	case err := <-ch:
-		return err
+	case err := <-errCh:
+		if err != nil {
+			return fmt.Errorf("failed to set secret: %w", err)
+		}
+		return nil
 	case <-ctx.Done():
 		return fmt.Errorf("timeout while trying to set secret in keyring")
 	}
@@ -36,25 +39,25 @@ func Get() (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	ch := make(chan string, 1)
+	resultCh := make(chan string, 1)
 	errCh := make(chan error, 1)
 
 	go func() {
-		defer close(ch)
+		defer close(resultCh)
 		defer close(errCh)
 		secret, err := keyring.Get(service, user)
 		if err != nil {
 			errCh <- err
 		} else {
-			ch <- secret
+			resultCh <- secret
 		}
 	}()
 
 	select {
-	case secret := <-ch:
+	case secret := <-resultCh:
 		return secret, nil
 	case err := <-errCh:
-		return "", err
+		return "", fmt.Errorf("failed to get secret: %w", err)
 	case <-ctx.Done():
 		return "", fmt.Errorf("timeout while trying to get secret in keyring")
 	}
@@ -64,16 +67,19 @@ func Delete() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	ch := make(chan error, 1)
+	errCh := make(chan error, 1)
 
 	go func() {
-		ch <- keyring.Delete(service, user)
-		close(ch)
+		errCh <- keyring.Delete(service, user)
+		close(errCh)
 	}()
 
 	select {
-	case err := <-ch:
-		return err
+	case err := <-errCh:
+		if err != nil {
+			return fmt.Errorf("failed to delete secret: %w", err)
+		}
+		return nil
 	case <-ctx.Done():
 		return fmt.Errorf("timeout while trying to delete secret in keyring")
 	}
