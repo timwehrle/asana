@@ -24,6 +24,11 @@ build: ## Run build
 .PHONY: test
 test: ## Run tests
 	@echo "Running tests..."
+	$(GOTEST) -v ./...
+
+.PHONY: test/cover
+test/cover: ## Run tests with coverage
+	@echo "Running tests with coverage..."
 	$(GOTEST) -v -coverprofile=c.out ./...
 	$(GOCMD) tool cover -html=c.out
 
@@ -35,7 +40,7 @@ lint: ## Run linter
 .PHONY: fmt
 fmt: ## Run formatter
 	@echo "Formatting code..."
-	$(GOFMT) -w -s .
+	$(GOFMT) -s -l -e .
 
 .PHONY: audit
 audit: ## Audit code
