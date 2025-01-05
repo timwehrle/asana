@@ -1,9 +1,11 @@
 package format
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/timwehrle/asana-go"
 	"github.com/timwehrle/asana/utils"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -84,4 +86,36 @@ func Date(date *asana.Date) string {
 	}
 
 	return parsedDate.Format("Jan 02, 2006")
+}
+
+func Indent(s, prefix string) string {
+	if len(strings.TrimSpace(s)) == 0 {
+		return s
+	}
+	return regexp.MustCompile(`(?m)^`).ReplaceAllLiteralString(s, prefix)
+}
+
+func Dedent(s string) string {
+	lines := strings.Split(s, "\n")
+	minIndent := -1
+
+	for _, line := range lines {
+		if len(line) == 0 {
+			continue
+		}
+		indent := len(line) - len(strings.TrimLeft(line, " "))
+		if minIndent == -1 || indent < minIndent {
+			minIndent = indent
+		}
+	}
+
+	if minIndent <= 0 {
+		return s
+	}
+
+	var buffer bytes.Buffer
+	for _, line := range lines {
+		fmt.Fprintln(&buffer, strings.TrimPrefix(line, strings.Repeat(" ", minIndent)))
+	}
+	return strings.TrimSuffix(buffer.String(), "\n")
 }
