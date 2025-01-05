@@ -48,7 +48,7 @@ func getSuggestions(cmd *cobra.Command, arg string) []string {
 }
 
 // showHelp displays the help content for a command
-func showHelp(cmd *cobra.Command, args []string, w io.Writer) {
+func showHelp(cmd *cobra.Command, _ []string, w io.Writer) {
 	boldText := utils.Bold().SprintFunc()
 	flags := cmd.Flags()
 
