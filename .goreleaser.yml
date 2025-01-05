@@ -40,6 +40,17 @@ archives:
       - goos: windows
         format: zip
 
+brews:
+  - name: asana
+    homepage: "https://github.com/timwehrle/asana"
+    commit_author:
+      name: timwehrle
+      email: hello@timwehrle.de
+    repository:
+      owner: timwehrle
+      name: homebrew-asana
+      branch: main
+
 changelog:
   use: github
   format: "{{.SHA}}: {{.Message}} by @{{.AuthorUsername}}"

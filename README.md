@@ -26,6 +26,13 @@ Download the latest binary for your platform from the [releases page](https://gi
 go install github.com/timwehrle/asana@v0.1.0
 ```
 
+## Homebrew Installation
+
+```shell
+brew tap timwehrle/asana
+brew install --formula asana
+```
+
 # Getting started
 
 ## Authentication
