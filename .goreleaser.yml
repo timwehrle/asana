@@ -63,12 +63,9 @@ changelog:
       - "^tests:"
       - "^test:"
       - "^test\\("
-      - "merge conflict"
-      - "Merge pull request"
-      - "Merge branch"
   groups:
     - title: "Features"
-      regexp: '^.*?feat(\(.+\))??!?:.+$'
+      regexp: '^.*?(feat|Add)(\([^)]+\))?!?:?\s?.+$'
       order: 0
     - title: "Bug fixes"
       regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
