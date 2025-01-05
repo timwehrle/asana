@@ -6,21 +6,14 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana-go"
 	"github.com/timwehrle/asana/pkg/factory"
+	"github.com/timwehrle/asana/pkg/sorting"
 	"github.com/timwehrle/asana/utils"
-	"sort"
 )
 
 type options struct {
-	Limit    int
-	Sort     string
-	Archived bool
+	Limit int
+	Sort  string
 }
-
-type projectList []*asana.Project
-
-func (p projectList) Len() int           { return len(p) }
-func (p projectList) Less(i, j int) bool { return p[i].Name < p[j].Name }
-func (p projectList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 func NewCmdList(f factory.Factory) *cobra.Command {
 	opts := &options{}
@@ -39,7 +32,7 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 	}
 
 	cmd.Flags().IntVarP(&opts.Limit, "limit", "l", 0, "Max number of projects to display")
-	cmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Sort projects by name: 'asc' or 'desc'")
+	cmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Sort projects by name (options: asc, desc)")
 
 	return cmd
 }
@@ -69,7 +62,12 @@ func listRun(f factory.Factory, opts *options) error {
 	}
 
 	if opts.Sort != "" {
-		sortProjects(projects, opts.Sort == "desc")
+		switch opts.Sort {
+		case "asc":
+			sorting.ProjectSort.ByName(projects)
+		case "desc":
+			sorting.ProjectSort.ByNameDesc(projects)
+		}
 	}
 
 	fmt.Printf("\nProjects in %s:\n\n", utils.Bold().Sprint(cfg.Workspace.Name))
@@ -111,12 +109,4 @@ func fetchProjects(client *asana.Client, workspaceID string, limit int, projects
 	}
 
 	return *projects, nil
-}
-
-func sortProjects(projects []*asana.Project, descending bool) {
-	if descending {
-		sort.Sort(sort.Reverse(projectList(projects)))
-	} else {
-		sort.Sort(projectList(projects))
-	}
 }
