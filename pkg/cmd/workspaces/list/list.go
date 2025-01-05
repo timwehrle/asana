@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/timwehrle/asana/pkg/factory"
+	"github.com/timwehrle/asana/utils"
 
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/asana/utils"
 )
 
 func NewCmdList(f factory.Factory) *cobra.Command {
@@ -36,19 +36,24 @@ func listRun(f factory.Factory) error {
 		return err
 	}
 
+	cfg, err := f.Config()
+	if err != nil {
+		return err
+	}
+
 	workspaces, err := client.AllWorkspaces()
 	if err != nil {
 		return err
 	}
 
 	if len(workspaces) == 0 {
-		fmt.Println("No workspaces found.")
+		fmt.Printf("No workspaces found for %s", utils.Bold().Sprint(cfg.Username))
 		return nil
 	}
 
-	fmt.Println(utils.BoldUnderline().Sprint("Your Workspaces:"))
+	fmt.Printf("\nWorkspaces of %s:\n\n", utils.Bold().Sprint(cfg.Username))
 	for i, ws := range workspaces {
-		fmt.Printf("%d. %s\n", i+1, ws.Name)
+		fmt.Printf("%d. %s\n", i+1, utils.Bold().Sprint(ws.Name))
 	}
 
 	return nil
