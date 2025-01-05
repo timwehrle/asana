@@ -16,8 +16,12 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 		Short:   "List available workspaces",
 		Long: heredoc.Doc(`
 				Retrieve and display a list of all workspaces associated 
-				with your Asana account.
-		`),
+				with your Asana account.`),
+		Example: heredoc.Doc(`
+				$ asana workspaces list
+				$ asana workspaces ls
+				$ asana ws ls
+			`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return listRun(f)
 		},

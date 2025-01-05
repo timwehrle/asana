@@ -15,14 +15,9 @@ func NewCmdStatus(f factory.Factory) *cobra.Command {
 		Use:   "status",
 		Short: "View current authentication status",
 		Long: heredoc.Doc(`
-				Display the current authentication status, including 
-				the logged-in user and API health. This command helps 
-				verify connectivity and user identity.
-		`),
-		Example: heredoc.Doc(`
-				# Check authentication status
-				$ asana auth status
-		`),
+				Display the current authentication status, including the logged-in user and API health. 
+				This command helps verify connectivity and user identity.`),
+		Example: heredoc.Doc(`$ asana auth status`),
 		RunE: func(_ *cobra.Command, _ []string) error {
 			return statusRun(f)
 		},

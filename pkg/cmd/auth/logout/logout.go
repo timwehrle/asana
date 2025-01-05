@@ -18,12 +18,8 @@ func NewCmdLogout() *cobra.Command {
 				Log out of your current Asana account by removing locally 
 				stored credentials.
 				
-				This action revokes CLI access to the Asana API.
-		`),
-		Example: heredoc.Doc(`
-			# Log out of Asana
-			$ asana auth logout
-		`),
+				This action revokes CLI access to the Asana API.`),
+		Example: heredoc.Doc(`$ asana auth logout`),
 		RunE: func(_ *cobra.Command, _ []string) error {
 			return logoutRun()
 		},

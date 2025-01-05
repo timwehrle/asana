@@ -2,6 +2,7 @@ package update
 
 import (
 	"fmt"
+	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana-go"
 	"github.com/timwehrle/asana/internal/prompter"
@@ -17,6 +18,10 @@ func NewCmdUpdate(f factory.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update",
 		Short: "Update details of a specific task",
+		Long:  "Retrieve task details and select one for updating it.",
+		Example: heredoc.Doc(`
+			$ asana tasks update
+			$ asana ts update`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return updateRun(f)
 		},

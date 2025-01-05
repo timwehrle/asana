@@ -13,10 +13,8 @@ func NewCmdGet(f factory.Factory) *cobra.Command {
 		Use:   "get <key>",
 		Short: "Print the value of a given configuration key",
 		Example: heredoc.Doc(`
-				# Get a configuration value
 				$ asana config get default-workspace
-				$ asana config get dw
-		`),
+				$ asana config get dw`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runConfigGet(f, args[0])

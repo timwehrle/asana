@@ -17,10 +17,12 @@ func NewCmdView(f factory.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "view",
 		Short: "View details of a specific task",
+		Example: heredoc.Doc(`
+				$ asana tasks view
+				$ asana ts view`),
 		Long: heredoc.Doc(`
-				Display detailed information about a specific task,
-				allowing you to analyze and manage it effectively.
-		`),
+				Display detailed information about a specific task, allowing you to 
+				analyze and manage it effectively.`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return viewRun(f)
 		},

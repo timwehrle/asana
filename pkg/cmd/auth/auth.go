@@ -16,8 +16,7 @@ func NewCmdAuth(f factory.Factory) *cobra.Command {
 		Short: "Authenticate with Asana",
 		Long: heredoc.Doc(`
 			Manage authentication for the Asana CLI, including login
-			logout and checking authentication status.
-		`),
+			logout and checking authentication status.`),
 	}
 
 	cmd.AddCommand(status.NewCmdStatus(f))

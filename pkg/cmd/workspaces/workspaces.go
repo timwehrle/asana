@@ -12,9 +12,7 @@ func NewCmdWorkspace(f factory.Factory) *cobra.Command {
 		Use:     "workspaces <subcommand>",
 		Aliases: []string{"ws"},
 		Short:   "Manage your Asana workspaces",
-		Long: heredoc.Doc(`
-				Perform operations related to your Asana workspaces.
-		`),
+		Long:    heredoc.Doc(`Perform operations related to your Asana workspaces.`),
 	}
 
 	cmd.AddCommand(list.NewCmdList(f))

@@ -2,6 +2,7 @@ package update
 
 import (
 	"fmt"
+	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/internal/prompter"
@@ -10,8 +11,10 @@ import (
 
 func NewCmdUpdate() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "update",
-		Short: "Update the Personal Access Token of your Asana account",
+		Use:     "update",
+		Short:   "Update the Personal Access Token of your Asana account",
+		Long:    "Update the current Personal Access Token of your Asana account.",
+		Example: heredoc.Doc(`$ asana auth update`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runAuthUpdate()
 		},

@@ -15,9 +15,12 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List all tasks",
-		Long: heredoc.Doc(`
-			Retrieve and display a list of all tasks assigned to your Asana account.
-		`),
+		Long:    heredoc.Doc(`Retrieve and display a list of all tasks assigned to your Asana account.`),
+		Example: heredoc.Doc(`
+				$ asana tasks list
+				$ asana tasks ls
+				$ asana ts ls
+			`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return listRun(f)
 		},

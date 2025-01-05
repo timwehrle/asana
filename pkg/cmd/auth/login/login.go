@@ -16,15 +16,11 @@ func NewCmdLogin() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "login",
 		Short: "Log in to your Asana account",
-		Long: heredoc.Docf(`
-				Authenticate with Asana using a Personal Access Token. 
-				Follow the steps in your Asana account to generate a token 
-				and use it with this command to enable CLI access.
-		`),
+		Long: heredoc.Docf(`Authenticate with Asana using a Personal Access Token. 
+				Follow the steps in your Asana account to generate a token and use it 
+				with this command to enable CLI access.`),
 		Example: heredoc.Doc(`
-			# Log in to Asana
-			$ asana auth login
-		`),
+					$ asana auth login`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return loginRun()
 		},
