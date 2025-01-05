@@ -2,14 +2,19 @@ package main
 
 import (
 	"fmt"
-	"os"
-
 	"github.com/timwehrle/asana/cmd"
+	"os"
 )
 
 func main() {
-	if err := cmd.Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+	root, err := cmd.NewCmdRoot()
+	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
+	}
+
+	if err := root.Execute(); err != nil {
+		fmt.Printf("%s\n\n", err)
+		_ = root.Usage()
 	}
 }

@@ -1,69 +1,56 @@
 package cmd
 
 import (
-	"github.com/timwehrle/asana/internal/version"
-	"github.com/timwehrle/asana/pkg/cmd/projects"
-	"github.com/timwehrle/asana/pkg/factory"
-	"regexp"
-	"strings"
-
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-
 	service "github.com/timwehrle/asana/internal/auth"
+	"github.com/timwehrle/asana/internal/version"
 	"github.com/timwehrle/asana/pkg/cmd/auth"
 	"github.com/timwehrle/asana/pkg/cmd/config"
+	"github.com/timwehrle/asana/pkg/cmd/projects"
 	"github.com/timwehrle/asana/pkg/cmd/tasks"
 	"github.com/timwehrle/asana/pkg/cmd/workspaces"
+	"github.com/timwehrle/asana/pkg/factory"
+	"os"
 )
 
-var rootCmd = &cobra.Command{
-	Use:     "asana <command> <subcommand> [flags]",
-	Short:   "The Asana CLI tool",
-	Version: version.Version,
-	Long:    `Work with Asana from the command line.`,
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		if cmd.HasParent() && cmd.Parent().Name() == "auth" {
-			return nil
-		}
-
-		err := service.Check()
-		if err != nil {
-			return err
-		}
-
-		return nil
-	},
-}
-
-func init() {
+func NewCmdRoot() (*cobra.Command, error) {
 	cmdFactory := factory.New()
 
-	rootCmd.AddCommand(auth.NewCmdAuth(cmdFactory))
-	rootCmd.AddCommand(tasks.NewCmdTasks(cmdFactory))
-	rootCmd.AddCommand(projects.NewCmdProjects(cmdFactory))
-	rootCmd.AddCommand(workspaces.NewCmdWorkspace(cmdFactory))
-	rootCmd.AddCommand(config.NewCmdConfig(cmdFactory))
+	cmd := &cobra.Command{
+		Use:     "asana <command> <subcommand> [flags]",
+		Short:   "The Asana CLI tool",
+		Version: version.Version,
+		Long:    `Work with Asana from the command line.`,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if cmd.HasParent() && cmd.Parent().Name() == "auth" {
+				return nil
+			}
 
-	rootCmd.SilenceErrors = true
-	rootCmd.SilenceUsage = true
+			err := service.Check()
+			if err != nil {
+				return err
+			}
 
-	// Colorize output
-	rootCmd.SetOut(color.Output)
-	cobra.AddTemplateFunc("StyleHeading", color.New(color.FgGreen).SprintFunc())
-	usageTemplate := rootCmd.UsageTemplate()
-	usageTemplate = strings.NewReplacer(
-		`Usage:`, `{{StyleHeading "Usage:"}}`,
-		`Aliases:`, `{{StyleHeading "Aliases:"}}`,
-		`Examples:`, `{{StyleHeading "Examples:"}}`,
-		`Available Commands:`, `{{StyleHeading "Available Commands:"}}`,
-		`Flags:`, `{{StyleHeading "Flags:"}}`,
-	).Replace(usageTemplate)
-	re := regexp.MustCompile(`(?m)^Flags:\s*$`)
-	usageTemplate = re.ReplaceAllLiteralString(usageTemplate, `{{StyleHeading "Flags:"}}`)
-	rootCmd.SetUsageTemplate(usageTemplate)
-}
+			return nil
+		},
+	}
 
-func Execute() error {
-	return rootCmd.Execute()
+	cmd.AddCommand(auth.NewCmdAuth(cmdFactory))
+	cmd.AddCommand(tasks.NewCmdTasks(cmdFactory))
+	cmd.AddCommand(projects.NewCmdProjects(cmdFactory))
+	cmd.AddCommand(workspaces.NewCmdWorkspace(cmdFactory))
+	cmd.AddCommand(config.NewCmdConfig(cmdFactory))
+
+	cmd.SilenceErrors = true
+	cmd.SilenceUsage = true
+
+	cmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
+		showHelp(command, strings, os.Stdout)
+	})
+
+	cmd.SetUsageFunc(func(command *cobra.Command) error {
+		return showRootUsage(command)
+	})
+
+	return cmd, nil
 }
