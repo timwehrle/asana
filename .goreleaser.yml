@@ -43,6 +43,8 @@ archives:
 brews:
   - name: asana
     homepage: "https://github.com/timwehrle/asana"
+    description: "A command-line interface for managing Asana directly from your terminal."
+    license: "MIT"
     commit_author:
       name: timwehrle
       email: hello@timwehrle.de
