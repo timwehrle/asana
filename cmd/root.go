@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 	service "github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/internal/version"
@@ -8,9 +10,9 @@ import (
 	"github.com/timwehrle/asana/pkg/cmd/config"
 	"github.com/timwehrle/asana/pkg/cmd/projects"
 	"github.com/timwehrle/asana/pkg/cmd/tasks"
+	"github.com/timwehrle/asana/pkg/cmd/users"
 	"github.com/timwehrle/asana/pkg/cmd/workspaces"
 	"github.com/timwehrle/asana/pkg/factory"
-	"os"
 )
 
 func NewCmdRoot() (*cobra.Command, error) {
@@ -39,6 +41,7 @@ func NewCmdRoot() (*cobra.Command, error) {
 	cmd.AddCommand(tasks.NewCmdTasks(cmdFactory))
 	cmd.AddCommand(projects.NewCmdProjects(cmdFactory))
 	cmd.AddCommand(workspaces.NewCmdWorkspace(cmdFactory))
+	cmd.AddCommand(users.NewCmdUsers(cmdFactory))
 	cmd.AddCommand(config.NewCmdConfig(cmdFactory))
 
 	cmd.SilenceErrors = true
