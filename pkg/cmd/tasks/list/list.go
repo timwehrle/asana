@@ -3,6 +3,7 @@ package list
 import (
 	"errors"
 	"fmt"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana-go"
@@ -78,7 +79,7 @@ func listRun(f factory.Factory, opts *options) error {
 		return err
 	}
 
-	fmt.Printf("\nTasks of %s:\n\n", utils.Bold().Sprint(cfg.Username))
+	fmt.Printf("\nTasks for %s:\n\n", utils.Bold().Sprint(cfg.Username))
 	for i, task := range tasks {
 		fmt.Printf("%d. [%s] %s\n", i+1, format.Date(task.DueOn), utils.Bold().Sprint(task.Name))
 	}
