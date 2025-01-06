@@ -2,6 +2,7 @@ package login
 
 import (
 	"fmt"
+
 	"github.com/timwehrle/asana-go"
 	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/utils"
@@ -51,14 +52,14 @@ func loginRun() error {
 		return err
 	}
 
-	err = auth.Set(token)
+	client := asana.NewClientWithAccessToken(token)
+
+	workspaces, err := client.AllWorkspaces()
 	if err != nil {
 		return err
 	}
 
-	client := asana.NewClientWithAccessToken(token)
-
-	workspaces, err := client.AllWorkspaces()
+	err = auth.Set(token)
 	if err != nil {
 		return err
 	}
