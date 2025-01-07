@@ -9,7 +9,7 @@ import (
 
 func NewCmdUsers(f factory.Factory) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "users",
+		Use:   "users <command>",
 		Short: "Manage users of your Asana workspace",
 		Long: heredoc.Doc(`
 				Manage and interact with users in your Asana workspace.
