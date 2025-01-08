@@ -2,32 +2,44 @@ package prompter
 
 import (
 	"fmt"
-	"github.com/AlecAivazis/survey/v2"
 	"os"
+
+	"github.com/AlecAivazis/survey/v2"
 )
 
-func Input(title, defaultValue string) (string, error) {
-	var input string
-	err := ask(&survey.Input{
-		Message: title,
-		Default: defaultValue,
-	}, &input)
-	if err != nil {
-		return "", err
-	}
-	return input, nil
+type Prompter interface {
+	Input(prompt, defaultValue string) (string, error)
+	Confirm(prompt, defaultValue string) (bool, error)
+	Token() (string, error)
+	Select(message string, options []string) (int, error)
+	Editor(prompt, existingDescription string) (string, error)
 }
 
-func Confirm(message, defaultValue string) (bool, error) {
+type DefaultPrompter struct{}
+
+func New() *DefaultPrompter {
+	return &DefaultPrompter{}
+}
+
+func (p *DefaultPrompter) Input(prompt, defaultValue string) (string, error) {
+	var result string
+	err := ask(&survey.Input{
+		Message: prompt,
+		Default: defaultValue,
+	}, &result)
+	return result, err
+}
+
+func (p *DefaultPrompter) Confirm(prompt, defaultValue string) (bool, error) {
 	var confirm bool
 	err := ask(&survey.Confirm{
-		Message: message,
+		Message: prompt,
 		Default: defaultValue == "No",
 	}, &confirm)
 	return confirm, err
 }
 
-func Token() (string, error) {
+func (p *DefaultPrompter) Token() (string, error) {
 	var token string
 	err := ask(&survey.Password{
 		Message: "Paste your authentication token:",
@@ -35,7 +47,7 @@ func Token() (string, error) {
 	return token, err
 }
 
-func Select(message string, options []string) (int, error) {
+func (p *DefaultPrompter) Select(message string, options []string) (int, error) {
 	var answerIndex int
 
 	prompt := &survey.Select{
@@ -51,11 +63,11 @@ func Select(message string, options []string) (int, error) {
 	return answerIndex, nil
 }
 
-func Editor(message, existingDescription string) (string, error) {
+func (p *DefaultPrompter) Editor(prompt, existingDescription string) (string, error) {
 	var input string
 
 	err := ask(&survey.Editor{
-		Message:       message,
+		Message:       prompt,
 		Default:       existingDescription,
 		AppendDefault: true,
 		HideDefault:   true,
@@ -69,8 +81,9 @@ func Editor(message, existingDescription string) (string, error) {
 
 func ask(q survey.Prompt, response any, opts ...survey.AskOpt) error {
 	opts = append(opts, survey.WithStdio(os.Stdin, os.Stdout, os.Stderr))
-	if err := survey.AskOne(q, response, opts...); err != nil {
-		return fmt.Errorf("could not prompt: %w", err)
+	err := survey.AskOne(q, response, opts...)
+	if err == nil {
+		return nil
 	}
-	return nil
+	return fmt.Errorf("could not prompt: %w", err)
 }

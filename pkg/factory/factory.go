@@ -4,17 +4,23 @@ import (
 	"github.com/timwehrle/asana-go"
 	"github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/internal/config"
+	"github.com/timwehrle/asana/internal/prompter"
 )
 
 type Factory interface {
 	Config() (*config.Config, error)
 	NewAsanaClient() (*asana.Client, error)
+	Prompter() prompter.Prompter
 }
 
-type DefaultFactory struct{}
+type DefaultFactory struct {
+	prompter prompter.Prompter
+}
 
 func New() *DefaultFactory {
-	return &DefaultFactory{}
+	return &DefaultFactory{
+		prompter: prompter.New(),
+	}
 }
 
 func (f *DefaultFactory) Config() (*config.Config, error) {
@@ -34,4 +40,8 @@ func (f *DefaultFactory) NewAsanaClient() (*asana.Client, error) {
 	}
 
 	return asana.NewClientWithAccessToken(token), nil
+}
+
+func (f *DefaultFactory) Prompter() prompter.Prompter {
+	return f.prompter
 }

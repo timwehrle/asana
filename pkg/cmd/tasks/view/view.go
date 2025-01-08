@@ -2,14 +2,14 @@ package view
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/format"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana-go"
-	"github.com/timwehrle/asana/internal/prompter"
 	"github.com/timwehrle/asana/utils"
 )
 
@@ -21,7 +21,7 @@ func NewCmdView(f factory.Factory) *cobra.Command {
 				$ asana tasks view
 				$ asana ts view`),
 		Long: heredoc.Doc(`
-				Display detailed information about a specific task, allowing you to 
+				Display detailed information about a specific task, allowing you to
 				analyze and manage it effectively.`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return viewRun(f)
@@ -53,7 +53,7 @@ func viewRun(f factory.Factory) error {
 		return err
 	}
 
-	selectedTask, err := prompt(allTasks)
+	selectedTask, err := prompt(allTasks, f)
 	if err != nil {
 		return err
 	}
@@ -66,13 +66,13 @@ func viewRun(f factory.Factory) error {
 	return nil
 }
 
-func prompt(allTasks []*asana.Task) (*asana.Task, error) {
+func prompt(allTasks []*asana.Task, f factory.Factory) (*asana.Task, error) {
 	taskNames := format.Tasks(allTasks)
 
 	today := time.Now()
 	selectMessage := fmt.Sprintf("Your Tasks on %s (Select one for more details):", today.Format("Jan 02, 2006"))
 
-	index, err := prompter.Select(selectMessage, taskNames)
+	index, err := f.Prompter().Select(selectMessage, taskNames)
 	if err != nil {
 		return nil, err
 	}

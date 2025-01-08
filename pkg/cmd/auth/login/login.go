@@ -5,32 +5,32 @@ import (
 
 	"github.com/timwehrle/asana-go"
 	"github.com/timwehrle/asana/internal/config"
+	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/utils"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/internal/auth"
-	"github.com/timwehrle/asana/internal/prompter"
 )
 
-func NewCmdLogin() *cobra.Command {
+func NewCmdLogin(f factory.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "login",
 		Short: "Log in to your Asana account",
-		Long: heredoc.Docf(`Authenticate with Asana using a Personal Access Token. 
-				Follow the steps in your Asana account to generate a token and use it 
+		Long: heredoc.Docf(`Authenticate with Asana using a Personal Access Token.
+				Follow the steps in your Asana account to generate a token and use it
 				with this command to enable CLI access.`),
 		Example: heredoc.Doc(`
 					$ asana auth login`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return loginRun()
+			return loginRun(f)
 		},
 	}
 
 	return cmd
 }
 
-func loginRun() error {
+func loginRun(f factory.Factory) error {
 	var token string
 
 	_, err := auth.Get()
@@ -42,7 +42,7 @@ func loginRun() error {
 	fmt.Print(heredoc.Doc(`
 		Tip: You can generate a Personal Access Token here: https://app.asana.com/0/my-apps
 	`))
-	token, err = prompter.Token()
+	token, err = f.Prompter().Token()
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func loginRun() error {
 		names[i] = ws.Name
 	}
 
-	index, err := prompter.Select("Select a default workspace:", names)
+	index, err := f.Prompter().Select("Select a default workspace:", names)
 	if err != nil {
 		return err
 	}

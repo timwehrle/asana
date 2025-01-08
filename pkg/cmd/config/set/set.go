@@ -2,9 +2,9 @@ package set
 
 import (
 	"fmt"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/asana/internal/prompter"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/utils"
 )
@@ -57,7 +57,7 @@ func setDefaultWorkspace(f factory.Factory) error {
 		names[i] = ws.Name
 	}
 
-	index, err := prompter.Select("Select a new default workspace:", names)
+	index, err := f.Prompter().Select("Select a new default workspace:", names)
 	if err != nil {
 		return err
 	}

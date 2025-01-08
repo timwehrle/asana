@@ -2,16 +2,16 @@ package update
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana-go"
-	"github.com/timwehrle/asana/internal/prompter"
 	"github.com/timwehrle/asana/pkg/convert"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/format"
 	"github.com/timwehrle/asana/utils"
-	"strings"
-	"time"
 )
 
 func NewCmdUpdate(f factory.Factory) *cobra.Command {
@@ -54,7 +54,7 @@ func updateRun(f factory.Factory) error {
 
 	taskNames := format.Tasks(tasks)
 
-	index, err := prompter.Select("Select the task to update", taskNames)
+	index, err := f.Prompter().Select("Select the task to update", taskNames)
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func updateRun(f factory.Factory) error {
 		"Set Due Date",
 		"Cancel",
 	}
-	selectedAction, err := prompter.Select("What do you want to do with this task:", actions)
+	selectedAction, err := f.Prompter().Select("What do you want to do with this task:", actions)
 	if err != nil {
 		return fmt.Errorf("failed selecting an action: %w", err)
 	}
@@ -82,11 +82,11 @@ func updateRun(f factory.Factory) error {
 	case 0:
 		return completeTask(client, selectedTask)
 	case 1:
-		return editTask(client, selectedTask)
+		return editTask(client, selectedTask, f)
 	case 2:
-		return editDescription(client, selectedTask)
+		return editDescription(client, selectedTask, f)
 	case 3:
-		return setDueDate(client, selectedTask)
+		return setDueDate(client, selectedTask, f)
 	case 4:
 		fmt.Println(utils.Success(), "Operation canceled. You can rerun the command to try again.")
 		return nil
@@ -95,8 +95,8 @@ func updateRun(f factory.Factory) error {
 	return nil
 }
 
-func setDueDate(client *asana.Client, task *asana.Task) error {
-	input, err := prompter.Input("Enter the new due date (YYYY-MM-DD):", "")
+func setDueDate(client *asana.Client, task *asana.Task, f factory.Factory) error {
+	input, err := f.Prompter().Input("Enter the new due date (YYYY-MM-DD):", "")
 	if err != nil {
 		return err
 	}
@@ -122,10 +122,10 @@ func setDueDate(client *asana.Client, task *asana.Task) error {
 	return nil
 }
 
-func editDescription(client *asana.Client, task *asana.Task) error {
+func editDescription(client *asana.Client, task *asana.Task, f factory.Factory) error {
 	existingDescription := strings.TrimSpace(task.Notes)
 
-	newDescription, err := prompter.Editor("Edit the description:", existingDescription)
+	newDescription, err := f.Prompter().Editor("Edit the description:", existingDescription)
 	if err != nil {
 		return err
 	}
@@ -171,8 +171,8 @@ func completeTask(client *asana.Client, task *asana.Task) error {
 	return nil
 }
 
-func editTask(client *asana.Client, task *asana.Task) error {
-	input, err := prompter.Input("Enter the new task name:", "")
+func editTask(client *asana.Client, task *asana.Task, f factory.Factory) error {
+	input, err := f.Prompter().Input("Enter the new task name:", "")
 	if err != nil {
 		return err
 	}
