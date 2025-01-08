@@ -3,6 +3,7 @@ package prompter
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
 )
@@ -27,7 +28,17 @@ func (p *DefaultPrompter) Input(prompt, defaultValue string) (string, error) {
 		Message: prompt,
 		Default: defaultValue,
 	}, &result)
-	return result, err
+	if err != nil {
+		return "", err
+	}
+
+	result = strings.TrimSpace(result)
+
+	if result == "" {
+		return defaultValue, err
+	}
+
+	return result, nil
 }
 
 func (p *DefaultPrompter) Confirm(prompt, defaultValue string) (bool, error) {
@@ -79,7 +90,7 @@ func (p *DefaultPrompter) Editor(prompt, existingDescription string) (string, er
 	return input, nil
 }
 
-func ask(q survey.Prompt, response any, opts ...survey.AskOpt) error {
+var ask = func(q survey.Prompt, response any, opts ...survey.AskOpt) error {
 	opts = append(opts, survey.WithStdio(os.Stdin, os.Stdout, os.Stderr))
 	err := survey.AskOne(q, response, opts...)
 	if err == nil {
