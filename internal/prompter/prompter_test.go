@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -63,9 +64,9 @@ func TestDefaultPrompter_Input(t *testing.T) {
 			result, err := prompter.Input(tt.prompt, tt.defaultValue)
 
 			if tt.expectErr {
-				assert.Error(t, err)
+				require.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, tt.expectedResponse, result)
 			}
 		})
