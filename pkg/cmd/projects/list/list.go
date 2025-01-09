@@ -12,8 +12,9 @@ import (
 )
 
 type options struct {
-	Limit int
-	Sort  string
+	Limit    int
+	Sort     string
+	Favorite bool
 }
 
 func NewCmdList(f factory.Factory) *cobra.Command {
@@ -34,6 +35,7 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 
 	cmd.Flags().IntVarP(&opts.Limit, "limit", "l", 0, "Max number of projects to display")
 	cmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Sort projects by name (options: asc, desc)")
+	cmd.Flags().BoolVarP(&opts.Favorite, "favorite", "f", false, "List your favorited projects")
 
 	return cmd
 }
@@ -57,8 +59,16 @@ func listRun(f factory.Factory, opts *options) error {
 	}
 
 	projects := make([]*asana.Project, 0, initialCapacity)
+	workspace := &asana.Workspace{
+		ID: cfg.Workspace.ID,
+	}
 
-	if projects, err = fetchProjects(client, cfg.Workspace.ID, opts.Limit, &projects); err != nil {
+	if opts.Favorite {
+		projects, err = fetchFavoriteProjects(client, workspace, opts.Limit)
+	} else {
+		projects, err = fetchAllProjects(client, workspace, opts.Limit)
+	}
+	if err != nil {
 		return err
 	}
 
@@ -72,6 +82,9 @@ func listRun(f factory.Factory, opts *options) error {
 	}
 
 	fmt.Printf("\nProjects in %s:\n\n", utils.Bold().Sprint(cfg.Workspace.Name))
+	if len(projects) == 0 {
+		fmt.Println("No projects found.")
+	}
 	for _, project := range projects {
 		fmt.Printf("%s\n", utils.Bold().Sprint(project.Name))
 	}
@@ -79,26 +92,31 @@ func listRun(f factory.Factory, opts *options) error {
 	return nil
 }
 
-func fetchProjects(client *asana.Client, workspaceID string, limit int, projects *[]*asana.Project) ([]*asana.Project, error) {
-	options := &asana.Options{
-		Limit:  limit,
-		Fields: []string{"name"},
+func fetchFavoriteProjects(client *asana.Client, workspace *asana.Workspace, limit int) ([]*asana.Project, error) {
+	initialCapacity := 100
+	if limit > 0 {
+		initialCapacity = limit
 	}
 
-	workspace := &asana.Workspace{
-		ID: workspaceID,
+	if err := workspace.Fetch(client); err != nil {
+		return nil, err
+	}
+
+	favorites := make([]*asana.Project, 0, initialCapacity)
+	options := &asana.Options{
+		Limit: limit,
 	}
 
 	for {
-		batch, nextPage, err := workspace.Projects(client, options)
+		batch, nextPage, err := workspace.FavoriteProjects(client, options)
 		if err != nil {
 			return nil, err
 		}
 
-		*projects = append(*projects, batch...)
+		favorites = append(favorites, batch...)
 
-		if limit > 0 && len(*projects) >= limit {
-			*projects = (*projects)[:limit]
+		if limit > 0 && len(favorites) > limit {
+			favorites = favorites[:limit]
 			break
 		}
 
@@ -109,5 +127,40 @@ func fetchProjects(client *asana.Client, workspaceID string, limit int, projects
 		options.Offset = nextPage.Offset
 	}
 
-	return *projects, nil
+	return favorites, nil
+}
+
+func fetchAllProjects(client *asana.Client, workspace *asana.Workspace, limit int) ([]*asana.Project, error) {
+	initialCapacity := 100
+	if limit > 0 {
+		initialCapacity = limit
+	}
+
+	projects := make([]*asana.Project, 0, initialCapacity)
+	options := &asana.Options{
+		Limit:  limit,
+		Fields: []string{"name"},
+	}
+
+	for {
+		batch, nextPage, err := workspace.Projects(client, options)
+		if err != nil {
+			return nil, err
+		}
+
+		projects = append(projects, batch...)
+
+		if limit > 0 && len(projects) >= limit {
+			projects = projects[:limit]
+			break
+		}
+
+		if nextPage == nil || nextPage.Offset == "" {
+			break
+		}
+
+		options.Offset = nextPage.Offset
+	}
+
+	return projects, nil
 }
