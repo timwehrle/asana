@@ -21,6 +21,8 @@ func runPrompterTests[T any](
 	mockFunc func(*T, T) error,
 	runTest func(prompter Prompter, prompt, defaultValue string) (T, error),
 ) {
+	t.Helper()
+
 	originalAsk := ask
 	defer func() { ask = originalAsk }()
 
