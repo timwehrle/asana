@@ -51,14 +51,7 @@ func listRun(f factory.Factory, opts *options) error {
 		return err
 	}
 
-	var initialCapacity int
-	if opts.Limit > 0 {
-		initialCapacity = opts.Limit
-	} else {
-		initialCapacity = 100
-	}
-
-	projects := make([]*asana.Project, 0, initialCapacity)
+	var projects []*asana.Project
 	workspace := &asana.Workspace{
 		ID: cfg.Workspace.ID,
 	}
