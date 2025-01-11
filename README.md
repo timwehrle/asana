@@ -44,15 +44,20 @@ brew install --formula asana
    ```
 3. Follow the prompts to paste your token and select your default workspace.
 
+To check the current status of your authentication and the Asana API:
+```shell
+asana auth status
+```
+
 ## Configuration
 
 Set or get your default workspace:
 
 ```shell
-asana config set default-workspace # or the shorter alias
+asana config set default-workspace
 asana config set dw
 
-asana config get default-workspace # or the shorter alias
+asana config get default-workspace
 asana config get dw
 ```
 
@@ -62,15 +67,26 @@ View your tasks:
 
 ```shell
 asana tasks list # List all your tasks
+asana tasks list --sort due-desc # Sort tasks by descending due date
 asana tasks view # Interactive task viewer with details
 asana tasks update # Interactive task updater
 ```
 
-## Advanced Usage
+View the projects in your workspace:
+```shell
+asana projects list # List all the projects
+asana projects list -l 25 --sort desc # List with options
+```
 
+View the users in your workspace:
+```shell
+asana users list # List all the users
+asana users list -l 25 --sort desc # List with options
+```
+
+For more usage:
 ```shell
 asana help # Show all available commands
-asana workspaces list # List all workspaces
 ```
 
 # Contributing
