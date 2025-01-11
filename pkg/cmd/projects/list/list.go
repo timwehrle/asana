@@ -6,6 +6,7 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana-go"
+	"github.com/timwehrle/asana/pkg/cmd/projects/shared"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/iostreams"
 	"github.com/timwehrle/asana/pkg/sorting"
@@ -68,7 +69,7 @@ func runList(opts *ListOptions) error {
 	if opts.Config.Favorite {
 		projects, err = fetchFavoriteProjects(client, workspace, opts.Config.Limit)
 	} else {
-		projects, err = fetchAllProjects(client, workspace, opts.Config.Limit)
+		projects, err = shared.FetchAllProjects(client, workspace, opts.Config.Limit)
 	}
 	if err != nil {
 		return err
@@ -130,39 +131,4 @@ func fetchFavoriteProjects(client *asana.Client, workspace *asana.Workspace, lim
 	}
 
 	return favorites, nil
-}
-
-func fetchAllProjects(client *asana.Client, workspace *asana.Workspace, limit int) ([]*asana.Project, error) {
-	initialCapacity := 100
-	if limit > 0 {
-		initialCapacity = limit
-	}
-
-	projects := make([]*asana.Project, 0, initialCapacity)
-	options := &asana.Options{
-		Limit:  limit,
-		Fields: []string{"name"},
-	}
-
-	for {
-		batch, nextPage, err := workspace.Projects(client, options)
-		if err != nil {
-			return nil, err
-		}
-
-		projects = append(projects, batch...)
-
-		if limit > 0 && len(projects) >= limit {
-			projects = projects[:limit]
-			break
-		}
-
-		if nextPage == nil || nextPage.Offset == "" {
-			break
-		}
-
-		options.Offset = nextPage.Offset
-	}
-
-	return projects, nil
 }
