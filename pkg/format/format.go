@@ -3,11 +3,12 @@ package format
 import (
 	"bytes"
 	"fmt"
-	"github.com/timwehrle/asana-go"
-	"github.com/timwehrle/asana/utils"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/timwehrle/asana-go"
+	"github.com/timwehrle/asana/pkg/iostreams"
 )
 
 func formatItems[T any](items []*T, nameFunc func(*T) string) []string {
@@ -47,10 +48,13 @@ func Tags(tags []*asana.Tag) string {
 
 // Notes formats the notes for better readability
 func Notes(notes string) string {
+	io := iostreams.System()
+	cs := io.ColorScheme()
+
 	if notes == "" {
 		return ""
 	}
-	return utils.BoldUnderline().Sprintf("Description:") + "\n" + notes + "\n"
+	return cs.Bold("Description:") + "\n" + notes + "\n"
 }
 
 func Date(date *asana.Date) string {

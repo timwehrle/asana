@@ -1,7 +1,6 @@
 package list
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/MakeNowJust/heredoc"
@@ -9,100 +8,163 @@ import (
 	"github.com/timwehrle/asana-go"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/format"
+	"github.com/timwehrle/asana/pkg/iostreams"
 	"github.com/timwehrle/asana/pkg/sorting"
-	"github.com/timwehrle/asana/utils"
 )
+
+type SortOption string
 
 const (
-	sortAsc       = "asc"
-	sortDesc      = "desc"
-	sortDue       = "due"
-	sortDueDesc   = "due-desc"
-	sortCreatedAt = "created-at"
+	SortAsc       SortOption = "asc"
+	SortDesc      SortOption = "desc"
+	SortDue       SortOption = "due"
+	SortDueDesc   SortOption = "due-desc"
+	SortCreatedAt SortOption = "created-at"
 )
 
-type options struct {
-	Sort string
+var validSortOptions = map[SortOption]struct{}{
+	SortAsc:       {},
+	SortDesc:      {},
+	SortDue:       {},
+	SortDueDesc:   {},
+	SortCreatedAt: {},
+}
+
+type ListOptions struct {
+	factory.Factory
+	IO     *iostreams.IOStreams
+	Config struct {
+		Sort SortOption
+	}
 }
 
 func NewCmdList(f factory.Factory) *cobra.Command {
-	opts := &options{}
+	opts := &ListOptions{
+		Factory: f,
+		IO:      f.IOStreams(),
+	}
 
 	cmd := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List all tasks",
-		Long:    heredoc.Doc(`Retrieve and display a list of all tasks assigned to your Asana account.`),
-		Example: heredoc.Doc(`
-				$ asana tasks list
-				$ asana tasks ls
-				$ asana ts ls
+		Long: heredoc.Doc(`
+				Retrieve and display a list of all tasks assigned to your Asana account.
+				Tasks can be sorted by name, due date, or creation date.
 			`),
+		Example: heredoc.Doc(`
+				# List all tasks
+				$ asana tasks list
+
+				# List tasks sorted by due date (descending)
+				$ asana task list --sort due-desc
+			`),
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return listRun(f, opts)
+			if err := validateSortOption(opts.Config.Sort); err != nil {
+				return err
+			}
+
+			return listRun(opts)
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Sort tasks by name, due date, creation date (options: asc, desc, due, due-desc, created-at)")
+	cmd.Flags().StringVarP((*string)(&opts.Config.Sort), "sort", "s", "", "Sort tasks by name, due date, creation date (options: asc, desc, due, due-desc, created-at)")
 
 	return cmd
 }
 
-func listRun(f factory.Factory, opts *options) error {
-	cfg, err := f.Config()
-	if err != nil {
-		return err
+func validateSortOption(opt SortOption) error {
+	if opt == "" {
+		return nil
 	}
 
-	client, err := f.NewAsanaClient()
+	if _, ok := validSortOptions[opt]; !ok {
+		return fmt.Errorf("invalid sort option %q. Available options: asc, desc, due, due-desc, created-at", opt)
+	}
+	return nil
+}
+
+func listRun(opts *ListOptions) error {
+	cfg, err := opts.Factory.Config()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get config: %w", err)
 	}
 
-	tasks, _, err := client.QueryTasks(&asana.TaskQuery{
-		Assignee:       "me",
-		Workspace:      cfg.Workspace.ID,
-		CompletedSince: "now",
-	}, &asana.Options{
-		Fields: []string{"due_on", "name", "created_at"},
-	})
+	tasks, err := fetchTasks(opts, cfg.Workspace.ID)
 	if err != nil {
 		return err
 	}
 
 	if len(tasks) == 0 {
-		fmt.Println("No tasks found.")
-		return nil
+		return printEmptyMessage(opts.IO)
 	}
 
-	if err := applySorting(tasks, opts.Sort); err != nil {
-		return err
+	if err := sortTasks(tasks, opts.Config.Sort); err != nil {
+		return fmt.Errorf("failed to sort tasks: %w", err)
 	}
 
-	fmt.Printf("\nTasks for %s:\n\n", utils.Bold().Sprint(cfg.Username))
-	for i, task := range tasks {
-		fmt.Printf("%d. [%s] %s\n", i+1, format.Date(task.DueOn), utils.Bold().Sprint(task.Name))
+	return printTasks(opts.IO, cfg.Username, tasks)
+}
+
+func fetchTasks(opts *ListOptions, workspaceID string) ([]*asana.Task, error) {
+	client, err := opts.Factory.NewAsanaClient()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Asana client: %w", err)
 	}
 
+	query := &asana.TaskQuery{
+		Assignee:       "me",
+		Workspace:      workspaceID,
+		CompletedSince: "now",
+	}
+
+	options := &asana.Options{
+		Fields: []string{"name", "due_on", "created_at"},
+	}
+
+	tasks, _, err := client.QueryTasks(query, options)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch tasks: %w", err)
+	}
+
+	return tasks, nil
+}
+
+func sortTasks(tasks []*asana.Task, sortOption SortOption) error {
+	switch sortOption {
+	case SortAsc:
+		sorting.TaskSort.ByName(tasks)
+	case SortDesc:
+		sorting.TaskSort.ByNameDesc(tasks)
+	case SortDue:
+		sorting.TaskSort.ByDueDate(tasks)
+	case SortDueDesc:
+		sorting.TaskSort.ByDueDateDesc(tasks)
+	case SortCreatedAt:
+		sorting.TaskSort.ByCreatedAt(tasks)
+	case "":
+		// No sorting requested
+	}
 	return nil
 }
 
-func applySorting(tasks []*asana.Task, sortOption string) error {
-	switch sortOption {
-	case sortAsc:
-		sorting.TaskSort.ByName(tasks)
-	case sortDesc:
-		sorting.TaskSort.ByNameDesc(tasks)
-	case sortDue:
-		sorting.TaskSort.ByDueDate(tasks)
-	case sortDueDesc:
-		sorting.TaskSort.ByDueDateDesc(tasks)
-	case sortCreatedAt:
-		sorting.TaskSort.ByCreatedAt(tasks)
-	case "":
-		// No sorting
-	default:
-		return errors.New("invalid sort option. Available options: asc, desc, due, due-desc, created-at")
+func printEmptyMessage(io *iostreams.IOStreams) error {
+	fmt.Fprintln(io.Out, "No tasks found.")
+	return nil
+}
+
+func printTasks(io *iostreams.IOStreams, username string, tasks []*asana.Task) error {
+	cs := io.ColorScheme()
+
+	fmt.Fprintf(io.Out, "\nTasks for %s:\n\n", cs.Bold(username))
+
+	for i, task := range tasks {
+		fmt.Fprintf(io.Out, "%d. [%s] %s\n",
+			i+1,
+			format.Date(task.DueOn),
+			cs.Bold(task.Name),
+		)
 	}
 
 	return nil

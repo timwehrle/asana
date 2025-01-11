@@ -2,14 +2,25 @@ package list
 
 import (
 	"fmt"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/timwehrle/asana/pkg/factory"
-	"github.com/timwehrle/asana/utils"
+	"github.com/timwehrle/asana/pkg/iostreams"
 
 	"github.com/spf13/cobra"
 )
 
+type ListOptions struct {
+	factory.Factory
+	IO *iostreams.IOStreams
+}
+
 func NewCmdList(f factory.Factory) *cobra.Command {
+	opts := &ListOptions{
+		Factory: f,
+		IO:      f.IOStreams(),
+	}
+
 	cmd := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
@@ -23,20 +34,22 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 				$ asana ws ls
 			`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return listRun(f)
+			return listRun(opts)
 		},
 	}
 
 	return cmd
 }
 
-func listRun(f factory.Factory) error {
-	client, err := f.NewAsanaClient()
+func listRun(opts *ListOptions) error {
+	cs := opts.IO.ColorScheme()
+
+	client, err := opts.NewAsanaClient()
 	if err != nil {
 		return err
 	}
 
-	cfg, err := f.Config()
+	cfg, err := opts.Factory.Config()
 	if err != nil {
 		return err
 	}
@@ -47,13 +60,13 @@ func listRun(f factory.Factory) error {
 	}
 
 	if len(workspaces) == 0 {
-		fmt.Printf("No workspaces found for %s", utils.Bold().Sprint(cfg.Username))
+		fmt.Fprintf(opts.IO.Out, "No workspaces found for %s", cs.Bold(cfg.Username))
 		return nil
 	}
 
-	fmt.Printf("\nWorkspaces of %s:\n\n", utils.Bold().Sprint(cfg.Username))
+	fmt.Fprintf(opts.IO.Out, "\nWorkspaces of %s:\n\n", cs.Bold(cfg.Username))
 	for i, ws := range workspaces {
-		fmt.Printf("%d. %s\n", i+1, utils.Bold().Sprint(ws.Name))
+		fmt.Fprintf(opts.IO.Out, "%d. %s\n", i+1, cs.Bold(ws.Name))
 	}
 
 	return nil

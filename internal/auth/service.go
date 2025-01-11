@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+
 	"github.com/zalando/go-keyring"
 )
 

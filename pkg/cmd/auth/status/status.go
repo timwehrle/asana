@@ -2,58 +2,134 @@ package status
 
 import (
 	"fmt"
+
 	"github.com/MakeNowJust/heredoc"
+	"github.com/timwehrle/asana-go"
+	"github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/pkg/factory"
-	"github.com/timwehrle/asana/utils"
+	"github.com/timwehrle/asana/pkg/iostreams"
 
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/asana/internal/auth"
 )
 
+type Status struct {
+	LoggedIn       bool
+	APIOperational bool
+	User           *asana.User
+	WorkspaceID    string
+	WorkspaceName  string
+}
+
+type StatusOptions struct {
+	factory.Factory
+	IO *iostreams.IOStreams
+}
+
 func NewCmdStatus(f factory.Factory) *cobra.Command {
+	opts := &StatusOptions{
+		Factory: f,
+		IO:      f.IOStreams(),
+	}
+
 	cmd := &cobra.Command{
 		Use:   "status",
 		Short: "View current authentication status",
 		Long: heredoc.Doc(`
-				Display the current authentication status, including the logged-in user and API health. 
-				This command helps verify connectivity and user identity.`),
-		Example: heredoc.Doc(`$ asana auth status`),
-		RunE: func(_ *cobra.Command, _ []string) error {
-			return statusRun(f)
+            Display the current authentication status, including:
+            - Login state
+            - API connectivity
+            - User information
+            - Default workspace configuration
+            
+            This command helps verify your setup and connectivity to Asana.`),
+		Example: heredoc.Docf(`
+            # Check authentication status
+            $ %[1]s auth status
+            
+            # View status with debug information
+            $ %[1]s auth status --debug
+        `, "asana"),
+		Args: cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runStatus(opts)
 		},
 	}
 
 	return cmd
 }
 
-func statusRun(f factory.Factory) error {
-	cfg, err := f.Config()
+func runStatus(opts *StatusOptions) error {
+	status, err := getStatus(opts)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get status: %w", err)
 	}
 
-	_, err = auth.Get()
+	return printStatus(opts.IO, status)
+}
+
+func getStatus(opts *StatusOptions) (*Status, error) {
+	status := &Status{}
+
+	token, err := auth.Get()
 	if err != nil {
-		fmt.Println("You are not logged in.")
+		status.LoggedIn = false
+		return status, nil
+	}
+	status.LoggedIn = token != ""
+
+	cfg, err := opts.Factory.Config()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get config: %w", err)
+	}
+
+	status.WorkspaceID = cfg.Workspace.ID
+	status.WorkspaceName = cfg.Workspace.Name
+
+	if status.LoggedIn {
+		client, err := opts.NewAsanaClient()
+		if err != nil {
+			return nil, fmt.Errorf("failed to create Asana client: %w", err)
+		}
+
+		user, err := client.CurrentUser()
+		if err != nil {
+			status.APIOperational = false
+			return status, nil
+		}
+
+		status.APIOperational = true
+		status.User = user
+	}
+
+	return status, nil
+}
+
+func printStatus(io *iostreams.IOStreams, status *Status) error {
+	cs := io.ColorScheme()
+
+	if !status.LoggedIn {
+		fmt.Fprintf(io.Out, "%s %s\n", cs.WarningIcon, cs.Bold("Not logged in"))
 		return nil
 	}
 
-	client, err := f.NewAsanaClient()
-	if err != nil {
-		return err
-	}
-
-	me, err := client.CurrentUser()
-	if err != nil {
-		return err
-	}
-	fmt.Println("API is operational.")
-	fmt.Printf("Logged in as %s (%s)\n", utils.Bold().Sprint(me.Name), me.ID)
-
-	if cfg.Workspace.ID == "" || cfg.Workspace.Name == "" {
-		fmt.Println("No default workspace set.")
+	if status.APIOperational {
+		fmt.Fprintf(io.Out, "%s %s\n", cs.SuccessIcon, cs.Bold("API is operational"))
 	} else {
-		fmt.Printf("Default workspace is %s (%s)\n", utils.Bold().Sprint(cfg.Workspace.Name), cfg.Workspace.ID)
+		fmt.Fprintf(io.Out, "%s %s\n", cs.ErrorIcon, cs.Bold("API is not responding"))
+	}
+
+	if status.User != nil {
+		fmt.Fprintf(io.Out, "\n%s:\n", cs.Bold("User Information"))
+		fmt.Fprintf(io.Out, "  Name: %s\n", status.User.Name)
+		fmt.Fprintf(io.Out, "  ID:   %s\n", status.User.ID)
+	}
+
+	fmt.Fprintf(io.Out, "\n%s:\n", cs.Bold("Workspace Configuration"))
+	if status.WorkspaceID == "" || status.WorkspaceName == "" {
+		fmt.Fprintf(io.Out, "%s %s\n", cs.WarningIcon, cs.Bold("No default workspace configured"))
+	} else {
+		fmt.Fprintf(io.Out, "  Name: %s\n", status.WorkspaceName)
+		fmt.Fprintf(io.Out, "  ID:   %s\n", status.WorkspaceID)
 	}
 
 	return nil

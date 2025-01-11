@@ -7,27 +7,39 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/internal/auth"
 	"github.com/timwehrle/asana/pkg/factory"
-	"github.com/timwehrle/asana/utils"
+	"github.com/timwehrle/asana/pkg/iostreams"
 )
 
+type UpdateOptions struct {
+	factory.Factory
+	IO *iostreams.IOStreams
+}
+
 func NewCmdUpdate(f factory.Factory) *cobra.Command {
+	opts := &UpdateOptions{
+		Factory: f,
+		IO:      f.IOStreams(),
+	}
+
 	cmd := &cobra.Command{
 		Use:     "update",
 		Short:   "Update the Personal Access Token of your Asana account",
 		Long:    "Update the current Personal Access Token of your Asana account.",
 		Example: heredoc.Doc(`$ asana auth update`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runAuthUpdate(f)
+			return runUpdate(opts)
 		},
 	}
 
 	return cmd
 }
 
-func runAuthUpdate(f factory.Factory) error {
-	newToken, err := f.Prompter().Token()
+func runUpdate(opts *UpdateOptions) error {
+	cs := opts.IO.ColorScheme()
+
+	newToken, err := opts.Prompter().Token()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get token: %w", err)
 	}
 
 	err = auth.ValidateToken(newToken)
@@ -37,10 +49,10 @@ func runAuthUpdate(f factory.Factory) error {
 
 	err = auth.Set(newToken)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to set new token: %w", err)
 	}
 
-	fmt.Println(utils.Success(), "Token updated")
+	fmt.Fprintln(opts.IO.Out, cs.SuccessIcon, "Token updated")
 
 	return nil
 }

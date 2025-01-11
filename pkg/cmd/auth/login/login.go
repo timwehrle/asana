@@ -6,14 +6,24 @@ import (
 	"github.com/timwehrle/asana-go"
 	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/pkg/factory"
-	"github.com/timwehrle/asana/utils"
+	"github.com/timwehrle/asana/pkg/iostreams"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/internal/auth"
 )
 
+type LoginOptions struct {
+	factory.Factory
+	IO *iostreams.IOStreams
+}
+
 func NewCmdLogin(f factory.Factory) *cobra.Command {
+	opts := &LoginOptions{
+		Factory: f,
+		IO:      f.IOStreams(),
+	}
+
 	cmd := &cobra.Command{
 		Use:   "login",
 		Short: "Log in to your Asana account",
@@ -23,26 +33,27 @@ func NewCmdLogin(f factory.Factory) *cobra.Command {
 		Example: heredoc.Doc(`
 					$ asana auth login`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return loginRun(f)
+			return runLogin(opts)
 		},
 	}
 
 	return cmd
 }
 
-func loginRun(f factory.Factory) error {
+func runLogin(opts *LoginOptions) error {
+	cs := opts.IO.ColorScheme()
 	var token string
 
 	_, err := auth.Get()
 	if err == nil {
-		fmt.Println("You are already logged in.")
+		fmt.Fprintln(opts.IO.Out, "You are already logged in")
 		return nil
 	}
 
-	fmt.Print(heredoc.Doc(`
+	fmt.Fprint(opts.IO.Out, heredoc.Doc(`
 		Tip: You can generate a Personal Access Token here: https://app.asana.com/0/my-apps
 	`))
-	token, err = f.Prompter().Token()
+	token, err = opts.Prompter().Token()
 	if err != nil {
 		return err
 	}
@@ -64,10 +75,10 @@ func loginRun(f factory.Factory) error {
 		return err
 	}
 
-	fmt.Println(utils.Success(), "Logged in")
+	fmt.Fprintln(opts.IO.Out, cs.SuccessIcon, "Logged in")
 
 	if len(workspaces) == 0 {
-		fmt.Println("No workspaces found.")
+		fmt.Fprintln(opts.IO.Out, "No workspaces found")
 		return nil
 	}
 
@@ -76,7 +87,7 @@ func loginRun(f factory.Factory) error {
 		names[i] = ws.Name
 	}
 
-	index, err := f.Prompter().Select("Select a default workspace:", names)
+	index, err := opts.Prompter().Select("Select a default workspace:", names)
 	if err != nil {
 		return err
 	}
@@ -98,7 +109,7 @@ func loginRun(f factory.Factory) error {
 		return err
 	}
 
-	fmt.Printf("%s Default workspace set to %s\n", utils.Success(), utils.Bold().Sprint(selectedWorkspace.Name))
+	fmt.Fprintf(opts.IO.Out, "%s Default workspace set to %s\n", cs.SuccessIcon, cs.Bold(selectedWorkspace.Name))
 
 	return nil
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/pkg/format"
-	"github.com/timwehrle/asana/utils"
+	"github.com/timwehrle/asana/pkg/iostreams"
 )
 
 // HelpSection represents a named section in the help output
@@ -49,7 +49,6 @@ func getSuggestions(cmd *cobra.Command, arg string) []string {
 
 // showHelp displays the help content for a command
 func showHelp(cmd *cobra.Command, _ []string, w io.Writer) {
-	boldText := utils.Bold().SprintFunc()
 	flags := cmd.Flags()
 
 	if help, _ := flags.GetBool("help"); !help && !cmd.Runnable() && len(flags.Args()) > 0 {
@@ -59,14 +58,17 @@ func showHelp(cmd *cobra.Command, _ []string, w io.Writer) {
 
 	sections := buildHelpSections(cmd)
 	for _, section := range sections {
-		printSection(w, section, boldText)
+		printSection(w, section)
 	}
 }
 
 // printSection formats and prints a help section
-func printSection(w io.Writer, section HelpSection, boldText func(a ...interface{}) string) {
+func printSection(w io.Writer, section HelpSection) {
+	io := iostreams.System()
+	cs := io.ColorScheme()
+
 	if section.Title != "" {
-		fmt.Fprintln(w, boldText(section.Title))
+		fmt.Fprintln(w, cs.Bold(section.Title))
 		fmt.Fprintln(w, format.Indent(strings.Trim(section.Body, "\r\n"), "  "))
 	} else {
 		fmt.Fprintln(w, section.Body)
@@ -193,12 +195,13 @@ func getLearnMoreSection() HelpSection {
 
 // showRootUsage displays the root command usage
 func showRootUsage(cmd *cobra.Command) error {
-	boldText := utils.Bold().SprintFunc()
+	io := iostreams.System()
+	cs := io.ColorScheme()
 
-	fmt.Print(boldText("Usage:"))
+	fmt.Print(cs.Bold("Usage:"))
 	fmt.Printf("  %s <command> <subcommand> [flags]\n", cmd.Name())
 
-	fmt.Println("\n" + boldText("Available commands:"))
+	fmt.Println("\n" + cs.Bold("Available commands:"))
 	for _, subCmd := range cmd.Commands() {
 		if !subCmd.Hidden {
 			fmt.Printf("  %s\n", subCmd.Name())

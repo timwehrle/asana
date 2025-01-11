@@ -7,18 +7,25 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana-go"
 	"github.com/timwehrle/asana/pkg/factory"
+	"github.com/timwehrle/asana/pkg/iostreams"
 	"github.com/timwehrle/asana/pkg/sorting"
-	"github.com/timwehrle/asana/utils"
 )
 
-type options struct {
-	Limit    int
-	Sort     string
-	Favorite bool
+type ListOptions struct {
+	factory.Factory
+	IO     *iostreams.IOStreams
+	Config struct {
+		Limit    int
+		Sort     string
+		Favorite bool
+	}
 }
 
 func NewCmdList(f factory.Factory) *cobra.Command {
-	opts := &options{}
+	opts := &ListOptions{
+		Factory: f,
+		IO:      f.IOStreams(),
+	}
 
 	cmd := &cobra.Command{
 		Use:     "list",
@@ -26,27 +33,29 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 		Short:   "List projects from your default workspace",
 		Long:    heredoc.Doc(`Retrieve and display a list of all projects under your default workspace.`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if opts.Limit < 0 {
-				return fmt.Errorf("invalid limit: %v", opts.Limit)
+			if opts.Config.Limit < 0 {
+				return fmt.Errorf("invalid limit: %v", opts.Config.Limit)
 			}
-			return listRun(f, opts)
+			return listRun(opts)
 		},
 	}
 
-	cmd.Flags().IntVarP(&opts.Limit, "limit", "l", 0, "Max number of projects to display")
-	cmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Sort projects by name (options: asc, desc)")
-	cmd.Flags().BoolVarP(&opts.Favorite, "favorite", "f", false, "List your favorited projects")
+	cmd.Flags().IntVarP(&opts.Config.Limit, "limit", "l", 0, "Max number of projects to display")
+	cmd.Flags().StringVarP(&opts.Config.Sort, "sort", "s", "", "Sort projects by name (options: asc, desc)")
+	cmd.Flags().BoolVarP(&opts.Config.Favorite, "favorite", "f", false, "List your favorited projects")
 
 	return cmd
 }
 
-func listRun(f factory.Factory, opts *options) error {
-	cfg, err := f.Config()
+func listRun(opts *ListOptions) error {
+	cs := opts.IO.ColorScheme()
+
+	cfg, err := opts.Factory.Config()
 	if err != nil {
 		return err
 	}
 
-	client, err := f.NewAsanaClient()
+	client, err := opts.NewAsanaClient()
 	if err != nil {
 		return err
 	}
@@ -56,17 +65,17 @@ func listRun(f factory.Factory, opts *options) error {
 		ID: cfg.Workspace.ID,
 	}
 
-	if opts.Favorite {
-		projects, err = fetchFavoriteProjects(client, workspace, opts.Limit)
+	if opts.Config.Favorite {
+		projects, err = fetchFavoriteProjects(client, workspace, opts.Config.Limit)
 	} else {
-		projects, err = fetchAllProjects(client, workspace, opts.Limit)
+		projects, err = fetchAllProjects(client, workspace, opts.Config.Limit)
 	}
 	if err != nil {
 		return err
 	}
 
-	if opts.Sort != "" {
-		switch opts.Sort {
+	if opts.Config.Sort != "" {
+		switch opts.Config.Sort {
 		case "asc":
 			sorting.ProjectSort.ByName(projects)
 		case "desc":
@@ -74,12 +83,12 @@ func listRun(f factory.Factory, opts *options) error {
 		}
 	}
 
-	fmt.Printf("\nProjects in %s:\n\n", utils.Bold().Sprint(cfg.Workspace.Name))
+	fmt.Fprintf(opts.IO.Out, "\nProjects in %s:\n\n", cs.Bold(cfg.Workspace.Name))
 	if len(projects) == 0 {
-		fmt.Println("No projects found.")
+		fmt.Fprintln(opts.IO.Out, "No projects found")
 	}
-	for _, project := range projects {
-		fmt.Printf("%s\n", utils.Bold().Sprint(project.Name))
+	for i, project := range projects {
+		fmt.Fprintf(opts.IO.Out, "%d. %s\n", i+1, cs.Bold(project.Name))
 	}
 
 	return nil

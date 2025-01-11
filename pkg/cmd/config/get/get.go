@@ -2,13 +2,24 @@ package get
 
 import (
 	"fmt"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/pkg/factory"
-	"github.com/timwehrle/asana/utils"
+	"github.com/timwehrle/asana/pkg/iostreams"
 )
 
+type GetOptions struct {
+	factory.Factory
+	IO *iostreams.IOStreams
+}
+
 func NewCmdGet(f factory.Factory) *cobra.Command {
+	opts := &GetOptions{
+		Factory: f,
+		IO:      f.IOStreams(),
+	}
+
 	cmd := &cobra.Command{
 		Use:   "get <key>",
 		Short: "Print the value of a given configuration key",
@@ -17,22 +28,24 @@ func NewCmdGet(f factory.Factory) *cobra.Command {
 				$ asana config get dw`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runConfigGet(f, args[0])
+			return runConfigGet(opts, args[0])
 		},
 	}
 
 	return cmd
 }
 
-func runConfigGet(f factory.Factory, key string) error {
+func runConfigGet(opts *GetOptions, key string) error {
+	cs := opts.IO.ColorScheme()
+
 	switch key {
 	case "default-workspace", "dw":
-		cfg, err := f.Config()
+		cfg, err := opts.Factory.Config()
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("Default workspace is %s (%s)\n", utils.Bold().Sprint(cfg.Workspace.Name), cfg.Workspace.ID)
+		fmt.Fprintf(opts.IO.Out, "Default workspace is %s (%s)\n", cs.Bold(cfg.Workspace.Name), cfg.Workspace.ID)
 		return nil
 
 	default:

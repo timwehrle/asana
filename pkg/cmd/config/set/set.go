@@ -6,10 +6,20 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/pkg/factory"
-	"github.com/timwehrle/asana/utils"
+	"github.com/timwehrle/asana/pkg/iostreams"
 )
 
+type SetOptions struct {
+	factory.Factory
+	IO *iostreams.IOStreams
+}
+
 func NewCmdConfigSet(f factory.Factory) *cobra.Command {
+	opts := &SetOptions{
+		Factory: f,
+		IO:      f.IOStreams(),
+	}
+
 	cmd := &cobra.Command{
 		Use:   "set <key>",
 		Short: "Update configuration with a value",
@@ -20,24 +30,26 @@ func NewCmdConfigSet(f factory.Factory) *cobra.Command {
 				$ asana config set dw
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runConfigSet(f, args[0])
+			return runConfigSet(opts, args[0])
 		},
 	}
 
 	return cmd
 }
 
-func runConfigSet(f factory.Factory, key string) error {
+func runConfigSet(opts *SetOptions, key string) error {
 	switch key {
 	case "default-workspace", "dw":
-		return setDefaultWorkspace(f)
+		return setDefaultWorkspace(opts)
 	default:
 		return fmt.Errorf("unknown configuration key: %s. Available keys are: default-workspace (dw)", key)
 	}
 }
 
-func setDefaultWorkspace(f factory.Factory) error {
-	client, err := f.NewAsanaClient()
+func setDefaultWorkspace(opts *SetOptions) error {
+	cs := opts.IO.ColorScheme()
+
+	client, err := opts.NewAsanaClient()
 	if err != nil {
 		return err
 	}
@@ -48,7 +60,7 @@ func setDefaultWorkspace(f factory.Factory) error {
 	}
 
 	if len(workspaces) == 0 {
-		fmt.Println("No workspaces found.")
+		fmt.Fprintln(opts.IO.Out, "No workspaces found")
 		return nil
 	}
 
@@ -57,14 +69,14 @@ func setDefaultWorkspace(f factory.Factory) error {
 		names[i] = ws.Name
 	}
 
-	index, err := f.Prompter().Select("Select a new default workspace:", names)
+	index, err := opts.Prompter().Select("Select a new default workspace:", names)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to select new workspace: %w", err)
 	}
 
 	selectedWorkspace := workspaces[index]
 
-	cfg, err := f.Config()
+	cfg, err := opts.Factory.Config()
 	if err != nil {
 		return err
 	}
@@ -76,7 +88,7 @@ func setDefaultWorkspace(f factory.Factory) error {
 		return err
 	}
 
-	fmt.Printf("%s Default workspace set to %s\n", utils.Success(), utils.Bold().Sprint(selectedWorkspace.Name))
+	fmt.Fprintf(opts.IO.Out, "%s Default workspace set to %s\n", cs.SuccessIcon, cs.Bold(selectedWorkspace.Name))
 
 	return nil
 }

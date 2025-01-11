@@ -4,14 +4,24 @@ import (
 	"fmt"
 
 	"github.com/timwehrle/asana/pkg/factory"
-	"github.com/timwehrle/asana/utils"
+	"github.com/timwehrle/asana/pkg/iostreams"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/internal/auth"
 )
 
+type LogoutOptions struct {
+	factory.Factory
+	IO *iostreams.IOStreams
+}
+
 func NewCmdLogout(f factory.Factory) *cobra.Command {
+	opts := &LogoutOptions{
+		Factory: f,
+		IO:      f.IOStreams(),
+	}
+
 	cmd := &cobra.Command{
 		Use:   "logout",
 		Short: "Log out of your Asana account",
@@ -21,35 +31,28 @@ func NewCmdLogout(f factory.Factory) *cobra.Command {
 
 				This action revokes CLI access to the Asana API.`),
 		Example: heredoc.Doc(`$ asana auth logout`),
-		RunE: func(_ *cobra.Command, _ []string) error {
-			return logoutRun(f)
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runLogout(opts)
 		},
 	}
 
 	return cmd
 }
 
-func logoutRun(f factory.Factory) error {
+func runLogout(opts *LogoutOptions) error {
+	cs := opts.IO.ColorScheme()
+
 	_, err := auth.Get()
 	if err != nil {
 		return err
 	}
 
-	confirm := false
-	confirm, err = f.Prompter().Confirm("Are you sure you want to log out?", "No")
+	err = auth.Delete()
 	if err != nil {
 		return err
 	}
 
-	if confirm {
-		err := auth.Delete()
-		if err != nil {
-			return err
-		}
-		fmt.Println(utils.Success(), "Logged out")
-	} else {
-		fmt.Println("Logout aborted.")
-	}
+	fmt.Fprintln(opts.IO.Out, cs.SuccessIcon, "Logged out")
 
 	return nil
 }
