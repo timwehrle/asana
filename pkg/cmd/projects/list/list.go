@@ -36,7 +36,7 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 			if opts.Config.Limit < 0 {
 				return fmt.Errorf("invalid limit: %v", opts.Config.Limit)
 			}
-			return listRun(opts)
+			return runList(opts)
 		},
 	}
 
@@ -47,7 +47,7 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 	return cmd
 }
 
-func listRun(opts *ListOptions) error {
+func runList(opts *ListOptions) error {
 	cs := opts.IO.ColorScheme()
 
 	cfg, err := opts.Factory.Config()
