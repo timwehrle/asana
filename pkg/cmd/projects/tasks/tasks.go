@@ -34,8 +34,6 @@ func NewCmdTasks(f factory.Factory) *cobra.Command {
 }
 
 func runTasks(opts *TasksOptions) error {
-	cs := opts.IO.ColorScheme()
-
 	cfg, err := opts.Factory.Config()
 	if err != nil {
 		return err
@@ -73,6 +71,12 @@ func runTasks(opts *TasksOptions) error {
 		return fmt.Errorf("failed fetching tasks of project %s: %w", project.Name, err)
 	}
 
+	return printTasks(opts, project, tasks)
+}
+
+func printTasks(opts *TasksOptions, project *asana.Project, tasks []*asana.Task) error {
+	cs := opts.IO.ColorScheme()
+
 	fmt.Fprintf(opts.IO.Out, "\nTasks in %s:\n\n", cs.Bold(project.Name))
 
 	if len(tasks) == 0 {
@@ -80,8 +84,8 @@ func runTasks(opts *TasksOptions) error {
 		return nil
 	}
 
-	for _, task := range tasks {
-		fmt.Fprintf(opts.IO.Out, "%s\n", cs.Bold(task.Name))
+	for i, task := range tasks {
+		fmt.Fprintf(opts.IO.Out, "%d. %s\n", i+1, cs.Bold(task.Name))
 	}
 
 	return nil
