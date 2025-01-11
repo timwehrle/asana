@@ -1,10 +1,11 @@
 package format
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/timwehrle/asana-go"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/timwehrle/asana-go"
 )
 
 type mockStruct struct {
@@ -206,4 +207,86 @@ func TestDate(t *testing.T) {
 			t.Errorf("Expected '%s', got '%s'", expected, result)
 		}
 	})
+}
+
+func TestIndent(t *testing.T) {
+	tests := []struct {
+		name   string
+		input  string
+		prefix string
+		want   string
+	}{
+		{
+			name:   "non-empty string",
+			input:  "line1\nline2\nline3",
+			prefix: ">> ",
+			want:   ">> line1\n>> line2\n>> line3",
+		},
+		{
+			name:   "empty string",
+			input:  "",
+			prefix: ">> ",
+			want:   "",
+		},
+		{
+			name:   "string with only spaces",
+			input:  "   ",
+			prefix: ">> ",
+			want:   "   ",
+		},
+		{
+			name:   "strings with newlines",
+			input:  "line1\n\nline3",
+			prefix: "-- ",
+			want:   "-- line1\n-- \n-- line3",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Indent(tt.input, tt.prefix)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestDedent(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{
+			name:  "string with consistent indentation",
+			input: "    line1\n    line2\n    line3",
+			want:  "line1\nline2\nline3",
+		},
+		{
+			name:  "string with varying indentation",
+			input: "    line1\n  line2\n        line3",
+			want:  "  line1\nline2\n      line3",
+		},
+		{
+			name:  "string with no indentation",
+			input: "line1\nline2\nline3",
+			want:  "line1\nline2\nline3",
+		},
+		{
+			name:  "empty string",
+			input: "",
+			want:  "",
+		},
+		{
+			name:  "string with blank lines",
+			input: "    line1\n\n    line3",
+			want:  "line1\n\nline3",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Dedent(tt.input)
+			assert.Equal(t, tt.want, got)
+		})
+	}
 }
