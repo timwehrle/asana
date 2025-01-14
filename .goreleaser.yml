@@ -5,7 +5,6 @@ before:
   hooks:
     - go mod verify
     - go mod tidy
-    - ./scripts/completions.sh
 
 release:
   prerelease: auto
