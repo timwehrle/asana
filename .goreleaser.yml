@@ -10,7 +10,7 @@ release:
   prerelease: auto
   name_template: "Asana CLI {{ .Version }}"
   header: |
-    ## Asana CLI {{ .Version }}
+    ## Release {{ .Version }}
 
     For installation instructions, please visit our [documentation](https://github.com/timwehrle/asana#installation).
   footer: |
