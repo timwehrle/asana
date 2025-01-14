@@ -9,7 +9,12 @@ before:
 release:
   prerelease: auto
   name_template: "Asana CLI {{ .Version }}"
+  header: |
+    ## Asana CLI {{ .Version }}
 
+    For installation instructions, please visit our [documentation](https://github.com/timwehrle/asana#installation).
+  footer: |
+    **Full Changelog**: https://github.com/timwehrle/asana/compare/{{ .PreviousTag }}...{{ .Tag }}
 builds:
   - env:
       - CGO_ENABLED=0
