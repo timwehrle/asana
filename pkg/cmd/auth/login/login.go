@@ -44,8 +44,8 @@ func runLogin(opts *LoginOptions) error {
 	cs := opts.IO.ColorScheme()
 	var token string
 
-	_, err := auth.Get()
-	if err == nil {
+	token, err := auth.Get()
+	if err == nil && token != "" {
 		fmt.Fprintln(opts.IO.Out, "You are already logged in")
 		return nil
 	}
