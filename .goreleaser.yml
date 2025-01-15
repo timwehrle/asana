@@ -79,7 +79,7 @@ changelog:
       regexp: '^.*?sec(\(.+\))??!?:.+$'
       order: 2
     - title: "Build process updates"
-      regexp: '^.*?(build|ci)(\(.+\))??!?:.+$S'
+      regexp: '^.*?(build|ci)(\(.+\))??!?:.+$'
       order: 3
     - title: "Dependency updates"
       regexp: '^.*?(.+)\(deps\)!?:.+$'
