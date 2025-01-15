@@ -84,3 +84,11 @@ func Delete() error {
 		return fmt.Errorf("timeout while trying to delete secret in keyring")
 	}
 }
+
+func MockInit() {
+	keyring.MockInit()
+}
+
+func MockInitWithError(err error) {
+	keyring.MockInitWithError(err)
+}
