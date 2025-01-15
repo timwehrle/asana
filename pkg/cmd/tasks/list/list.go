@@ -34,7 +34,8 @@ type ListOptions struct {
 	factory.Factory
 	IO     *iostreams.IOStreams
 	Config struct {
-		Sort SortOption
+		Sort  SortOption
+		Limit int
 	}
 }
 
@@ -70,6 +71,7 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP((*string)(&opts.Config.Sort), "sort", "s", "", "Sort tasks by name, due date, creation date (options: asc, desc, due, due-desc, created-at)")
+	cmd.Flags().IntVarP(&opts.Config.Limit, "limit", "l", 0, "Limit the tasks to display")
 
 	return cmd
 }
@@ -91,7 +93,7 @@ func listRun(opts *ListOptions) error {
 		return fmt.Errorf("failed to get config: %w", err)
 	}
 
-	tasks, err := fetchTasks(opts, cfg.Workspace.ID)
+	tasks, err := fetchTasks(opts, cfg.Workspace.ID, opts.Config.Limit)
 	if err != nil {
 		return err
 	}
@@ -107,7 +109,12 @@ func listRun(opts *ListOptions) error {
 	return printTasks(opts.IO, cfg.Username, tasks)
 }
 
-func fetchTasks(opts *ListOptions, workspaceID string) ([]*asana.Task, error) {
+func fetchTasks(opts *ListOptions, workspaceID string, limit int) ([]*asana.Task, error) {
+	initialCapacity := 100
+	if limit > 0 {
+		initialCapacity = limit
+	}
+
 	client, err := opts.Factory.NewAsanaClient()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Asana client: %w", err)
@@ -119,13 +126,30 @@ func fetchTasks(opts *ListOptions, workspaceID string) ([]*asana.Task, error) {
 		CompletedSince: "now",
 	}
 
+	tasks := make([]*asana.Task, 0, initialCapacity)
 	options := &asana.Options{
 		Fields: []string{"name", "due_on", "created_at"},
+		Limit:  limit,
 	}
 
-	tasks, _, err := client.QueryTasks(query, options)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch tasks: %w", err)
+	for {
+		batch, nextPage, err := client.QueryTasks(query, options)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch tasks: %w", err)
+		}
+
+		tasks = append(tasks, batch...)
+
+		if limit > 0 && len(tasks) > limit {
+			tasks = tasks[:limit]
+			break
+		}
+
+		if nextPage == nil || nextPage.Offset == "" {
+			break
+		}
+
+		options.Offset = nextPage.Offset
 	}
 
 	return tasks, nil
