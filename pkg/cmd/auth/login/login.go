@@ -15,7 +15,10 @@ import (
 
 type LoginOptions struct {
 	factory.Factory
-	IO *iostreams.IOStreams
+	IO     *iostreams.IOStreams
+	Config struct {
+		Workspace string
+	}
 }
 
 func NewCmdLogin(f factory.Factory) *cobra.Command {
@@ -27,15 +30,23 @@ func NewCmdLogin(f factory.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "login",
 		Short: "Log in to your Asana account",
-		Long: heredoc.Docf(`Authenticate with Asana using a Personal Access Token.
-				Follow the steps in your Asana account to generate a token and use it
-				with this command to enable CLI access.`),
+		Long: heredoc.Docf(`
+				Authenticate with Asana using a Personal Access Token (PAT).
+				
+				To get started:
+				1. Visit https://app.asana.com/0/my-apps
+				2. Click "Create new token"
+				3. Give your token a description (e.g., "CLI Access")
+				4. Copy the generated token`),
 		Example: heredoc.Doc(`
-					$ asana auth login`),
+					$ asana auth login
+					$ asana auth login --workspace "Test Workspace"`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runLogin(opts)
 		},
 	}
+
+	cmd.Flags().StringVarP(&opts.Config.Workspace, "workspace", "w", "", "Preselect the default workspace")
 
 	return cmd
 }
@@ -82,17 +93,33 @@ func runLogin(opts *LoginOptions) error {
 		return nil
 	}
 
-	names := make([]string, len(workspaces))
-	for i, ws := range workspaces {
-		names[i] = ws.Name
+	var selectedWorkspace *asana.Workspace
+	if opts.Config.Workspace != "" {
+		for _, ws := range workspaces {
+			if ws.ID == opts.Config.Workspace || ws.Name == opts.Config.Workspace {
+				selectedWorkspace = ws
+				break
+			}
+		}
+
+		if selectedWorkspace == nil {
+			fmt.Fprintf(opts.IO.ErrOut, "%s Workspace '%s' not found. Please select one from the list.\n", cs.ErrorIcon, opts.Config.Workspace)
+		}
 	}
 
-	index, err := opts.Prompter().Select("Select a default workspace:", names)
-	if err != nil {
-		return err
-	}
+	if selectedWorkspace == nil {
+		names := make([]string, len(workspaces))
+		for i, ws := range workspaces {
+			names[i] = ws.Name
+		}
 
-	selectedWorkspace := workspaces[index]
+		index, err := opts.Prompter().Select("Select a default workspace:", names)
+		if err != nil {
+			return err
+		}
+
+		selectedWorkspace = workspaces[index]
+	}
 
 	user, err := client.CurrentUser()
 	if err != nil {
