@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/timwehrle/asana/pkg/cmd/tags"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -43,6 +44,7 @@ func NewCmdRoot() (*cobra.Command, error) {
 	cmd.AddCommand(workspaces.NewCmdWorkspace(cmdFactory))
 	cmd.AddCommand(users.NewCmdUsers(cmdFactory))
 	cmd.AddCommand(config.NewCmdConfig(cmdFactory))
+	cmd.AddCommand(tags.NewCmdTags(cmdFactory))
 
 	cmd.SilenceErrors = true
 	cmd.SilenceUsage = true
