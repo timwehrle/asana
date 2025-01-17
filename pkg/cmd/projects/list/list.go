@@ -43,7 +43,7 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 
 	cmd.Flags().IntVarP(&opts.Config.Limit, "limit", "l", 0, "Max number of projects to display")
 	cmd.Flags().StringVarP(&opts.Config.Sort, "sort", "s", "", "Sort projects by name (options: asc, desc)")
-	cmd.Flags().BoolVarP(&opts.Config.Favorite, "favorite", "f", false, "List your favorited projects")
+	cmd.Flags().BoolVarP(&opts.Config.Favorite, "favorite", "f", false, "List your favorite projects")
 
 	return cmd
 }
