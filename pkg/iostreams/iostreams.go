@@ -85,7 +85,7 @@ func Test() (*IOStreams, *bytes.Buffer, *bytes.Buffer, *bytes.Buffer) {
 	out := &bytes.Buffer{}
 	errOut := &bytes.Buffer{}
 
-	io := &IOStreams{
+	testIO := &IOStreams{
 		In:           io.NopCloser(in),
 		Out:          out,
 		ErrOut:       errOut,
@@ -95,9 +95,9 @@ func Test() (*IOStreams, *bytes.Buffer, *bytes.Buffer, *bytes.Buffer) {
 		ColorEnabled: false,
 	}
 
-	io.initColorScheme()
+	testIO.initColorScheme()
 
-	return io, in, out, errOut
+	return testIO, in, out, errOut
 }
 
 // ColorScheme returns the color scheme for the streams
