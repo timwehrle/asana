@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/timwehrle/asana-go"
+	"github.com/timwehrle/asana-api"
 )
 
 type mockStruct struct {

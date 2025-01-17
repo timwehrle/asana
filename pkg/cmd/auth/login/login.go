@@ -3,7 +3,7 @@ package login
 import (
 	"fmt"
 
-	"github.com/timwehrle/asana-go"
+	"github.com/timwehrle/asana-api"
 	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/iostreams"

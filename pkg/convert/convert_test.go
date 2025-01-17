@@ -1,7 +1,7 @@
 package convert
 
 import (
-	"github.com/timwehrle/asana-go"
+	"github.com/timwehrle/asana-api"
 	"testing"
 	"time"
 )

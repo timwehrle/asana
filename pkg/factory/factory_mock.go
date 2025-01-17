@@ -2,7 +2,7 @@ package factory
 
 import (
 	"github.com/stretchr/testify/mock"
-	"github.com/timwehrle/asana-go"
+	"github.com/timwehrle/asana-api"
 	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/internal/prompter"
 	"github.com/timwehrle/asana/pkg/iostreams"

@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/timwehrle/asana-go"
+	"github.com/timwehrle/asana-api"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"

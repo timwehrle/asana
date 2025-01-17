@@ -1,7 +1,7 @@
 package sorting
 
 import (
-	"github.com/timwehrle/asana-go"
+	"github.com/timwehrle/asana-api"
 	"time"
 )
 

@@ -1,6 +1,6 @@
 package shared
 
-import "github.com/timwehrle/asana-go"
+import "github.com/timwehrle/asana-api"
 
 func FetchAllProjects(client *asana.Client, workspace *asana.Workspace, limit int) ([]*asana.Project, error) {
 	initialCapacity := 100

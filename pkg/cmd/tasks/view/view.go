@@ -10,7 +10,7 @@ import (
 	"github.com/timwehrle/asana/pkg/iostreams"
 
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/asana-go"
+	"github.com/timwehrle/asana-api"
 )
 
 type ViewOptions struct {

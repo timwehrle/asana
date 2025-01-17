@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/asana-go"
+	"github.com/timwehrle/asana-api"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/iostreams"
 )

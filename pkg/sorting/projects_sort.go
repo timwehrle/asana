@@ -1,6 +1,6 @@
 package sorting
 
-import "github.com/timwehrle/asana-go"
+import "github.com/timwehrle/asana-api"
 
 var ProjectSort = struct {
 	ByName     func(projects []*asana.Project)
