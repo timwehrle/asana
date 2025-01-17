@@ -51,32 +51,32 @@ type IOStreams struct {
 
 // System returns an IOStreams suitable for use in a command
 func System() *IOStreams {
-	io := &IOStreams{
+	ioSys := &IOStreams{
 		In:     os.Stdin,
 		Out:    os.Stdout,
 		ErrOut: os.Stderr,
 	}
 
 	// Determine if streams are TTYs
-	io.IsStdinTTY = isTerminal(os.Stdin)
-	io.IsStdoutTTY = isTerminal(os.Stdout)
-	io.IsStderrTTY = isTerminal(os.Stderr)
+	ioSys.IsStdinTTY = isTerminal(os.Stdin)
+	ioSys.IsStdoutTTY = isTerminal(os.Stdout)
+	ioSys.IsStderrTTY = isTerminal(os.Stderr)
 
 	// Enable colors if stdout is a terminal
-	io.ColorEnabled = io.IsStdoutTTY
+	ioSys.ColorEnabled = ioSys.IsStdoutTTY
 
 	// Initialize color scheme
-	io.initColorScheme()
+	ioSys.initColorScheme()
 
 	// If on Windows and output is a terminal, use colorable
-	if io.IsStdoutTTY {
-		io.Out = colorable.NewColorable(os.Stdout)
+	if ioSys.IsStdoutTTY {
+		ioSys.Out = colorable.NewColorable(os.Stdout)
 	}
-	if io.IsStderrTTY {
-		io.ErrOut = colorable.NewColorable(os.Stderr)
+	if ioSys.IsStderrTTY {
+		ioSys.ErrOut = colorable.NewColorable(os.Stderr)
 	}
 
-	return io
+	return ioSys
 }
 
 // Test returns an IOStreams suitable for testing
