@@ -92,10 +92,6 @@ if [ ! -f "asana" ]; then
   exit 1
 fi
 
-if [ ! -w "/usr/local/bin/" ]; then
-  echo "Error: Cannot write to /usr/local/bin. Please run with sudo."
-fi
-
 if ! sudo mv asana /usr/local/bin; then
   echo "Error: Failed to install binary."
   exit 1
