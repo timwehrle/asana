@@ -27,7 +27,8 @@ func NewCmdGet(f factory.Factory, runF func(*GetOptions) error) *cobra.Command {
 		Example: heredoc.Doc(`
 				$ asana config get default-workspace
 				$ asana config get dw`),
-		Args: cobra.ExactArgs(1),
+		ValidArgs: []string{"default-workspace", "dw"},
+		Args:      cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if runF != nil {
 				return runF(opts)
@@ -51,9 +52,7 @@ func runConfigGet(opts *GetOptions, key string) error {
 		}
 
 		fmt.Fprintf(opts.IO.Out, "Default workspace is %s (%s)\n", cs.Bold(cfg.Workspace.Name), cfg.Workspace.ID)
-		return nil
-
-	default:
-		return fmt.Errorf("unknown configuration key: %s. Available keys are: default-workspace (dw)", key)
 	}
+
+	return nil
 }

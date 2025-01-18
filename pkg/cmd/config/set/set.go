@@ -22,14 +22,17 @@ type SetOptions struct {
 
 func NewCmdConfigSet(f factory.Factory, runF func(*SetOptions) error) *cobra.Command {
 	opts := &SetOptions{
-		IO:     f.IOStreams,
-		Client: f.Client,
+		IO:       f.IOStreams,
+		Prompter: f.Prompter,
+		Client:   f.Client,
+		Config:   f.Config,
 	}
 
 	cmd := &cobra.Command{
-		Use:   "set <key>",
-		Short: "Update configuration with a value",
-		Args:  cobra.ExactArgs(1),
+		Use:       "set <key>",
+		Short:     "Update configuration with a value",
+		ValidArgs: []string{"default-workspace", "dw"},
+		Args:      cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 		Example: heredoc.Doc(`
 				# Set a configuration value
 				$ asana config set default-workspace
@@ -51,9 +54,9 @@ func runConfigSet(opts *SetOptions, key string) error {
 	switch key {
 	case "default-workspace", "dw":
 		return setDefaultWorkspace(opts)
-	default:
-		return fmt.Errorf("unknown configuration key: %s. Available keys are: default-workspace (dw)", key)
 	}
+
+	return nil
 }
 
 func setDefaultWorkspace(opts *SetOptions) error {
