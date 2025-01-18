@@ -1,4 +1,4 @@
-package cmd
+package root
 
 import (
 	"github.com/timwehrle/asana/pkg/cmd/tags"
@@ -34,6 +34,21 @@ func NewCmdRoot(f factory.Factory) (*cobra.Command, error) {
 
 			return nil
 		},
+	}
+
+	cfg, err := f.Config()
+	if err != nil {
+		return nil, err
+	}
+
+	err = cfg.Load()
+	if err != nil {
+		return nil, err
+	}
+
+	err = cfg.Set("version", version.Version)
+	if err != nil {
+		return nil, err
 	}
 
 	cmd.AddCommand(auth.NewCmdAuth(f))

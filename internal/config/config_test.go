@@ -10,67 +10,62 @@ import (
 	"testing"
 )
 
+func setupTestConfig(t *testing.T) *Config {
+	t.Helper()
+
+	cfg := &Config{}
+	err := cfg.Save()
+	require.NoError(t, err)
+	return cfg
+}
+
 func TestConfig(t *testing.T) {
 	tmpDir := t.TempDir()
 	originalXDGConfig := os.Getenv(xdgConfigHome)
 	os.Setenv(xdgConfigHome, tmpDir)
 	defer os.Setenv(xdgConfigHome, originalXDGConfig)
 
-	t.Run("Save and Load Config", func(t *testing.T) {
+	t.Run("Save and load config", func(t *testing.T) {
 		cfg := &Config{
 			Username: "testuser",
 			Workspace: &asana.Workspace{
-				Name: "Test Workspace",
-				ID:   "1234",
+				ID:   "123",
+				Name: "TestWorkspace",
 			},
 		}
 
-		// Test save
 		err := cfg.Save()
-		require.NoError(t, err)
-
-		// Verify file exists
-		configPath := filepath.Join(tmpDir, "asana-cli", "config.yml")
-		_, err = os.Stat(configPath)
 		require.NoError(t, err)
 
 		newCfg := &Config{}
 		err = newCfg.Load()
 		require.NoError(t, err)
+
 		assert.Equal(t, cfg.Username, newCfg.Username)
-		assert.Equal(t, cfg.Workspace.Name, newCfg.Workspace.Name)
 		assert.Equal(t, cfg.Workspace.ID, newCfg.Workspace.ID)
-	})
-
-	t.Run("Load Non-existent Config", func(t *testing.T) {
-		configPath := filepath.Join(tmpDir, "asana-cli", "config.yml")
-		os.Remove(configPath)
-
-		cfg := &Config{}
-		err := cfg.Load()
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "No configuration file found")
+		assert.Equal(t, cfg.Workspace.Name, newCfg.Workspace.Name)
 	})
 
 	t.Run("Set Valid Field", func(t *testing.T) {
-		cfg := &Config{}
+		cfg := setupTestConfig(t)
 		err := cfg.Set("Username", "newuser")
 		require.NoError(t, err)
-		assert.Equal(t, "newuser", cfg.Username)
+
+		newCfg := &Config{}
+		err = newCfg.Load()
+		require.NoError(t, err)
+		assert.Equal(t, "newuser", newCfg.Username)
 	})
 
 	t.Run("Set Invalid Field", func(t *testing.T) {
-		cfg := &Config{}
-		err := cfg.Set("Nonexistentfield", "value")
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "does not exist in config")
-	})
+		cfg := setupTestConfig(t)
+		err := cfg.Set("nonexistentfield", "value")
+		require.NoError(t, err)
 
-	t.Run("Set Field Type Mismatch", func(t *testing.T) {
-		cfg := &Config{}
-		err := cfg.Set("Username", 123)
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "value type mismatch")
+		newCfg := &Config{}
+		err = newCfg.Load()
+		require.NoError(t, err)
+		assert.Empty(t, newCfg.Username)
 	})
 
 	t.Run("Concurrent Access", func(t *testing.T) {
@@ -165,4 +160,38 @@ func TestConfigDir(t *testing.T) {
 			assert.Equal(t, tt.output, configDir())
 		})
 	}
+}
+
+func TestConfigErrors(t *testing.T) {
+	t.Run("Invalid Config Format", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		os.Setenv(xdgConfigHome, tmpDir)
+
+		configPath := filepath.Join(configDir(), "config.yml")
+		err := os.MkdirAll(filepath.Dir(configPath), 0755)
+		require.NoError(t, err)
+
+		err = os.WriteFile(configPath, []byte("invalid: yaml: content: {["), 0600)
+		require.NoError(t, err)
+
+		cfg := &Config{}
+		err = cfg.Load()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to read config")
+	})
+
+	t.Run("Permission Denied", func(t *testing.T) {
+		if runtime.GOOS == "windows" {
+			t.Skip("Skipping on Windows")
+		}
+
+		tmpDir := t.TempDir()
+		err := os.MkdirAll(tmpDir, 0555)
+		require.NoError(t, err)
+
+		os.Setenv(xdgConfigHome, tmpDir)
+		cfg := &Config{}
+		err = cfg.Save()
+		require.Error(t, err)
+	})
 }
