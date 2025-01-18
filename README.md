@@ -26,7 +26,7 @@ Download the latest binary for your platform from the [releases page](https://gi
 ## From Source
 
 ```shell
-go install github.com/timwehrle/asana@latest
+go install github.com/timwehrle/asana/cmd/asana@latest
 ```
 
 ## Bash Installation
