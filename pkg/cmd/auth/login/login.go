@@ -53,8 +53,8 @@ func NewCmdLogin(f factory.Factory, runF func(*LoginOptions) error) *cobra.Comma
 					# Log in interactively and select a workspace
 					$ asana auth login
 					
-					# Log in with a token piped via stdin (not recommended since you leak your token to the shell history)
-					$ echo "your-token" | asana auth login --with-token
+					# Log in with a default workspace
+					$ asana auth login --workspace "Test Workspace"
 					
 					# Log in with a token and set a default workspace
 					$ asana auth login --workspace "Test Workspace" --with-token < mytoken.txt`),
