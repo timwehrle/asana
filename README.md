@@ -12,6 +12,9 @@ A command-line interface to manage your Asana tasks and projects directly from y
    <a href="https://github.com/timwehrle/asana/actions/workflows/go.yml">
       <img src="https://github.com/timwehrle/asana/actions/workflows/go.yml/badge.svg" alt="Go Pipeline">
    </a>
+   <a href="https://goreportcard.com/report/github.com/timwehrle/asana">
+      <img src="https://goreportcard.com/badge/github.com/timwehrle/asana" alt="Go Report Card">
+   </a>
 </div>
 
 # Installation
