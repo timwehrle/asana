@@ -18,9 +18,10 @@ import (
 
 type LoginOptions struct {
 	IO       *iostreams.IOStreams
-	Config   func() (*config.Config, error)
 	Prompter prompter.Prompter
-	Client   func() (*asana.Client, error)
+
+	Config func() (*config.Config, error)
+	Client func() (*asana.Client, error)
 
 	Workspace   string
 	Token       string
@@ -29,10 +30,10 @@ type LoginOptions struct {
 
 func NewCmdLogin(f factory.Factory, runF func(*LoginOptions) error) *cobra.Command {
 	opts := &LoginOptions{
-		IO:       f.IOStreams(),
+		IO:       f.IOStreams,
 		Config:   f.Config,
 		Client:   f.Client,
-		Prompter: f.Prompter(),
+		Prompter: f.Prompter,
 	}
 
 	var tokenStdin bool

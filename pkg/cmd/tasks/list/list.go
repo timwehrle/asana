@@ -2,6 +2,7 @@ package list
 
 import (
 	"fmt"
+	"github.com/timwehrle/asana/internal/config"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -31,18 +32,20 @@ var validSortOptions = map[SortOption]struct{}{
 }
 
 type ListOptions struct {
-	factory.Factory
-	IO     *iostreams.IOStreams
-	Config struct {
-		Sort  SortOption
-		Limit int
-	}
+	IO *iostreams.IOStreams
+
+	Config func() (*config.Config, error)
+	Client func() (*asana.Client, error)
+
+	Sort  SortOption
+	Limit int
 }
 
-func NewCmdList(f factory.Factory) *cobra.Command {
+func NewCmdList(f factory.Factory, runF func(*ListOptions) error) *cobra.Command {
 	opts := &ListOptions{
-		Factory: f,
-		IO:      f.IOStreams(),
+		IO:     f.IOStreams,
+		Config: f.Config,
+		Client: f.Client,
 	}
 
 	cmd := &cobra.Command{
@@ -62,16 +65,20 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 			`),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := validateSortOption(opts.Config.Sort); err != nil {
+			if err := validateSortOption(opts.Sort); err != nil {
 				return err
+			}
+
+			if runF != nil {
+				return runF(opts)
 			}
 
 			return listRun(opts)
 		},
 	}
 
-	cmd.Flags().StringVarP((*string)(&opts.Config.Sort), "sort", "s", "", "Sort tasks by name, due date, creation date (options: asc, desc, due, due-desc, created-at)")
-	cmd.Flags().IntVarP(&opts.Config.Limit, "limit", "l", 0, "Limit the tasks to display")
+	cmd.Flags().StringVarP((*string)(&opts.Sort), "sort", "s", "", "Sort tasks by name, due date, creation date (options: asc, desc, due, due-desc, created-at)")
+	cmd.Flags().IntVarP(&opts.Limit, "limit", "l", 0, "Limit the tasks to display")
 
 	return cmd
 }
@@ -88,12 +95,12 @@ func validateSortOption(opt SortOption) error {
 }
 
 func listRun(opts *ListOptions) error {
-	cfg, err := opts.Factory.Config()
+	cfg, err := opts.Config()
 	if err != nil {
 		return fmt.Errorf("failed to get config: %w", err)
 	}
 
-	tasks, err := fetchTasks(opts, cfg.Workspace.ID, opts.Config.Limit)
+	tasks, err := fetchTasks(opts, cfg.Workspace.ID, opts.Limit)
 	if err != nil {
 		return err
 	}
@@ -102,7 +109,7 @@ func listRun(opts *ListOptions) error {
 		return printEmptyMessage(opts.IO)
 	}
 
-	if err := sortTasks(tasks, opts.Config.Sort); err != nil {
+	if err := sortTasks(tasks, opts.Sort); err != nil {
 		return fmt.Errorf("failed to sort tasks: %w", err)
 	}
 
@@ -115,7 +122,7 @@ func fetchTasks(opts *ListOptions, workspaceID string, limit int) ([]*asana.Task
 		initialCapacity = limit
 	}
 
-	client, err := opts.Factory.Client()
+	client, err := opts.Client()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Asana client: %w", err)
 	}

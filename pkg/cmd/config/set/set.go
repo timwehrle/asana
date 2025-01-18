@@ -2,6 +2,9 @@ package set
 
 import (
 	"fmt"
+	"github.com/timwehrle/asana-api"
+	"github.com/timwehrle/asana/internal/config"
+	"github.com/timwehrle/asana/internal/prompter"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -10,14 +13,17 @@ import (
 )
 
 type SetOptions struct {
-	factory.Factory
-	IO *iostreams.IOStreams
+	IO       *iostreams.IOStreams
+	Prompter prompter.Prompter
+
+	Client func() (*asana.Client, error)
+	Config func() (*config.Config, error)
 }
 
-func NewCmdConfigSet(f factory.Factory) *cobra.Command {
+func NewCmdConfigSet(f factory.Factory, runF func(*SetOptions) error) *cobra.Command {
 	opts := &SetOptions{
-		Factory: f,
-		IO:      f.IOStreams(),
+		IO:     f.IOStreams,
+		Client: f.Client,
 	}
 
 	cmd := &cobra.Command{
@@ -30,6 +36,10 @@ func NewCmdConfigSet(f factory.Factory) *cobra.Command {
 				$ asana config set dw
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if runF != nil {
+				return runF(opts)
+			}
+
 			return runConfigSet(opts, args[0])
 		},
 	}
@@ -69,14 +79,14 @@ func setDefaultWorkspace(opts *SetOptions) error {
 		names[i] = ws.Name
 	}
 
-	index, err := opts.Prompter().Select("Select a new default workspace:", names)
+	index, err := opts.Prompter.Select("Select a new default workspace:", names)
 	if err != nil {
 		return fmt.Errorf("failed to select new workspace: %w", err)
 	}
 
 	selectedWorkspace := workspaces[index]
 
-	cfg, err := opts.Factory.Config()
+	cfg, err := opts.Config()
 	if err != nil {
 		return err
 	}

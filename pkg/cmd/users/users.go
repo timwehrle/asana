@@ -19,7 +19,7 @@ func NewCmdUsers(f factory.Factory) *cobra.Command {
 			`),
 	}
 
-	cmd.AddCommand(list.NewCmdList(f))
+	cmd.AddCommand(list.NewCmdList(f, nil))
 
 	return cmd
 }

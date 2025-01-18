@@ -2,6 +2,9 @@ package list
 
 import (
 	"fmt"
+	"github.com/timwehrle/asana-api"
+	"github.com/timwehrle/asana/internal/config"
+	"github.com/timwehrle/asana/internal/prompter"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/timwehrle/asana/pkg/factory"
@@ -11,14 +14,19 @@ import (
 )
 
 type ListOptions struct {
-	factory.Factory
-	IO *iostreams.IOStreams
+	IO       *iostreams.IOStreams
+	Prompter prompter.Prompter
+
+	Config func() (*config.Config, error)
+	Client func() (*asana.Client, error)
 }
 
-func NewCmdList(f factory.Factory) *cobra.Command {
+func NewCmdList(f factory.Factory, runF func(*ListOptions) error) *cobra.Command {
 	opts := &ListOptions{
-		Factory: f,
-		IO:      f.IOStreams(),
+		IO:       f.IOStreams,
+		Prompter: f.Prompter,
+		Config:   f.Config,
+		Client:   f.Client,
 	}
 
 	cmd := &cobra.Command{
@@ -34,14 +42,18 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 				$ asana ws ls
 			`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return listRun(opts)
+			if runF != nil {
+				return runF(opts)
+			}
+
+			return runList(opts)
 		},
 	}
 
 	return cmd
 }
 
-func listRun(opts *ListOptions) error {
+func runList(opts *ListOptions) error {
 	cs := opts.IO.ColorScheme()
 
 	client, err := opts.Client()
@@ -49,7 +61,7 @@ func listRun(opts *ListOptions) error {
 		return err
 	}
 
-	cfg, err := opts.Factory.Config()
+	cfg, err := opts.Config()
 	if err != nil {
 		return err
 	}

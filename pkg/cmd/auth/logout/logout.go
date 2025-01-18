@@ -12,14 +12,12 @@ import (
 )
 
 type LogoutOptions struct {
-	factory.Factory
 	IO *iostreams.IOStreams
 }
 
-func NewCmdLogout(f factory.Factory) *cobra.Command {
+func NewCmdLogout(f factory.Factory, runF func(options *LogoutOptions) error) *cobra.Command {
 	opts := &LogoutOptions{
-		Factory: f,
-		IO:      f.IOStreams(),
+		IO: f.IOStreams,
 	}
 
 	cmd := &cobra.Command{
@@ -32,6 +30,10 @@ func NewCmdLogout(f factory.Factory) *cobra.Command {
 				This action revokes CLI access to the Asana API.`),
 		Example: heredoc.Doc(`$ asana auth logout`),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if runF != nil {
+				return runF(opts)
+			}
+
 			return runLogout(opts)
 		},
 	}

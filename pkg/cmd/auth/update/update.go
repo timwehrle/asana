@@ -2,6 +2,7 @@ package update
 
 import (
 	"fmt"
+	"github.com/timwehrle/asana/internal/prompter"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -11,14 +12,14 @@ import (
 )
 
 type UpdateOptions struct {
-	factory.Factory
-	IO *iostreams.IOStreams
+	IO       *iostreams.IOStreams
+	Prompter prompter.Prompter
 }
 
-func NewCmdUpdate(f factory.Factory) *cobra.Command {
+func NewCmdUpdate(f factory.Factory, runF func(*UpdateOptions) error) *cobra.Command {
 	opts := &UpdateOptions{
-		Factory: f,
-		IO:      f.IOStreams(),
+		IO:       f.IOStreams,
+		Prompter: f.Prompter,
 	}
 
 	cmd := &cobra.Command{
@@ -27,6 +28,10 @@ func NewCmdUpdate(f factory.Factory) *cobra.Command {
 		Long:    "Update the current Personal Access Token of your Asana account.",
 		Example: heredoc.Doc(`$ asana auth update`),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if runF != nil {
+				return runF(opts)
+			}
+
 			return runUpdate(opts)
 		},
 	}
@@ -37,7 +42,7 @@ func NewCmdUpdate(f factory.Factory) *cobra.Command {
 func runUpdate(opts *UpdateOptions) error {
 	cs := opts.IO.ColorScheme()
 
-	newToken, err := opts.Prompter().Token()
+	newToken, err := opts.Prompter.Token()
 	if err != nil {
 		return fmt.Errorf("failed to get token: %w", err)
 	}

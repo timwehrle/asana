@@ -2,6 +2,7 @@ package get
 
 import (
 	"fmt"
+	"github.com/timwehrle/asana/internal/config"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -10,14 +11,14 @@ import (
 )
 
 type GetOptions struct {
-	factory.Factory
-	IO *iostreams.IOStreams
+	Config func() (*config.Config, error)
+	IO     *iostreams.IOStreams
 }
 
-func NewCmdGet(f factory.Factory) *cobra.Command {
+func NewCmdGet(f factory.Factory, runF func(*GetOptions) error) *cobra.Command {
 	opts := &GetOptions{
-		Factory: f,
-		IO:      f.IOStreams(),
+		Config: f.Config,
+		IO:     f.IOStreams,
 	}
 
 	cmd := &cobra.Command{
@@ -28,6 +29,10 @@ func NewCmdGet(f factory.Factory) *cobra.Command {
 				$ asana config get dw`),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if runF != nil {
+				return runF(opts)
+			}
+
 			return runConfigGet(opts, args[0])
 		},
 	}
@@ -40,7 +45,7 @@ func runConfigGet(opts *GetOptions, key string) error {
 
 	switch key {
 	case "default-workspace", "dw":
-		cfg, err := opts.Factory.Config()
+		cfg, err := opts.Config()
 		if err != nil {
 			return err
 		}

@@ -2,6 +2,8 @@ package update
 
 import (
 	"fmt"
+	"github.com/timwehrle/asana/internal/config"
+	"github.com/timwehrle/asana/internal/prompter"
 	"strings"
 	"time"
 
@@ -38,14 +40,19 @@ var availableActions = []taskAction{
 }
 
 type UpdateOptions struct {
-	factory.Factory
-	IO *iostreams.IOStreams
+	IO       *iostreams.IOStreams
+	Prompter prompter.Prompter
+
+	Config func() (*config.Config, error)
+	Client func() (*asana.Client, error)
 }
 
-func NewCmdUpdate(f factory.Factory) *cobra.Command {
+func NewCmdUpdate(f factory.Factory, runF func(*UpdateOptions) error) *cobra.Command {
 	opts := &UpdateOptions{
-		Factory: f,
-		IO:      f.IOStreams(),
+		IO:       f.IOStreams,
+		Prompter: f.Prompter,
+		Config:   f.Config,
+		Client:   f.Client,
 	}
 
 	cmd := &cobra.Command{
@@ -57,6 +64,10 @@ func NewCmdUpdate(f factory.Factory) *cobra.Command {
 			$ asana tasks update
 			$ asana ts update`),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if runF != nil {
+				return runF(opts)
+			}
+
 			return runUpdate(opts)
 		},
 	}
@@ -83,7 +94,7 @@ func runUpdate(opts *UpdateOptions) error {
 }
 
 func selectTask(opts *UpdateOptions) (*asana.Task, error) {
-	cfg, err := opts.Factory.Config()
+	cfg, err := opts.Config()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get config: %w", err)
 	}
@@ -110,7 +121,7 @@ func selectTask(opts *UpdateOptions) (*asana.Task, error) {
 	}
 
 	taskNames := format.Tasks(tasks)
-	index, err := opts.Prompter().Select("Select the task to update:", taskNames)
+	index, err := opts.Prompter.Select("Select the task to update:", taskNames)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select task: %w", err)
 	}
@@ -129,7 +140,7 @@ func selectAction(opts *UpdateOptions) (UpdateAction, error) {
 		actions[i] = action.name
 	}
 
-	index, err := opts.Prompter().Select("What do you want to do with this task:", actions)
+	index, err := opts.Prompter.Select("What do you want to do with this task:", actions)
 	if err != nil {
 		return 0, fmt.Errorf("failed to select action: %w", err)
 	}
@@ -180,7 +191,7 @@ func completeTask(client *asana.Client, task *asana.Task, cs *iostreams.ColorSch
 }
 
 func editTaskName(opts *UpdateOptions, client *asana.Client, task *asana.Task, cs *iostreams.ColorScheme) error {
-	newName, err := opts.Prompter().Input("Enter the new task name:", task.Name)
+	newName, err := opts.Prompter.Input("Enter the new task name:", task.Name)
 	if err != nil {
 		return fmt.Errorf("failed to get input: %w", err)
 	}
@@ -206,7 +217,7 @@ func editTaskName(opts *UpdateOptions, client *asana.Client, task *asana.Task, c
 
 func editTaskDescription(opts *UpdateOptions, client *asana.Client, task *asana.Task, cs *iostreams.ColorScheme) error {
 	existingDescription := strings.TrimSpace(task.Notes)
-	newDescription, err := opts.Prompter().Editor("Edit the description:", existingDescription)
+	newDescription, err := opts.Prompter.Editor("Edit the description:", existingDescription)
 	if err != nil {
 		return fmt.Errorf("failed to get input: %w", err)
 	}
@@ -232,7 +243,7 @@ func editTaskDescription(opts *UpdateOptions, client *asana.Client, task *asana.
 }
 
 func setTaskDueDate(opts *UpdateOptions, client *asana.Client, task *asana.Task, cs *iostreams.ColorScheme) error {
-	input, err := opts.Prompter().Input("Enter the new due date (YYYY-MM-DD):", format.Date(task.DueOn))
+	input, err := opts.Prompter.Input("Enter the new due date (YYYY-MM-DD):", format.Date(task.DueOn))
 	if err != nil {
 		return fmt.Errorf("failed to get input: %w", err)
 	}

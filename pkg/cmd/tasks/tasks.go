@@ -16,9 +16,9 @@ func NewCmdTasks(f factory.Factory) *cobra.Command {
 		Long:    "Perform operations related to your Asana tasks.",
 	}
 
-	cmd.AddCommand(list.NewCmdList(f))
-	cmd.AddCommand(view.NewCmdView(f))
-	cmd.AddCommand(update.NewCmdUpdate(f))
+	cmd.AddCommand(list.NewCmdList(f, nil))
+	cmd.AddCommand(view.NewCmdView(f, nil))
+	cmd.AddCommand(update.NewCmdUpdate(f, nil))
 
 	return cmd
 }

@@ -2,6 +2,8 @@ package tasks
 
 import (
 	"fmt"
+	"github.com/timwehrle/asana/internal/config"
+	"github.com/timwehrle/asana/internal/prompter"
 
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana-api"
@@ -11,14 +13,19 @@ import (
 )
 
 type TasksOptions struct {
-	factory.Factory
-	IO *iostreams.IOStreams
+	IO       *iostreams.IOStreams
+	Prompter prompter.Prompter
+
+	Config func() (*config.Config, error)
+	Client func() (*asana.Client, error)
 }
 
-func NewCmdTasks(f factory.Factory) *cobra.Command {
+func NewCmdTasks(f factory.Factory, runF func(*TasksOptions) error) *cobra.Command {
 	opts := &TasksOptions{
-		Factory: f,
-		IO:      f.IOStreams(),
+		IO:       f.IOStreams,
+		Prompter: f.Prompter,
+		Config:   f.Config,
+		Client:   f.Client,
 	}
 
 	cmd := &cobra.Command{
@@ -26,6 +33,10 @@ func NewCmdTasks(f factory.Factory) *cobra.Command {
 		Short: "List tasks of a project",
 		Long:  "Retrieve and display a list of all tasks under a project.",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if runF != nil {
+				return runF(opts)
+			}
+
 			return runTasks(opts)
 		},
 	}
@@ -34,7 +45,7 @@ func NewCmdTasks(f factory.Factory) *cobra.Command {
 }
 
 func runTasks(opts *TasksOptions) error {
-	cfg, err := opts.Factory.Config()
+	cfg, err := opts.Config()
 	if err != nil {
 		return err
 	}
@@ -59,7 +70,7 @@ func runTasks(opts *TasksOptions) error {
 		projectNames = append(projectNames, project.Name)
 	}
 
-	index, err := opts.Prompter().Select("Select a project:", projectNames)
+	index, err := opts.Prompter.Select("Select a project:", projectNames)
 	if err != nil {
 		return fmt.Errorf("failed selecting a project: %w", err)
 	}

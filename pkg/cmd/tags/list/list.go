@@ -5,23 +5,26 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana-api"
+	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/iostreams"
 )
 
 type ListOptions struct {
-	factory.Factory
-	IO     *iostreams.IOStreams
-	Config struct {
-		Limit    int
-		Favorite bool
-	}
+	IO *iostreams.IOStreams
+
+	Config func() (*config.Config, error)
+	Client func() (*asana.Client, error)
+
+	Limit    int
+	Favorite bool
 }
 
-func NewCmdList(f factory.Factory) *cobra.Command {
+func NewCmdList(f factory.Factory, runF func(*ListOptions) error) *cobra.Command {
 	opts := &ListOptions{
-		Factory: f,
-		IO:      f.IOStreams(),
+		IO:     f.IOStreams,
+		Config: f.Config,
+		Client: f.Client,
 	}
 
 	cmd := &cobra.Command{
@@ -30,22 +33,27 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 		Long:    heredoc.Doc(`Retrieve and display a list of all tags under your default workspace.`),
 		Aliases: []string{"ls"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if opts.Config.Limit < 0 {
-				return fmt.Errorf("invalid limit: %v", opts.Config.Limit)
+			if opts.Limit < 0 {
+				return fmt.Errorf("invalid limit: %v", opts.Limit)
 			}
+
+			if runF != nil {
+				return runF(opts)
+			}
+
 			return runList(opts)
 		},
 	}
 
-	cmd.Flags().IntVarP(&opts.Config.Limit, "limit", "l", 0, "Max number of tags to display")
-	cmd.Flags().BoolVarP(&opts.Config.Favorite, "favorite", "f", false, "List your favorite tags")
+	cmd.Flags().IntVarP(&opts.Limit, "limit", "l", 0, "Max number of tags to display")
+	cmd.Flags().BoolVarP(&opts.Favorite, "favorite", "f", false, "List your favorite tags")
 
 	return cmd
 }
 
 func runList(opts *ListOptions) error {
 	cs := opts.IO.ColorScheme()
-	cfg, err := opts.Factory.Config()
+	cfg, err := opts.Config()
 	if err != nil {
 		return fmt.Errorf("failed to get config: %w", err)
 	}
@@ -58,10 +66,10 @@ func runList(opts *ListOptions) error {
 	var tags []*asana.Tag
 	workspace := &asana.Workspace{ID: cfg.Workspace.ID}
 
-	if opts.Config.Favorite {
+	if opts.Favorite {
 		tags, err = fetchFavoriteTags(client, workspace)
 	} else {
-		tags, err = fetchTags(client, workspace, opts.Config.Limit)
+		tags, err = fetchTags(client, workspace, opts.Limit)
 	}
 	if err != nil {
 		return err

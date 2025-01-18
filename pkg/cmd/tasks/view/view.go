@@ -2,6 +2,8 @@ package view
 
 import (
 	"fmt"
+	"github.com/timwehrle/asana/internal/config"
+	"github.com/timwehrle/asana/internal/prompter"
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
@@ -14,14 +16,19 @@ import (
 )
 
 type ViewOptions struct {
-	factory.Factory
-	*iostreams.IOStreams
+	IO       *iostreams.IOStreams
+	Prompter prompter.Prompter
+
+	Config func() (*config.Config, error)
+	Client func() (*asana.Client, error)
 }
 
-func NewCmdView(f factory.Factory) *cobra.Command {
+func NewCmdView(f factory.Factory, runF func(*ViewOptions) error) *cobra.Command {
 	opts := &ViewOptions{
-		Factory:   f,
-		IOStreams: f.IOStreams(),
+		IO:       f.IOStreams,
+		Prompter: f.Prompter,
+		Config:   f.Config,
+		Client:   f.Client,
 	}
 
 	cmd := &cobra.Command{
@@ -34,6 +41,10 @@ func NewCmdView(f factory.Factory) *cobra.Command {
 				Display detailed information about a specific task, allowing you to
 				analyze and manage it effectively.`),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if runF != nil {
+				return runF(opts)
+			}
+
 			return viewRun(opts)
 		},
 	}
@@ -42,7 +53,7 @@ func NewCmdView(f factory.Factory) *cobra.Command {
 }
 
 func viewRun(opts *ViewOptions) error {
-	cfg, err := opts.Factory.Config()
+	cfg, err := opts.Config()
 	if err != nil {
 		return err
 	}
@@ -63,12 +74,12 @@ func viewRun(opts *ViewOptions) error {
 		return err
 	}
 
-	selectedTask, err := prompt(allTasks, opts.Factory)
+	selectedTask, err := prompt(allTasks, opts.Prompter)
 	if err != nil {
 		return err
 	}
 
-	err = displayDetails(client, selectedTask, opts)
+	err = displayDetails(client, selectedTask, opts.IO)
 	if err != nil {
 		return err
 	}
@@ -76,13 +87,13 @@ func viewRun(opts *ViewOptions) error {
 	return nil
 }
 
-func prompt(allTasks []*asana.Task, f factory.Factory) (*asana.Task, error) {
+func prompt(allTasks []*asana.Task, prompter prompter.Prompter) (*asana.Task, error) {
 	taskNames := format.Tasks(allTasks)
 
 	today := time.Now()
 	selectMessage := fmt.Sprintf("Your Tasks on %s (Select one for more details):", today.Format("Jan 02, 2006"))
 
-	index, err := f.Prompter().Select(selectMessage, taskNames)
+	index, err := prompter.Select(selectMessage, taskNames)
 	if err != nil {
 		return nil, err
 	}
@@ -90,17 +101,17 @@ func prompt(allTasks []*asana.Task, f factory.Factory) (*asana.Task, error) {
 	return allTasks[index], nil
 }
 
-func displayDetails(client *asana.Client, task *asana.Task, opts *ViewOptions) error {
-	cs := opts.IOStreams.ColorScheme()
+func displayDetails(client *asana.Client, task *asana.Task, IO *iostreams.IOStreams) error {
+	cs := IO.ColorScheme()
 
 	err := task.Fetch(client)
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprintf(opts.Out, "%s | Due: %s | %s\n", cs.Bold(task.Name), format.Date(task.DueOn), format.Projects(task.Projects))
-	fmt.Fprintf(opts.Out, "%s\n", format.Tags(task.Tags))
-	fmt.Fprintln(opts.Out, format.Notes(task.Notes))
+	fmt.Fprintf(IO.Out, "%s | Due: %s | %s\n", cs.Bold(task.Name), format.Date(task.DueOn), format.Projects(task.Projects))
+	fmt.Fprintf(IO.Out, "%s\n", format.Tags(task.Tags))
+	fmt.Fprintln(IO.Out, format.Notes(task.Notes))
 
 	return nil
 }

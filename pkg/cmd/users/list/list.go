@@ -5,6 +5,7 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana-api"
+	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/iostreams"
 	"github.com/timwehrle/asana/pkg/sorting"
@@ -12,18 +13,20 @@ import (
 )
 
 type ListOptions struct {
-	factory.Factory
-	IO     *iostreams.IOStreams
-	Config struct {
-		Limit int
-		Sort  string
-	}
+	IO *iostreams.IOStreams
+
+	Config func() (*config.Config, error)
+	Client func() (*asana.Client, error)
+
+	Limit int
+	Sort  string
 }
 
-func NewCmdList(f factory.Factory) *cobra.Command {
+func NewCmdList(f factory.Factory, runF func(*ListOptions) error) *cobra.Command {
 	opts := &ListOptions{
-		Factory: f,
-		IO:      f.IOStreams(),
+		IO:     f.IOStreams,
+		Config: f.Config,
+		Client: f.Client,
 	}
 
 	cmd := &cobra.Command{
@@ -42,33 +45,37 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 			$ asana users list --sort desc
 		`),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if runF != nil {
+				return runF(opts)
+			}
+
 			return runList(opts)
 		},
 	}
 
-	cmd.Flags().IntVarP(&opts.Config.Limit, "limit", "l", 0, "Limit the number of users to display")
-	cmd.Flags().StringVarP(&opts.Config.Sort, "sort", "s", "", "Sort users by name (options: asc, desc)")
+	cmd.Flags().IntVarP(&opts.Limit, "limit", "l", 0, "Limit the number of users to display")
+	cmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Sort users by name (options: asc, desc)")
 
 	return cmd
 }
 
 func runList(opts *ListOptions) error {
-	cfg, err := opts.Factory.Config()
+	cfg, err := opts.Config()
 	if err != nil {
 		return fmt.Errorf("failed to get config: %w", err)
 	}
 
-	client, err := opts.Factory.Client()
+	client, err := opts.Client()
 	if err != nil {
 		return fmt.Errorf("failed to create Asana client: %w", err)
 	}
 
-	users, err := fetchUsers(client, cfg.Workspace.ID, opts.Config.Limit)
+	users, err := fetchUsers(client, cfg.Workspace.ID, opts.Limit)
 	if err != nil {
 		return fmt.Errorf("failed to fetch users: %w", err)
 	}
 
-	if err := sortUsers(users, opts.Config.Sort); err != nil {
+	if err := sortUsers(users, opts.Sort); err != nil {
 		return err
 	}
 

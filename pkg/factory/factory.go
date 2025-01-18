@@ -8,48 +8,54 @@ import (
 	"github.com/timwehrle/asana/pkg/iostreams"
 )
 
-type Factory interface {
-	Config() (*config.Config, error)
-	Client() (*asana.Client, error)
-	Prompter() prompter.Prompter
-	IOStreams() *iostreams.IOStreams
+type Factory struct {
+	Config func() (*config.Config, error)
+	Client func() (*asana.Client, error)
+
+	Prompter  prompter.Prompter
+	IOStreams *iostreams.IOStreams
 }
 
-type Default struct {
-	prompter prompter.Prompter
-	io       *iostreams.IOStreams
+func New() *Factory {
+	f := &Factory{}
+
+	f.IOStreams = ioStreams()
+	f.Prompter = newPrompter()
+	f.Client = newClientFunc()
+	f.Config = newConfigFunc()
+
+	return f
 }
 
-func New() *Default {
-	return &Default{
-		prompter: prompter.New(),
-		io:       iostreams.System(),
+func newConfigFunc() func() (*config.Config, error) {
+	return func() (*config.Config, error) {
+		cfg := &config.Config{}
+
+		if err := cfg.Load(); err != nil {
+			return nil, err
+		}
+
+		return cfg, nil
 	}
 }
 
-func (d *Default) Config() (*config.Config, error) {
-	cfg := &config.Config{}
+func newClientFunc() func() (*asana.Client, error) {
+	return func() (*asana.Client, error) {
+		token, err := auth.Get()
+		if err != nil {
+			return nil, err
+		}
 
-	if err := cfg.Load(); err != nil {
-		return nil, err
+		return asana.NewClientWithAccessToken(token), nil
 	}
-
-	return cfg, nil
 }
 
-func (d *Default) Client() (*asana.Client, error) {
-	token, err := auth.Get()
-	if err != nil {
-		return nil, err
-	}
-
-	return asana.NewClientWithAccessToken(token), nil
+func newPrompter() prompter.Prompter {
+	return prompter.New()
 }
 
-func (d *Default) Prompter() prompter.Prompter {
-	return d.prompter
-}
+func ioStreams() *iostreams.IOStreams {
+	io := iostreams.System()
 
-func (d *Default) IOStreams() *iostreams.IOStreams {
-	return d.io
+	return io
 }

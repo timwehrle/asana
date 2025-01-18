@@ -16,9 +16,7 @@ import (
 	"github.com/timwehrle/asana/pkg/factory"
 )
 
-func NewCmdRoot() (*cobra.Command, error) {
-	cmdFactory := factory.New()
-
+func NewCmdRoot(f factory.Factory) (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:     "asana <command> <subcommand> [flags]",
 		Short:   "The Asana CLI tool",
@@ -38,13 +36,13 @@ func NewCmdRoot() (*cobra.Command, error) {
 		},
 	}
 
-	cmd.AddCommand(auth.NewCmdAuth(cmdFactory))
-	cmd.AddCommand(tasks.NewCmdTasks(cmdFactory))
-	cmd.AddCommand(projects.NewCmdProjects(cmdFactory))
-	cmd.AddCommand(workspaces.NewCmdWorkspace(cmdFactory))
-	cmd.AddCommand(users.NewCmdUsers(cmdFactory))
-	cmd.AddCommand(config.NewCmdConfig(cmdFactory))
-	cmd.AddCommand(tags.NewCmdTags(cmdFactory))
+	cmd.AddCommand(auth.NewCmdAuth(f))
+	cmd.AddCommand(tasks.NewCmdTasks(f))
+	cmd.AddCommand(projects.NewCmdProjects(f))
+	cmd.AddCommand(workspaces.NewCmdWorkspace(f))
+	cmd.AddCommand(users.NewCmdUsers(f))
+	cmd.AddCommand(config.NewCmdConfig(f))
+	cmd.AddCommand(tags.NewCmdTags(f))
 
 	cmd.SilenceErrors = true
 	cmd.SilenceUsage = true

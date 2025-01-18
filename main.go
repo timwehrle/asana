@@ -3,11 +3,14 @@ package main
 import (
 	"fmt"
 	"github.com/timwehrle/asana/cmd"
+	"github.com/timwehrle/asana/pkg/factory"
 	"os"
 )
 
 func main() {
-	root, err := cmd.NewCmdRoot()
+	cmdFactory := factory.New()
+
+	root, err := cmd.NewCmdRoot(*cmdFactory)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

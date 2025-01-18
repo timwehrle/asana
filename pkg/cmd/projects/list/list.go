@@ -2,6 +2,7 @@ package list
 
 import (
 	"fmt"
+	"github.com/timwehrle/asana/internal/config"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -13,19 +14,21 @@ import (
 )
 
 type ListOptions struct {
-	factory.Factory
-	IO     *iostreams.IOStreams
-	Config struct {
-		Limit    int
-		Sort     string
-		Favorite bool
-	}
+	IO *iostreams.IOStreams
+
+	Config func() (*config.Config, error)
+	Client func() (*asana.Client, error)
+
+	Limit    int
+	Sort     string
+	Favorite bool
 }
 
-func NewCmdList(f factory.Factory) *cobra.Command {
+func NewCmdList(f factory.Factory, runF func(*ListOptions) error) *cobra.Command {
 	opts := &ListOptions{
-		Factory: f,
-		IO:      f.IOStreams(),
+		IO:     f.IOStreams,
+		Config: f.Config,
+		Client: f.Client,
 	}
 
 	cmd := &cobra.Command{
@@ -34,16 +37,21 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 		Short:   "List projects from your default workspace",
 		Long:    heredoc.Doc(`Retrieve and display a list of all projects under your default workspace.`),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if opts.Config.Limit < 0 {
-				return fmt.Errorf("invalid limit: %v", opts.Config.Limit)
+			if opts.Limit < 0 {
+				return fmt.Errorf("invalid limit: %v", opts.Limit)
 			}
+
+			if runF != nil {
+				return runF(opts)
+			}
+
 			return runList(opts)
 		},
 	}
 
-	cmd.Flags().IntVarP(&opts.Config.Limit, "limit", "l", 0, "Max number of projects to display")
-	cmd.Flags().StringVarP(&opts.Config.Sort, "sort", "s", "", "Sort projects by name (options: asc, desc)")
-	cmd.Flags().BoolVarP(&opts.Config.Favorite, "favorite", "f", false, "List your favorite projects")
+	cmd.Flags().IntVarP(&opts.Limit, "limit", "l", 0, "Max number of projects to display")
+	cmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Sort projects by name (options: asc, desc)")
+	cmd.Flags().BoolVarP(&opts.Favorite, "favorite", "f", false, "List your favorite projects")
 
 	return cmd
 }
@@ -51,7 +59,7 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 func runList(opts *ListOptions) error {
 	cs := opts.IO.ColorScheme()
 
-	cfg, err := opts.Factory.Config()
+	cfg, err := opts.Config()
 	if err != nil {
 		return err
 	}
@@ -66,17 +74,17 @@ func runList(opts *ListOptions) error {
 		ID: cfg.Workspace.ID,
 	}
 
-	if opts.Config.Favorite {
-		projects, err = fetchFavoriteProjects(client, workspace, opts.Config.Limit)
+	if opts.Favorite {
+		projects, err = fetchFavoriteProjects(client, workspace, opts.Limit)
 	} else {
-		projects, err = shared.FetchAllProjects(client, workspace, opts.Config.Limit)
+		projects, err = shared.FetchAllProjects(client, workspace, opts.Limit)
 	}
 	if err != nil {
 		return err
 	}
 
-	if opts.Config.Sort != "" {
-		switch opts.Config.Sort {
+	if opts.Sort != "" {
+		switch opts.Sort {
 		case "asc":
 			sorting.ProjectSort.ByName(projects)
 		case "desc":

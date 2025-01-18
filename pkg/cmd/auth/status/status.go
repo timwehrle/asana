@@ -2,6 +2,7 @@ package status
 
 import (
 	"fmt"
+	"github.com/timwehrle/asana/internal/config"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/timwehrle/asana-api"
@@ -21,14 +22,15 @@ type Status struct {
 }
 
 type StatusOptions struct {
-	factory.Factory
 	IO *iostreams.IOStreams
+
+	Config func() (*config.Config, error)
+	Client func() (*asana.Client, error)
 }
 
-func NewCmdStatus(f factory.Factory) *cobra.Command {
+func NewCmdStatus(f factory.Factory, runF func(*StatusOptions) error) *cobra.Command {
 	opts := &StatusOptions{
-		Factory: f,
-		IO:      f.IOStreams(),
+		IO: f.IOStreams,
 	}
 
 	cmd := &cobra.Command{
@@ -48,6 +50,10 @@ func NewCmdStatus(f factory.Factory) *cobra.Command {
         `, "asana"),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if runF != nil {
+				return runF(opts)
+			}
+
 			return runStatus(opts)
 		},
 	}
@@ -74,7 +80,7 @@ func getStatus(opts *StatusOptions) (*Status, error) {
 	}
 	status.LoggedIn = token != ""
 
-	cfg, err := opts.Factory.Config()
+	cfg, err := opts.Config()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get config: %w", err)
 	}

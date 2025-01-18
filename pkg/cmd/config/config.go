@@ -17,8 +17,8 @@ func NewCmdConfig(f factory.Factory) *cobra.Command {
 		`),
 	}
 
-	cmd.AddCommand(set.NewCmdConfigSet(f))
-	cmd.AddCommand(get.NewCmdGet(f))
+	cmd.AddCommand(set.NewCmdConfigSet(f, nil))
+	cmd.AddCommand(get.NewCmdGet(f, nil))
 
 	return cmd
 }

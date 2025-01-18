@@ -13,7 +13,7 @@ func NewCmdTags(f factory.Factory) *cobra.Command {
 		Long:  "Perform operations related to your Asana tags.",
 	}
 
-	cmd.AddCommand(list.NewCmdList(f))
+	cmd.AddCommand(list.NewCmdList(f, nil))
 
 	return cmd
 }
