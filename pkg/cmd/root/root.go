@@ -1,6 +1,7 @@
 package root
 
 import (
+	"github.com/MakeNowJust/heredoc"
 	"github.com/timwehrle/asana/pkg/cmd/tags"
 	"os"
 
@@ -69,6 +70,11 @@ func NewCmdRoot(f factory.Factory) (*cobra.Command, error) {
 	cmd.SetUsageFunc(func(command *cobra.Command) error {
 		return showRootUsage(command)
 	})
+
+	cmd.SetVersionTemplate(heredoc.Doc(`
+	asana version {{ .Version }}
+	https://github.com/timwehrle/asana/releases/tag/v{{ .Version }}
+	`))
 
 	return cmd, nil
 }
