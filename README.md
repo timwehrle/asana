@@ -31,6 +31,8 @@ go install github.com/timwehrle/asana@latest
 
 ## Bash Installation
 
+This installation option is experimental, because the OS and architecture get detected automatically.
+
 ```shell
 curl -sSL https://raw.githubusercontent.com/timwehrle/asana/main/scripts/install.sh | bash
 ```
