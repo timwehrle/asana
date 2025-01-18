@@ -181,7 +181,9 @@ func runLogin(opts *LoginOptions) error {
 	}
 
 	fmt.Fprintln(opts.IO.Out, cs.SuccessIcon, "Logged in")
-	fmt.Fprintf(opts.IO.Out, "%s Default workspace set to %s\n", cs.SuccessIcon, cs.Bold(selectedWorkspace.Name))
+	if selectedWorkspace != nil {
+		fmt.Fprintf(opts.IO.Out, "%s Default workspace set to %s\n", cs.SuccessIcon, cs.Bold(selectedWorkspace.Name))
+	}
 
 	return nil
 }
