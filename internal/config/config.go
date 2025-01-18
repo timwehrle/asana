@@ -1,20 +1,20 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"github.com/MakeNowJust/heredoc"
+	"github.com/spf13/viper"
 	"github.com/timwehrle/asana-api"
-	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
-	"reflect"
 	"runtime"
 	"sync"
 )
 
 type Config struct {
-	Username  string           `yaml:"username"`
-	Workspace *asana.Workspace `yaml:"workspace"`
+	Username  string           `mapstructure:"username"`
+	Workspace *asana.Workspace `mapstructure:"workspace"`
 	mu        sync.RWMutex
 }
 
@@ -31,6 +31,8 @@ func (e Error) Error() string {
 	return e.Message
 }
 
+var configFileNotFoundError viper.ConfigFileNotFoundError
+
 // configDir determines the directory for storing configuration files
 func configDir() string {
 	var path string
@@ -46,37 +48,34 @@ func configDir() string {
 	return path
 }
 
-func getConfigFilePath() (string, error) {
+func initViper() error {
 	configPath := configDir()
-
 	if err := os.MkdirAll(configPath, 0755); err != nil {
-		return "", fmt.Errorf("failed to create config dir: %w", err)
+		return fmt.Errorf("failed to create config dir: %w", err)
 	}
 
-	return filepath.Join(configPath, "config.yml"), nil
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(configPath)
+	return nil
 }
 
 func (c *Config) Save() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	path, err := getConfigFilePath()
-	if err != nil {
+	if err := initViper(); err != nil {
 		return err
 	}
 
-	file, err := os.Create(path)
-	if err != nil {
-		return fmt.Errorf("failed to create config file: %w", err)
-	}
-	defer file.Close()
+	viper.Set("username", c.Username)
+	viper.Set("workspace", c.Workspace)
 
-	encoder := yaml.NewEncoder(file)
-	defer encoder.Close()
-
-	err = encoder.Encode(c)
-	if err != nil {
-		return fmt.Errorf("failed to encode config: %w", err)
+	if err := viper.WriteConfig(); err != nil {
+		if errors.As(err, &configFileNotFoundError) {
+			return viper.SafeWriteConfig()
+		}
+		return fmt.Errorf("failed to write config: %w", err)
 	}
 
 	return nil
@@ -86,48 +85,39 @@ func (c *Config) Load() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	path, err := getConfigFilePath()
-	if err != nil {
+	if err := initViper(); err != nil {
 		return err
 	}
 
-	file, err := os.Open(path)
-	if err != nil {
-		if os.IsNotExist(err) {
+	if err := viper.ReadInConfig(); err != nil {
+		if errors.As(err, &configFileNotFoundError) {
 			return Error{Message: heredoc.Docf(`
-				No configuration file found.
-				Please run %[1]sasana auth login%[1]s to authenticate.
-			`, "`")}
+                No configuration file found. Please run %[1]sasana auth login%[1]s to authenticate.
+            `, "`")}
 		}
-		return fmt.Errorf("failed to open config file: %w", err)
+		return fmt.Errorf("failed to read config: %w", err)
 	}
-	defer file.Close()
 
-	decoder := yaml.NewDecoder(file)
-	if err := decoder.Decode(c); err != nil {
-		return fmt.Errorf("failed to decode config: %w", err)
+	if err := viper.Unmarshal(c); err != nil {
+		return fmt.Errorf("failed to decode confid: %w", err)
 	}
 
 	return nil
 }
 
-func (c *Config) Set(field string, value interface{}) error {
-	rv := reflect.ValueOf(c).Elem()
-	f := rv.FieldByName(field)
+func (c *Config) Set(field string, value any) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
-	if !f.IsValid() {
-		return fmt.Errorf("field '%s' does not exist in config", field)
+	if err := initViper(); err != nil {
+		return err
 	}
 
-	if !f.CanSet() {
-		return fmt.Errorf("field '%s' cannot be set", field)
+	viper.Set(field, value)
+
+	if err := viper.Unmarshal(c); err != nil {
+		return fmt.Errorf("failed to update config struct: %w", err)
 	}
 
-	fv := reflect.ValueOf(value)
-	if f.Kind() != fv.Kind() {
-		return fmt.Errorf("value type mismatch for field '%s'", field)
-	}
-
-	f.Set(fv)
-	return c.Save()
+	return viper.WriteConfig()
 }
