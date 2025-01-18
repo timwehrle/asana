@@ -13,10 +13,9 @@ import (
 type ExitCode int
 
 const (
-	exitOK     ExitCode = 0
-	exitError  ExitCode = 1
-	exitCancel ExitCode = 2
-	exitAuth   ExitCode = 4
+	exitOK    ExitCode = 0
+	exitError ExitCode = 1
+	exitAuth  ExitCode = 4
 )
 
 func Main() ExitCode {
@@ -25,6 +24,7 @@ func Main() ExitCode {
 
 	if !cmdFactory.IOStreams.ColorEnabled {
 		surveyCore.DisableColor = true
+		cmdFactory.IOStreams.DisableColor()
 		ansi.DisableColors(true)
 	} else {
 		surveyCore.TemplateFuncsWithColor["color"] = func(style string) string {
