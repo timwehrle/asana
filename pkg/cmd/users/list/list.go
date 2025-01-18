@@ -58,7 +58,7 @@ func runList(opts *ListOptions) error {
 		return fmt.Errorf("failed to get config: %w", err)
 	}
 
-	client, err := opts.Factory.NewAsanaClient()
+	client, err := opts.Factory.Client()
 	if err != nil {
 		return fmt.Errorf("failed to create Asana client: %w", err)
 	}

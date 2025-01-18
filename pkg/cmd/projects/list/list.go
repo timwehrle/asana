@@ -56,7 +56,7 @@ func runList(opts *ListOptions) error {
 		return err
 	}
 
-	client, err := opts.NewAsanaClient()
+	client, err := opts.Client()
 	if err != nil {
 		return err
 	}

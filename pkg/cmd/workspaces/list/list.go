@@ -44,7 +44,7 @@ func NewCmdList(f factory.Factory) *cobra.Command {
 func listRun(opts *ListOptions) error {
 	cs := opts.IO.ColorScheme()
 
-	client, err := opts.NewAsanaClient()
+	client, err := opts.Client()
 	if err != nil {
 		return err
 	}

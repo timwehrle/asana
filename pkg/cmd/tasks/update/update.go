@@ -88,7 +88,7 @@ func selectTask(opts *UpdateOptions) (*asana.Task, error) {
 		return nil, fmt.Errorf("failed to get config: %w", err)
 	}
 
-	client, err := opts.NewAsanaClient()
+	client, err := opts.Client()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Asana client: %w", err)
 	}
@@ -138,7 +138,7 @@ func selectAction(opts *UpdateOptions) (UpdateAction, error) {
 }
 
 func performAction(opts *UpdateOptions, task *asana.Task, action UpdateAction) error {
-	client, err := opts.NewAsanaClient()
+	client, err := opts.Client()
 	if err != nil {
 		return fmt.Errorf("failed to create Asana client: %w", err)
 	}

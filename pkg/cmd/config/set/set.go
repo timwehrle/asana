@@ -49,7 +49,7 @@ func runConfigSet(opts *SetOptions, key string) error {
 func setDefaultWorkspace(opts *SetOptions) error {
 	cs := opts.IO.ColorScheme()
 
-	client, err := opts.NewAsanaClient()
+	client, err := opts.Client()
 	if err != nil {
 		return err
 	}

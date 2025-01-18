@@ -39,7 +39,7 @@ func runTasks(opts *TasksOptions) error {
 		return err
 	}
 
-	client, err := opts.NewAsanaClient()
+	client, err := opts.Client()
 	if err != nil {
 		return err
 	}

@@ -115,7 +115,7 @@ func fetchTasks(opts *ListOptions, workspaceID string, limit int) ([]*asana.Task
 		initialCapacity = limit
 	}
 
-	client, err := opts.Factory.NewAsanaClient()
+	client, err := opts.Factory.Client()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Asana client: %w", err)
 	}

@@ -45,9 +45,6 @@ func NewCmdStatus(f factory.Factory) *cobra.Command {
 		Example: heredoc.Docf(`
             # Check authentication status
             $ %[1]s auth status
-            
-            # View status with debug information
-            $ %[1]s auth status --debug
         `, "asana"),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -86,7 +83,7 @@ func getStatus(opts *StatusOptions) (*Status, error) {
 	status.WorkspaceName = cfg.Workspace.Name
 
 	if status.LoggedIn {
-		client, err := opts.NewAsanaClient()
+		client, err := opts.Client()
 		if err != nil {
 			return nil, fmt.Errorf("failed to create Asana client: %w", err)
 		}
