@@ -171,7 +171,7 @@ func TestConfigErrors(t *testing.T) {
 		err := os.MkdirAll(filepath.Dir(configPath), 0755)
 		require.NoError(t, err)
 
-		err = os.WriteFile(configPath, []byte("invalid: yaml: content: {["), 0644)
+		err = os.WriteFile(configPath, []byte("invalid: yaml: content: {["), 0600)
 		require.NoError(t, err)
 
 		cfg := &Config{}
