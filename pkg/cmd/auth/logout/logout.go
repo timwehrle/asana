@@ -44,7 +44,7 @@ func NewCmdLogout(f factory.Factory, runF func(options *LogoutOptions) error) *c
 func runLogout(opts *LogoutOptions) error {
 	cs := opts.IO.ColorScheme()
 
-	_, err := auth.Get()
+	err := auth.Check()
 	if err != nil {
 		return err
 	}
