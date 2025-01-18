@@ -29,6 +29,12 @@ Download the latest binary for your platform from the [releases page](https://gi
 go install github.com/timwehrle/asana@latest
 ```
 
+## Bash Installation
+
+```shell
+curl -sSL https://raw.githubusercontent.com/timwehrle/asana/main/scripts/install.sh | bash
+```
+
 ## Homebrew Installation
 
 ```shell
