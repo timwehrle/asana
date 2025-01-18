@@ -9,10 +9,11 @@ import (
 
 func main() {
 	cmdFactory := factory.New()
+	stderr := cmdFactory.IOStreams.ErrOut
 
 	root, err := cmd.NewCmdRoot(*cmdFactory)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintf(stderr, "failed to create root command: %s\n", err)
 		os.Exit(1)
 	}
 
