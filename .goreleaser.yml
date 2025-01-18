@@ -18,6 +18,7 @@ release:
 builds:
   - env:
       - CGO_ENABLED=0
+    main: ./cmd/asana
     ldflags:
       - -s -w -X github.com/timwehrle/asana/internal/version.Version={{ .Version }}
     goos:

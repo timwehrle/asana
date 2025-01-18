@@ -19,7 +19,7 @@ VULN := golang.org/x/vuln/cmd/govulncheck@latest
 .PHONY: build
 build: ## Run build
 	@echo "Running build"
-	$(GOBUILD) ${LDFLAGS} -o $(BUILD_DIR)/$(APP_NAME)
+	$(GOBUILD) ${LDFLAGS} -o $(BUILD_DIR)/$(APP_NAME) ./cmd/asana
 
 .PHONY: test
 test: ## Run tests
