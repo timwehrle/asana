@@ -54,7 +54,7 @@ func (p *DefaultPrompter) Token() (string, error) {
 	var token string
 	err := ask(&survey.Password{
 		Message: "Paste your authentication token:",
-	}, &token, survey.WithValidator(survey.Required))
+	}, &token, survey.WithValidator(survey.Required), survey.WithValidator(survey.MinLength(6)))
 	return token, err
 }
 
