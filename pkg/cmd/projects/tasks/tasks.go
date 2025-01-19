@@ -64,8 +64,10 @@ func runTasks(opts *TasksOptions) error {
 		return err
 	}
 
-	var project *asana.Project
-	project, err = selectProject(opts, client, cfg.Workspace.ID)
+	project, err := selectProject(opts, client, cfg.Workspace.ID)
+	if err != nil {
+		return err
+	}
 
 	if opts.WithSections {
 		return listTasksWithSections(opts, client, project)
