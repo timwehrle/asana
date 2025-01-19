@@ -101,7 +101,7 @@ func selectProject(opts *TasksOptions, client *asana.Client, workspaceID string)
 }
 
 func listAllTasks(opts *TasksOptions, client *asana.Client, project *asana.Project) error {
-	tasks := make([]*asana.Task, 0, 100)
+	tasks := make([]*asana.Task, 0, 50)
 	options := &asana.Options{}
 
 	for {
