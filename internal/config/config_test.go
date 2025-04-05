@@ -1,13 +1,14 @@
 package config
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/timwehrle/asana-api"
 	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/timwehrle/asana-api"
 )
 
 func setupTestConfig(t *testing.T) *Config {
@@ -22,8 +23,8 @@ func setupTestConfig(t *testing.T) *Config {
 func TestConfig(t *testing.T) {
 	tmpDir := t.TempDir()
 	originalXDGConfig := os.Getenv(xdgConfigHome)
-	os.Setenv(xdgConfigHome, tmpDir)
-	defer os.Setenv(xdgConfigHome, originalXDGConfig)
+	t.Setenv(xdgConfigHome, tmpDir)
+	defer t.Setenv(xdgConfigHome, originalXDGConfig)
 
 	t.Run("Save and load config", func(t *testing.T) {
 		cfg := &Config{
@@ -165,7 +166,7 @@ func TestConfigDir(t *testing.T) {
 func TestConfigErrors(t *testing.T) {
 	t.Run("Invalid Config Format", func(t *testing.T) {
 		tmpDir := t.TempDir()
-		os.Setenv(xdgConfigHome, tmpDir)
+		t.Setenv(xdgConfigHome, tmpDir)
 
 		configPath := filepath.Join(configDir(), "config.yml")
 		err := os.MkdirAll(filepath.Dir(configPath), 0755)
@@ -189,7 +190,7 @@ func TestConfigErrors(t *testing.T) {
 		err := os.MkdirAll(tmpDir, 0555)
 		require.NoError(t, err)
 
-		os.Setenv(xdgConfigHome, tmpDir)
+		t.Setenv(xdgConfigHome, tmpDir)
 		cfg := &Config{}
 		err = cfg.Save()
 		require.Error(t, err)

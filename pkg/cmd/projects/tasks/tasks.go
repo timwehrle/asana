@@ -1,7 +1,9 @@
 package tasks
 
 import (
+	"errors"
 	"fmt"
+
 	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/internal/prompter"
 
@@ -34,7 +36,6 @@ func NewCmdTasks(f factory.Factory, runF func(*TasksOptions) error) *cobra.Comma
 		Config:   f.Config,
 		Client:   f.Client,
 	}
-
 	cmd := &cobra.Command{
 		Use:   "tasks",
 		Short: "List tasks of a project",
@@ -49,7 +50,6 @@ func NewCmdTasks(f factory.Factory, runF func(*TasksOptions) error) *cobra.Comma
 	}
 
 	cmd.Flags().BoolVarP(&opts.WithSections, "sections", "s", false, "Group tasks by sections")
-
 	return cmd
 }
 
@@ -76,7 +76,11 @@ func runTasks(opts *TasksOptions) error {
 	return listAllTasks(opts, client, project)
 }
 
-func selectProject(opts *TasksOptions, client *asana.Client, workspaceID string) (*asana.Project, error) {
+func selectProject(
+	opts *TasksOptions,
+	client *asana.Client,
+	workspaceID string,
+) (*asana.Project, error) {
 	projects, err := shared.FetchAllProjects(client, &asana.Workspace{ID: workspaceID}, 0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch projects: %w", err)
@@ -84,7 +88,7 @@ func selectProject(opts *TasksOptions, client *asana.Client, workspaceID string)
 
 	if len(projects) == 0 {
 		fmt.Fprintln(opts.IO.Out, "No projects found")
-		return nil, nil
+		return nil, errors.New("no projects found")
 	}
 
 	projectNames := make([]string, len(projects))
@@ -187,10 +191,13 @@ func displayTasks(opts *TasksOptions, project *asana.Project, tasks []*asana.Tas
 	}
 
 	return nil
-
 }
 
-func displayTasksBySection(opts *TasksOptions, project *asana.Project, sections []sectionTasks) error {
+func displayTasksBySection(
+	opts *TasksOptions,
+	project *asana.Project,
+	sections []sectionTasks,
+) error {
 	cs := opts.IO.ColorScheme()
 	out := opts.IO.Out
 

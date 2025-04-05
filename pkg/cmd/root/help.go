@@ -13,13 +13,13 @@ import (
 	"github.com/timwehrle/asana/pkg/iostreams"
 )
 
-// HelpSection represents a named section in the help output
+// HelpSection represents a named section in the help output.
 type HelpSection struct {
 	Title string
 	Body  string
 }
 
-// suggestNestedCommands provides suggestions for unknown commands
+// suggestNestedCommands provides suggestions for unknown commands.
 func suggestNestedCommands(w io.Writer, cmd *cobra.Command, arg string) {
 	fmt.Fprintf(w, "unknown command %q for %q\n", arg, cmd.CommandPath())
 
@@ -35,7 +35,7 @@ func suggestNestedCommands(w io.Writer, cmd *cobra.Command, arg string) {
 	_ = showRootUsage(cmd)
 }
 
-// getSuggestions returns command suggestions based on input
+// getSuggestions returns command suggestions based on input.
 func getSuggestions(cmd *cobra.Command, arg string) []string {
 	if arg == "help" {
 		return []string{"--help"}
@@ -47,7 +47,7 @@ func getSuggestions(cmd *cobra.Command, arg string) []string {
 	return cmd.SuggestionsFor(arg)
 }
 
-// showHelp displays the help content for a command
+// showHelp displays the help content for a command.
 func showHelp(cmd *cobra.Command, _ []string, w io.Writer) {
 	flags := cmd.Flags()
 
@@ -62,10 +62,10 @@ func showHelp(cmd *cobra.Command, _ []string, w io.Writer) {
 	}
 }
 
-// printSection formats and prints a help section
+// printSection formats and prints a help section.
 func printSection(w io.Writer, section HelpSection) {
-	io := iostreams.System()
-	cs := io.ColorScheme()
+	ioSys := iostreams.System()
+	cs := ioSys.ColorScheme()
 
 	if section.Title != "" {
 		fmt.Fprintln(w, cs.Bold(section.Title))
@@ -76,7 +76,7 @@ func printSection(w io.Writer, section HelpSection) {
 	fmt.Fprintln(w)
 }
 
-// buildHelpSections creates all help sections for a command
+// buildHelpSections creates all help sections for a command.
 func buildHelpSections(cmd *cobra.Command) []HelpSection {
 	var sections []HelpSection
 
@@ -112,7 +112,7 @@ func buildHelpSections(cmd *cobra.Command) []HelpSection {
 	return sections
 }
 
-// getCommandDescription returns the long or short description
+// getCommandDescription returns the long or short description.
 func getCommandDescription(cmd *cobra.Command) string {
 	if cmd.Long != "" {
 		return cmd.Long
@@ -120,10 +120,13 @@ func getCommandDescription(cmd *cobra.Command) string {
 	return cmd.Short
 }
 
-// appendFlagSections adds local and inherited flags sections
+// appendFlagSections adds local and inherited flags sections.
 func appendFlagSections(cmd *cobra.Command, sections *[]HelpSection) {
 	if cmd.HasAvailableLocalFlags() {
-		*sections = append(*sections, HelpSection{"Flags", format.Dedent(cmd.LocalFlags().FlagUsages())})
+		*sections = append(
+			*sections,
+			HelpSection{"Flags", format.Dedent(cmd.LocalFlags().FlagUsages())},
+		)
 	}
 
 	if inheritedFlags := cmd.InheritedFlags().FlagUsages(); inheritedFlags != "" {
@@ -131,12 +134,12 @@ func appendFlagSections(cmd *cobra.Command, sections *[]HelpSection) {
 	}
 }
 
-// formatAliases formats command aliases with parent aliases
+// formatAliases formats command aliases with parent aliases.
 func formatAliases(cmd *cobra.Command) string {
 	return strings.Join(getParentAliases(cmd, cmd.Aliases), ", ")
 }
 
-// getParentAliases recursively builds alias list including parent commands
+// getParentAliases recursively builds alias list including parent commands.
 func getParentAliases(cmd *cobra.Command, aliases []string) []string {
 	if !cmd.HasParent() {
 		return aliases
@@ -155,7 +158,7 @@ func getParentAliases(cmd *cobra.Command, aliases []string) []string {
 	return getParentAliases(cmd.Parent(), combinedAliases)
 }
 
-// formatCommands formats the list of available commands
+// formatCommands formats the list of available commands.
 func formatCommands(commands []*cobra.Command) string {
 	maxLength := getMaxCommandLength(commands)
 	var sb strings.Builder
@@ -167,7 +170,7 @@ func formatCommands(commands []*cobra.Command) string {
 	return sb.String()
 }
 
-// getMaxCommandLength calculates the maximum command name length
+// getMaxCommandLength calculates the maximum command name length.
 func getMaxCommandLength(commands []*cobra.Command) int {
 	maxLen := 0
 	for _, cmd := range commands {
@@ -178,12 +181,12 @@ func getMaxCommandLength(commands []*cobra.Command) int {
 	return maxLen + 2
 }
 
-// padRight pads a string with spaces to the specified length
+// padRight pads a string with spaces to the specified length.
 func padRight(s string, length int) string {
 	return fmt.Sprintf(fmt.Sprintf("%%-%ds", length), s)
 }
 
-// getLearnMoreSection returns the help section with additional information
+// getLearnMoreSection returns the help section with additional information.
 func getLearnMoreSection() HelpSection {
 	return HelpSection{
 		Title: "Learn More",
@@ -193,10 +196,10 @@ func getLearnMoreSection() HelpSection {
 	}
 }
 
-// showRootUsage displays the root command usage
+// showRootUsage displays the root command usage.
 func showRootUsage(cmd *cobra.Command) error {
-	io := iostreams.System()
-	cs := io.ColorScheme()
+	ioSys := iostreams.System()
+	cs := ioSys.ColorScheme()
 
 	fmt.Print(cs.Bold("Usage:"))
 	fmt.Printf("  %s <command> <subcommand> [flags]\n", cmd.Name())

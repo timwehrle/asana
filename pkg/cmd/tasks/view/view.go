@@ -2,9 +2,10 @@ package view
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/internal/prompter"
-	"time"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/timwehrle/asana/pkg/factory"
@@ -91,7 +92,10 @@ func prompt(allTasks []*asana.Task, prompter prompter.Prompter) (*asana.Task, er
 	taskNames := format.Tasks(allTasks)
 
 	today := time.Now()
-	selectMessage := fmt.Sprintf("Your Tasks on %s (Select one for more details):", today.Format("Jan 02, 2006"))
+	selectMessage := fmt.Sprintf(
+		"Your Tasks on %s (Select one for more details):",
+		today.Format("Jan 02, 2006"),
+	)
 
 	index, err := prompter.Select(selectMessage, taskNames)
 	if err != nil {
@@ -101,17 +105,23 @@ func prompt(allTasks []*asana.Task, prompter prompter.Prompter) (*asana.Task, er
 	return allTasks[index], nil
 }
 
-func displayDetails(client *asana.Client, task *asana.Task, IO *iostreams.IOStreams) error {
-	cs := IO.ColorScheme()
+func displayDetails(client *asana.Client, task *asana.Task, io *iostreams.IOStreams) error {
+	cs := io.ColorScheme()
 
 	err := task.Fetch(client)
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprintf(IO.Out, "%s | Due: %s | %s\n", cs.Bold(task.Name), format.Date(task.DueOn), format.Projects(task.Projects))
-	fmt.Fprintf(IO.Out, "%s\n", format.Tags(task.Tags))
-	fmt.Fprintln(IO.Out, format.Notes(task.Notes))
+	fmt.Fprintf(
+		io.Out,
+		"%s | Due: %s | %s\n",
+		cs.Bold(task.Name),
+		format.Date(task.DueOn),
+		format.Projects(task.Projects),
+	)
+	fmt.Fprintf(io.Out, "%s\n", format.Tags(task.Tags))
+	fmt.Fprintln(io.Out, format.Notes(task.Notes))
 
 	return nil
 }

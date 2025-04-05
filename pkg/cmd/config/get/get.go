@@ -2,6 +2,7 @@ package get
 
 import (
 	"fmt"
+
 	"github.com/timwehrle/asana/internal/config"
 
 	"github.com/MakeNowJust/heredoc"
@@ -51,7 +52,12 @@ func runConfigGet(opts *GetOptions, key string) error {
 			return err
 		}
 
-		fmt.Fprintf(opts.IO.Out, "Default workspace is %s (%s)\n", cs.Bold(cfg.Workspace.Name), cfg.Workspace.ID)
+		fmt.Fprintf(
+			opts.IO.Out,
+			"Default workspace is %s (%s)\n",
+			cs.Bold(cfg.Workspace.Name),
+			cfg.Workspace.ID,
+		)
 	}
 
 	return nil

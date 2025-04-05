@@ -2,6 +2,7 @@ package update
 
 import (
 	"fmt"
+
 	"github.com/timwehrle/asana/internal/prompter"
 
 	"github.com/MakeNowJust/heredoc"

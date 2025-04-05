@@ -2,6 +2,7 @@ package list
 
 import (
 	"fmt"
+
 	"github.com/timwehrle/asana/internal/config"
 
 	"github.com/MakeNowJust/heredoc"
@@ -77,7 +78,8 @@ func NewCmdList(f factory.Factory, runF func(*ListOptions) error) *cobra.Command
 		},
 	}
 
-	cmd.Flags().StringVarP((*string)(&opts.Sort), "sort", "s", "", "Sort tasks by name, due date, creation date (options: asc, desc, due, due-desc, created-at)")
+	cmd.Flags().
+		StringVarP((*string)(&opts.Sort), "sort", "s", "", "Sort tasks by name, due date, creation date (options: asc, desc, due, due-desc, created-at)")
 	cmd.Flags().IntVarP(&opts.Limit, "limit", "l", 0, "Limit the tasks to display")
 
 	return cmd
@@ -89,7 +91,10 @@ func validateSortOption(opt SortOption) error {
 	}
 
 	if _, ok := validSortOptions[opt]; !ok {
-		return fmt.Errorf("invalid sort option %q. Available options: asc, desc, due, due-desc, created-at", opt)
+		return fmt.Errorf(
+			"invalid sort option %q. Available options: asc, desc, due, due-desc, created-at",
+			opt,
+		)
 	}
 	return nil
 }
@@ -109,9 +114,7 @@ func listRun(opts *ListOptions) error {
 		return printEmptyMessage(opts.IO)
 	}
 
-	if err := sortTasks(tasks, opts.Sort); err != nil {
-		return fmt.Errorf("failed to sort tasks: %w", err)
-	}
+	sortTasks(tasks, opts.Sort)
 
 	return printTasks(opts.IO, cfg.Username, tasks)
 }
@@ -162,7 +165,7 @@ func fetchTasks(opts *ListOptions, workspaceID string, limit int) ([]*asana.Task
 	return tasks, nil
 }
 
-func sortTasks(tasks []*asana.Task, sortOption SortOption) error {
+func sortTasks(tasks []*asana.Task, sortOption SortOption) {
 	switch sortOption {
 	case SortAsc:
 		sorting.TaskSort.ByName(tasks)
@@ -177,7 +180,6 @@ func sortTasks(tasks []*asana.Task, sortOption SortOption) error {
 	case "":
 		// No sorting requested
 	}
-	return nil
 }
 
 func printEmptyMessage(io *iostreams.IOStreams) error {

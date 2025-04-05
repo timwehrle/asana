@@ -2,6 +2,7 @@ package set
 
 import (
 	"fmt"
+
 	"github.com/timwehrle/asana-api"
 	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/internal/prompter"
@@ -101,7 +102,12 @@ func setDefaultWorkspace(opts *SetOptions) error {
 		return err
 	}
 
-	fmt.Fprintf(opts.IO.Out, "%s Default workspace set to %s\n", cs.SuccessIcon, cs.Bold(selectedWorkspace.Name))
+	fmt.Fprintf(
+		opts.IO.Out,
+		"%s Default workspace set to %s\n",
+		cs.SuccessIcon,
+		cs.Bold(selectedWorkspace.Name),
+	)
 
 	return nil
 }

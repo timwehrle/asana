@@ -1,8 +1,9 @@
 package convert
 
 import (
-	"github.com/timwehrle/asana-api"
 	"time"
+
+	"github.com/timwehrle/asana-api"
 )
 
 func ToDate(dateStr string, layout string) (*asana.Date, error) {
@@ -16,7 +17,16 @@ func ToDate(dateStr string, layout string) (*asana.Date, error) {
 	}
 
 	location := time.Now().Location()
-	zeroedTime := time.Date(parsedTime.Year(), parsedTime.Month(), parsedTime.Day(), 0, 0, 0, 0, location)
+	zeroedTime := time.Date(
+		parsedTime.Year(),
+		parsedTime.Month(),
+		parsedTime.Day(),
+		0,
+		0,
+		0,
+		0,
+		location,
+	)
 
 	asanaDate := asana.Date(zeroedTime)
 	return &asanaDate, nil

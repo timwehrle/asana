@@ -1,8 +1,9 @@
 package sorting
 
 import (
-	"golang.org/x/exp/constraints"
 	"sort"
+
+	"cmp"
 )
 
 func By[T any](slice []T, less func(a T, b T) bool) {
@@ -11,7 +12,7 @@ func By[T any](slice []T, less func(a T, b T) bool) {
 	})
 }
 
-func ByField[T any, F constraints.Ordered](slice []T, field func(T) F, descending bool) {
+func ByField[T any, F cmp.Ordered](slice []T, field func(T) F, descending bool) {
 	sort.Slice(slice, func(i, j int) bool {
 		if descending {
 			return field(slice[i]) > field(slice[j])

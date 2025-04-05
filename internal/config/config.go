@@ -3,13 +3,14 @@ package config
 import (
 	"errors"
 	"fmt"
-	"github.com/MakeNowJust/heredoc"
-	"github.com/spf13/viper"
-	"github.com/timwehrle/asana-api"
 	"os"
 	"path/filepath"
 	"runtime"
 	"sync"
+
+	"github.com/MakeNowJust/heredoc"
+	"github.com/spf13/viper"
+	"github.com/timwehrle/asana-api"
 )
 
 type Config struct {
@@ -31,9 +32,9 @@ func (e Error) Error() string {
 	return e.Message
 }
 
-var configFileNotFoundError viper.ConfigFileNotFoundError
+var errConfigFileNotFound viper.ConfigFileNotFoundError
 
-// configDir determines the directory for storing configuration files
+// configDir determines the directory for storing configuration files.
 func configDir() string {
 	var path string
 
@@ -50,7 +51,7 @@ func configDir() string {
 
 func initViper() error {
 	configPath := configDir()
-	if err := os.MkdirAll(configPath, 0755); err != nil {
+	if err := os.MkdirAll(configPath, 0750); err != nil {
 		return fmt.Errorf("failed to create config dir: %w", err)
 	}
 
@@ -72,7 +73,7 @@ func (c *Config) Save() error {
 	viper.Set("workspace", c.Workspace)
 
 	if err := viper.WriteConfig(); err != nil {
-		if errors.As(err, &configFileNotFoundError) {
+		if errors.As(err, &errConfigFileNotFound) {
 			return viper.SafeWriteConfig()
 		}
 		return fmt.Errorf("failed to write config: %w", err)
@@ -90,7 +91,7 @@ func (c *Config) Load() error {
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
-		if errors.As(err, &configFileNotFoundError) {
+		if errors.As(err, &errConfigFileNotFound) {
 			return Error{Message: heredoc.Docf(`
                 No configuration file found. Please run %[1]sasana auth login%[1]s to authenticate.
             `, "`")}

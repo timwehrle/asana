@@ -1,8 +1,10 @@
-package format
+package format_test
 
 import (
 	"testing"
 	"time"
+
+	"github.com/timwehrle/asana/pkg/format"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/timwehrle/asana-api"
@@ -18,12 +20,16 @@ func TestFormatItems(t *testing.T) {
 		{name: "item2"},
 	}
 
-	result := formatItems(items, func(m *mockStruct) string {
+	result := format.Items(items, func(m *mockStruct) string {
 		return m.name
 	})
 
 	assert.Equal(t, []string{"item1", "item2"}, result)
-	assert.Empty(t, 0, len(formatItems([]*mockStruct{}, func(m *mockStruct) string { return m.name })))
+	assert.Empty(
+		t,
+		0,
+		len(format.Items([]*mockStruct{}, func(m *mockStruct) string { return m.name })),
+	)
 }
 
 func TestFormatList(t *testing.T) {
@@ -55,7 +61,7 @@ func TestFormatList(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := formatList(tt.prefix, tt.items)
+			result := format.List(tt.prefix, tt.items)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -79,7 +85,7 @@ func TestTasks(t *testing.T) {
 		},
 	}
 
-	result := Tasks(tasks)
+	result := format.Tasks(tasks)
 	assert.Len(t, result, 2)
 	for _, formattedTask := range result {
 		assert.Contains(t, formattedTask, "]")
@@ -101,9 +107,9 @@ func TestProjects(t *testing.T) {
 		},
 	}
 
-	result := Projects(projects)
+	result := format.Projects(projects)
 	assert.Equal(t, "Projects: Project 1, Project 2", result)
-	assert.Equal(t, "Projects: None", Projects([]*asana.Project{}))
+	assert.Equal(t, "Projects: None", format.Projects([]*asana.Project{}))
 }
 
 func TestTags(t *testing.T) {
@@ -120,9 +126,9 @@ func TestTags(t *testing.T) {
 		},
 	}
 
-	result := Tags(tags)
+	result := format.Tags(tags)
 	assert.Equal(t, "Tags: Tag 1, Tag 2", result)
-	assert.Equal(t, "Tags: None", Tags([]*asana.Tag{}))
+	assert.Equal(t, "Tags: None", format.Tags([]*asana.Tag{}))
 }
 
 func TestNotes(t *testing.T) {
@@ -145,7 +151,7 @@ func TestNotes(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := Notes(tt.notes)
+			result := format.Notes(tt.notes)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -153,7 +159,7 @@ func TestNotes(t *testing.T) {
 
 func TestDate(t *testing.T) {
 	t.Run("Empty Date", func(t *testing.T) {
-		result := Date(nil)
+		result := format.Date(nil)
 		if result != "None" {
 			t.Errorf("Expected 'None', got '%s'", result)
 		}
@@ -163,7 +169,7 @@ func TestDate(t *testing.T) {
 		now := time.Now()
 		today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 		date := asana.Date(today)
-		result := Date(&date)
+		result := format.Date(&date)
 		if result != "Today" {
 			t.Errorf("Expected 'Today', got '%s'", result)
 		}
@@ -172,7 +178,7 @@ func TestDate(t *testing.T) {
 	t.Run("Tomorrow", func(t *testing.T) {
 		tomorrow := time.Now().Add(24 * time.Hour)
 		date := asana.Date(tomorrow)
-		result := Date(&date)
+		result := format.Date(&date)
 		if result != "Tomorrow" {
 			t.Errorf("Expected 'Tomorrow', got '%s'", result)
 		}
@@ -182,7 +188,7 @@ func TestDate(t *testing.T) {
 		date := time.Now().Add(3 * 24 * time.Hour)
 		expected := date.Format("Mon")
 		asanaDate := asana.Date(date)
-		result := Date(&asanaDate)
+		result := format.Date(&asanaDate)
 		if result != expected {
 			t.Errorf("Expected '%s', got '%s'", expected, result)
 		}
@@ -192,7 +198,7 @@ func TestDate(t *testing.T) {
 		futureDate := time.Now().Add(8 * 24 * time.Hour)
 		expected := futureDate.Format("Jan 02, 2006")
 		asanaDate := asana.Date(futureDate)
-		result := Date(&asanaDate)
+		result := format.Date(&asanaDate)
 		if result != expected {
 			t.Errorf("Expected '%s', got '%s'", expected, result)
 		}
@@ -202,7 +208,7 @@ func TestDate(t *testing.T) {
 		pastDate := time.Now().Add(8 * (-24) * time.Hour)
 		expected := pastDate.Format("Jan 02, 2006")
 		asanaDate := asana.Date(pastDate)
-		result := Date(&asanaDate)
+		result := format.Date(&asanaDate)
 		if result != expected {
 			t.Errorf("Expected '%s', got '%s'", expected, result)
 		}
@@ -244,7 +250,7 @@ func TestIndent(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Indent(tt.input, tt.prefix)
+			got := format.Indent(tt.input, tt.prefix)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -285,7 +291,7 @@ func TestDedent(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Dedent(tt.input)
+			got := format.Dedent(tt.input)
 			assert.Equal(t, tt.want, got)
 		})
 	}

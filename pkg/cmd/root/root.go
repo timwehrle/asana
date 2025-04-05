@@ -1,9 +1,10 @@
 package root
 
 import (
+	"os"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/timwehrle/asana/pkg/cmd/tags"
-	"os"
 
 	"github.com/spf13/cobra"
 	service "github.com/timwehrle/asana/internal/auth"

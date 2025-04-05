@@ -32,8 +32,11 @@ func ValidateToken(token string) error {
 	if err != nil {
 		if asana.IsAuthError(err) {
 			return AuthenticationError{
-				Message: fmt.Sprintf("%s Authentication failed. Please provide a valid token.", cs.ErrorIcon),
-				Cause:   err,
+				Message: fmt.Sprintf(
+					"%s Authentication failed. Please provide a valid token.",
+					cs.ErrorIcon,
+				),
+				Cause: err,
 			}
 		}
 		return AuthenticationError{

@@ -2,6 +2,8 @@ package list
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana-api"
@@ -9,7 +11,6 @@ import (
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/iostreams"
 	"github.com/timwehrle/asana/pkg/sorting"
-	"strings"
 )
 
 type ListOptions struct {

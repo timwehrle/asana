@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/timwehrle/asana/pkg/cmd"
 	"os"
+
+	"github.com/timwehrle/asana/pkg/cmd"
 )
 
 func main() {

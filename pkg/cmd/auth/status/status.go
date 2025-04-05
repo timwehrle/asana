@@ -2,6 +2,7 @@ package status
 
 import (
 	"fmt"
+
 	"github.com/timwehrle/asana/internal/config"
 
 	"github.com/MakeNowJust/heredoc"

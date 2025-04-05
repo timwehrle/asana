@@ -2,10 +2,11 @@ package prompter
 
 import (
 	"errors"
+	"testing"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func runPrompterTests[T any](
@@ -203,7 +204,7 @@ func TestDefaultPrompter_Select(t *testing.T) {
 			*response = mockResponse
 			return nil
 		},
-		func(prompter Prompter, prompt, defaultValue string) (int, error) {
+		func(prompter Prompter, prompt, _ string) (int, error) {
 			return prompter.Select(prompt, []string{"Option 1", "Option 2"})
 		},
 	)

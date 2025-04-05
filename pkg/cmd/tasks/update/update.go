@@ -2,10 +2,11 @@ package update
 
 import (
 	"fmt"
-	"github.com/timwehrle/asana/internal/config"
-	"github.com/timwehrle/asana/internal/prompter"
 	"strings"
 	"time"
+
+	"github.com/timwehrle/asana/internal/config"
+	"github.com/timwehrle/asana/internal/prompter"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -166,7 +167,11 @@ func performAction(opts *UpdateOptions, task *asana.Task, action UpdateAction) e
 	case ActionSetDueDate:
 		return setTaskDueDate(opts, client, task, cs)
 	case ActionCancel:
-		fmt.Fprintf(opts.IO.Out, "%s Operation canceled. You can rerun the command to try again.\n", cs.SuccessIcon)
+		fmt.Fprintf(
+			opts.IO.Out,
+			"%s Operation canceled. You can rerun the command to try again.\n",
+			cs.SuccessIcon,
+		)
 		return nil
 	default:
 		return fmt.Errorf("unknown action: %d", action)
@@ -190,7 +195,12 @@ func completeTask(client *asana.Client, task *asana.Task, cs *iostreams.ColorSch
 	return nil
 }
 
-func editTaskName(opts *UpdateOptions, client *asana.Client, task *asana.Task, cs *iostreams.ColorScheme) error {
+func editTaskName(
+	opts *UpdateOptions,
+	client *asana.Client,
+	task *asana.Task,
+	cs *iostreams.ColorScheme,
+) error {
 	newName, err := opts.Prompter.Input("Enter the new task name:", task.Name)
 	if err != nil {
 		return fmt.Errorf("failed to get input: %w", err)
@@ -215,7 +225,12 @@ func editTaskName(opts *UpdateOptions, client *asana.Client, task *asana.Task, c
 	return nil
 }
 
-func editTaskDescription(opts *UpdateOptions, client *asana.Client, task *asana.Task, cs *iostreams.ColorScheme) error {
+func editTaskDescription(
+	opts *UpdateOptions,
+	client *asana.Client,
+	task *asana.Task,
+	cs *iostreams.ColorScheme,
+) error {
 	existingDescription := strings.TrimSpace(task.Notes)
 	newDescription, err := opts.Prompter.Editor("Edit the description:", existingDescription)
 	if err != nil {
@@ -242,8 +257,16 @@ func editTaskDescription(opts *UpdateOptions, client *asana.Client, task *asana.
 	return nil
 }
 
-func setTaskDueDate(opts *UpdateOptions, client *asana.Client, task *asana.Task, cs *iostreams.ColorScheme) error {
-	input, err := opts.Prompter.Input("Enter the new due date (YYYY-MM-DD):", format.Date(task.DueOn))
+func setTaskDueDate(
+	opts *UpdateOptions,
+	client *asana.Client,
+	task *asana.Task,
+	cs *iostreams.ColorScheme,
+) error {
+	input, err := opts.Prompter.Input(
+		"Enter the new due date (YYYY-MM-DD):",
+		format.Date(task.DueOn),
+	)
 	if err != nil {
 		return fmt.Errorf("failed to get input: %w", err)
 	}

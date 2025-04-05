@@ -1,9 +1,12 @@
-package convert
+package convert_test
 
 import (
-	"github.com/timwehrle/asana-api"
 	"testing"
 	"time"
+
+	"github.com/timwehrle/asana/pkg/convert"
+
+	"github.com/timwehrle/asana-api"
 )
 
 func TestToDate(t *testing.T) {
@@ -68,7 +71,7 @@ func TestToDate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ToDate(tt.dateStr, tt.layout)
+			got, err := convert.ToDate(tt.dateStr, tt.layout)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("StringToDate() error = %v, wantErr %v", err, tt.wantErr)

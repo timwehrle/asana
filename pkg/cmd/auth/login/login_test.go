@@ -2,11 +2,12 @@ package login
 
 import (
 	"bytes"
+	"testing"
+
 	"github.com/google/shlex"
 	"github.com/stretchr/testify/require"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/iostreams"
-	"testing"
 )
 
 func TestNewCmdLogin(t *testing.T) {

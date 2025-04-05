@@ -2,6 +2,7 @@ package list
 
 import (
 	"fmt"
+
 	"github.com/timwehrle/asana/internal/config"
 
 	"github.com/MakeNowJust/heredoc"
@@ -35,7 +36,9 @@ func NewCmdList(f factory.Factory, runF func(*ListOptions) error) *cobra.Command
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List projects from your default workspace",
-		Long:    heredoc.Doc(`Retrieve and display a list of all projects under your default workspace.`),
+		Long: heredoc.Doc(
+			`Retrieve and display a list of all projects under your default workspace.`,
+		),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if opts.Limit < 0 {
 				return fmt.Errorf("invalid limit: %v", opts.Limit)
@@ -50,7 +53,8 @@ func NewCmdList(f factory.Factory, runF func(*ListOptions) error) *cobra.Command
 	}
 
 	cmd.Flags().IntVarP(&opts.Limit, "limit", "l", 0, "Max number of projects to display")
-	cmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Sort projects by name (options: asc, desc)")
+	cmd.Flags().
+		StringVarP(&opts.Sort, "sort", "s", "", "Sort projects by name (options: asc, desc)")
 	cmd.Flags().BoolVarP(&opts.Favorite, "favorite", "f", false, "List your favorite projects")
 
 	return cmd
@@ -103,7 +107,11 @@ func runList(opts *ListOptions) error {
 	return nil
 }
 
-func fetchFavoriteProjects(client *asana.Client, workspace *asana.Workspace, limit int) ([]*asana.Project, error) {
+func fetchFavoriteProjects(
+	client *asana.Client,
+	workspace *asana.Workspace,
+	limit int,
+) ([]*asana.Project, error) {
 	initialCapacity := 100
 	if limit > 0 {
 		initialCapacity = limit

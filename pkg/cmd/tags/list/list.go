@@ -2,6 +2,7 @@ package list
 
 import (
 	"fmt"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana-api"
@@ -28,9 +29,11 @@ func NewCmdList(f factory.Factory, runF func(*ListOptions) error) *cobra.Command
 	}
 
 	cmd := &cobra.Command{
-		Use:     "list",
-		Short:   "List tags from your default workspace",
-		Long:    heredoc.Doc(`Retrieve and display a list of all tags under your default workspace.`),
+		Use:   "list",
+		Short: "List tags from your default workspace",
+		Long: heredoc.Doc(
+			`Retrieve and display a list of all tags under your default workspace.`,
+		),
 		Aliases: []string{"ls"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if opts.Limit < 0 {

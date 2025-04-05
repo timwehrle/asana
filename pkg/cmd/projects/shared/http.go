@@ -2,7 +2,11 @@ package shared
 
 import "github.com/timwehrle/asana-api"
 
-func FetchAllProjects(client *asana.Client, workspace *asana.Workspace, limit int) ([]*asana.Project, error) {
+func FetchAllProjects(
+	client *asana.Client,
+	workspace *asana.Workspace,
+	limit int,
+) ([]*asana.Project, error) {
 	initialCapacity := 100
 	if limit > 0 {
 		initialCapacity = limit

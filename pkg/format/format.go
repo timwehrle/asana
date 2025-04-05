@@ -11,7 +11,7 @@ import (
 	"github.com/timwehrle/asana/pkg/iostreams"
 )
 
-func formatItems[T any](items []*T, nameFunc func(*T) string) []string {
+func Items[T any](items []*T, nameFunc func(*T) string) []string {
 	names := make([]string, len(items))
 	for i, item := range items {
 		names[i] = nameFunc(item)
@@ -19,7 +19,7 @@ func formatItems[T any](items []*T, nameFunc func(*T) string) []string {
 	return names
 }
 
-func formatList(prefix string, items []string) string {
+func List(prefix string, items []string) string {
 	if len(items) == 0 {
 		return prefix + "None"
 	}
@@ -27,23 +27,23 @@ func formatList(prefix string, items []string) string {
 }
 
 func Tasks(tasks []*asana.Task) []string {
-	return formatItems(tasks, func(t *asana.Task) string {
+	return Items(tasks, func(t *asana.Task) string {
 		return fmt.Sprintf("[%s] %s", Date(t.DueOn), t.Name)
 	})
 }
 
 func Projects(projects []*asana.Project) string {
-	names := formatItems(projects, func(p *asana.Project) string {
+	names := Items(projects, func(p *asana.Project) string {
 		return p.Name
 	})
-	return formatList("Projects: ", names)
+	return List("Projects: ", names)
 }
 
 func Tags(tags []*asana.Tag) string {
-	names := formatItems(tags, func(t *asana.Tag) string {
+	names := Items(tags, func(t *asana.Tag) string {
 		return t.Name
 	})
-	return formatList("Tags: ", names)
+	return List("Tags: ", names)
 }
 
 // Notes formats the notes for better readability
@@ -58,7 +58,6 @@ func Notes(notes string) string {
 }
 
 func Date(date *asana.Date) string {
-
 	if date == nil {
 		return "None"
 	}
@@ -66,7 +65,16 @@ func Date(date *asana.Date) string {
 	parsedDate := time.Time(*date)
 	location := time.Now().Location()
 
-	parsedDate = time.Date(parsedDate.Year(), parsedDate.Month(), parsedDate.Day(), 0, 0, 0, 0, location)
+	parsedDate = time.Date(
+		parsedDate.Year(),
+		parsedDate.Month(),
+		parsedDate.Day(),
+		0,
+		0,
+		0,
+		0,
+		location,
+	)
 
 	now := time.Now().In(location)
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, location)

@@ -2,9 +2,10 @@ package login
 
 import (
 	"fmt"
-	"github.com/timwehrle/asana/internal/prompter"
 	"io"
 	"strings"
+
+	"github.com/timwehrle/asana/internal/prompter"
 
 	"github.com/timwehrle/asana-api"
 	"github.com/timwehrle/asana/internal/config"
@@ -61,7 +62,9 @@ func NewCmdLogin(f factory.Factory, runF func(*LoginOptions) error) *cobra.Comma
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if tokenStdin {
 				if opts.Workspace == "" {
-					return fmt.Errorf("workspace must be specified with --workspace when using --with-token")
+					return fmt.Errorf(
+						"workspace must be specified with --workspace when using --with-token",
+					)
 				}
 				defer opts.IO.In.Close()
 				token, err := io.ReadAll(opts.IO.In)
@@ -83,7 +86,8 @@ func NewCmdLogin(f factory.Factory, runF func(*LoginOptions) error) *cobra.Comma
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Workspace, "workspace", "w", "", "The default workspace to make calls to")
+	cmd.Flags().
+		StringVarP(&opts.Workspace, "workspace", "w", "", "The default workspace to make calls to")
 	cmd.Flags().BoolVar(&tokenStdin, "with-token", false, "Read token from standard input")
 
 	return cmd
@@ -139,10 +143,19 @@ func runLogin(opts *LoginOptions) error {
 
 		if selectedWorkspace == nil {
 			if !opts.Interactive {
-				return fmt.Errorf("%s Workspace '%s' not found. Please specify a valid workspace with --workspace", cs.ErrorIcon, opts.Workspace)
+				return fmt.Errorf(
+					"%s Workspace '%s' not found. Please specify a valid workspace with --workspace",
+					cs.ErrorIcon,
+					opts.Workspace,
+				)
 			}
 
-			fmt.Fprintf(opts.IO.ErrOut, "%s Workspace '%s' not found. Please select one from the list.\n", cs.ErrorIcon, opts.Workspace)
+			fmt.Fprintf(
+				opts.IO.ErrOut,
+				"%s Workspace '%s' not found. Please select one from the list.\n",
+				cs.ErrorIcon,
+				opts.Workspace,
+			)
 		}
 	}
 
@@ -182,7 +195,12 @@ func runLogin(opts *LoginOptions) error {
 
 	fmt.Fprintln(opts.IO.Out, cs.SuccessIcon, "Logged in")
 	if selectedWorkspace != nil {
-		fmt.Fprintf(opts.IO.Out, "%s Default workspace set to %s\n", cs.SuccessIcon, cs.Bold(selectedWorkspace.Name))
+		fmt.Fprintf(
+			opts.IO.Out,
+			"%s Default workspace set to %s\n",
+			cs.SuccessIcon,
+			cs.Bold(selectedWorkspace.Name),
+		)
 	}
 
 	return nil
