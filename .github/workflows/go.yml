@@ -27,9 +27,8 @@ jobs:
         run: go mod download
 
       - name: Running Linter
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
-          version: v1.60
           args: --timeout=5m
 
       - name: Check Formatting
