@@ -3,6 +3,8 @@ package login
 import (
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/timwehrle/asana/internal/prompter"
@@ -99,8 +101,15 @@ func runLogin(opts *LoginOptions) error {
 	var token string
 	token, err := auth.Get()
 	if err == nil && token != "" {
-		fmt.Fprintln(opts.IO.Out, "You are already logged in")
-		return nil
+		cfg := &config.Config{}
+		if err := cfg.Load(); err != nil {
+			if err := auth.Delete(); err != nil {
+				return fmt.Errorf("failed to clear existing token: %w", err)
+			}
+		} else {
+			fmt.Fprintln(opts.IO.Out, "You are already logged in")
+			return nil
+		}
 	}
 
 	if opts.Interactive {
@@ -121,6 +130,11 @@ func runLogin(opts *LoginOptions) error {
 	}
 
 	client := asana.NewClientWithAccessToken(token)
+
+	user, err := client.CurrentUser()
+	if err != nil {
+		return err
+	}
 
 	workspaces, err := client.AllWorkspaces()
 	if err != nil {
@@ -173,9 +187,9 @@ func runLogin(opts *LoginOptions) error {
 		selectedWorkspace = workspaces[index]
 	}
 
-	user, err := client.CurrentUser()
-	if err != nil {
-		return err
+	configDir := filepath.Join(os.Getenv("HOME"), ".config", "asana-cli")
+	if err := os.MkdirAll(configDir, 0750); err != nil {
+		return fmt.Errorf("failed to create config directory: %w", err)
 	}
 
 	cfg := &config.Config{

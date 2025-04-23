@@ -49,12 +49,35 @@ func configDir() string {
 	return path
 }
 
-func initViper() error {
+// ensureConfigDir ensures the config directory exists
+func ensureConfigDir() error {
 	configPath := configDir()
 	if err := os.MkdirAll(configPath, 0750); err != nil {
-		return fmt.Errorf("failed to create config dir: %w", err)
+		return fmt.Errorf("failed to create config directory: %w", err)
+	}
+	return nil
+}
+
+// ensureConfigFile ensures the config file exists with default values
+func ensureConfigFile() error {
+	configPath := filepath.Join(configDir(), "config.yaml")
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		// Don't create an empty config file by default
+		return nil
+	}
+	return nil
+}
+
+func initViper() error {
+	if err := ensureConfigDir(); err != nil {
+		return err
 	}
 
+	if err := ensureConfigFile(); err != nil {
+		return err
+	}
+
+	configPath := configDir()
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(configPath)
@@ -100,7 +123,7 @@ func (c *Config) Load() error {
 	}
 
 	if err := viper.Unmarshal(c); err != nil {
-		return fmt.Errorf("failed to decode confid: %w", err)
+		return fmt.Errorf("failed to decode config: %w", err)
 	}
 
 	return nil
