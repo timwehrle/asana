@@ -25,10 +25,12 @@ func NewCmdRoot(f factory.Factory) (*cobra.Command, error) {
 		Version: version.Version,
 		Long:    `Work with Asana from the command line.`,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			if cmd.HasParent() && cmd.Parent().Name() == "auth" {
+			// Skip all checks for auth commands
+			if isAuthCommand(os.Args) {
 				return nil
 			}
 
+			// For non-auth commands, check authentication and load config
 			err := service.Check()
 			if err != nil {
 				return err
@@ -38,22 +40,28 @@ func NewCmdRoot(f factory.Factory) (*cobra.Command, error) {
 		},
 	}
 
-	cfg, err := f.Config()
-	if err != nil {
-		return nil, err
-	}
-
-	err = cfg.Load()
-	if err != nil {
-		return nil, err
-	}
-
-	err = cfg.Set("version", version.Version)
-	if err != nil {
-		return nil, err
-	}
-
+	// Add auth command first
 	cmd.AddCommand(auth.NewCmdAuth(f))
+
+	// Only load config for non-auth commands
+	if !isAuthCommand(os.Args) {
+		cfg, err := f.Config()
+		if err != nil {
+			return nil, err
+		}
+
+		err = cfg.Load()
+		if err != nil {
+			return nil, err
+		}
+
+		err = cfg.Set("version", version.Version)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Add other commands
 	cmd.AddCommand(tasks.NewCmdTasks(f))
 	cmd.AddCommand(projects.NewCmdProjects(f))
 	cmd.AddCommand(workspaces.NewCmdWorkspace(f))
@@ -78,4 +86,12 @@ func NewCmdRoot(f factory.Factory) (*cobra.Command, error) {
 	`))
 
 	return cmd, nil
+}
+
+// isAuthCommand checks if the command being run is an auth command
+func isAuthCommand(args []string) bool {
+	if len(args) < 2 {
+		return false
+	}
+	return args[1] == "auth"
 }
