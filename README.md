@@ -44,6 +44,10 @@ brew tap timwehrle/asana
 brew install --formula asana
 ```
 
+## Are you encountering problems with WSL2 and keyrings?
+
+Here is a simple workaround that gives WSL2 users the required functionality: [https://github.com/XeroAPI/xoauth/issues/25#issuecomment-2364599936](https://github.com/XeroAPI/xoauth/issues/25#issuecomment-2364599936)
+
 # Getting started
 
 ## Authentication
