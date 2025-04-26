@@ -44,9 +44,18 @@ brew tap timwehrle/asana
 brew install --formula asana
 ```
 
-## Are you encountering problems with WSL2 and keyrings?
+## Having troubles with keyrings on WSL2?
 
-Here is a simple workaround that gives WSL2 users the required functionality: [https://github.com/XeroAPI/xoauth/issues/25#issuecomment-2364599936](https://github.com/XeroAPI/xoauth/issues/25#issuecomment-2364599936)
+If you're running into issues with keyring access on WSL2, there's a simple workaround!
+You can find a detailed explanation here: [https://github.com/XeroAPI/xoauth/issues/25#issuecomment-2364599936](https://github.com/XeroAPI/xoauth/issues/25#issuecomment-2364599936)
+
+To make development smoother, we've also provided a setup script.
+It installs the necessary packages and configures the GNOME keyring automatically. You probably have to do this every time you start your WSL2 environment. 
+```shell
+chmod +x scripts/setup-wsl-keyring.sh
+./scripts/setup-wsl-keyring.sh
+```
+After running the script, keyring functionality should be available in your WSL2 environment.
 
 # Getting started
 
