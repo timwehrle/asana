@@ -10,7 +10,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/viper"
-	"github.com/timwehrle/asana-api"
+	"github.com/timwehrle/asana/internal/api/asana"
 )
 
 type Config struct {

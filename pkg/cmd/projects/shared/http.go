@@ -1,6 +1,6 @@
 package shared
 
-import "github.com/timwehrle/asana-api"
+import "github.com/timwehrle/asana/internal/api/asana"
 
 func FetchAllProjects(
 	client *asana.Client,

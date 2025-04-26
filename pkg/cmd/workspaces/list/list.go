@@ -3,7 +3,7 @@ package list
 import (
 	"fmt"
 
-	"github.com/timwehrle/asana-api"
+	"github.com/timwehrle/asana/internal/api/asana"
 	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/internal/prompter"
 

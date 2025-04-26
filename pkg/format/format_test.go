@@ -7,7 +7,7 @@ import (
 	"github.com/timwehrle/asana/pkg/format"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/timwehrle/asana-api"
+	"github.com/timwehrle/asana/internal/api/asana"
 )
 
 type mockStruct struct {

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/timwehrle/asana-api"
+	"github.com/timwehrle/asana/internal/api/asana"
 	"github.com/timwehrle/asana/pkg/iostreams"
 )
 
