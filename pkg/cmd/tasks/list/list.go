@@ -7,7 +7,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
-	"github.com/timwehrle/asana-api"
+	"github.com/timwehrle/asana/internal/api/asana"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/format"
 	"github.com/timwehrle/asana/pkg/iostreams"

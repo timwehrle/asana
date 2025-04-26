@@ -6,7 +6,7 @@ import (
 
 	"github.com/timwehrle/asana/pkg/convert"
 
-	"github.com/timwehrle/asana-api"
+	"github.com/timwehrle/asana/internal/api/asana"
 )
 
 func TestToDate(t *testing.T) {
