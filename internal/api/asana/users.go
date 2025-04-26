@@ -54,7 +54,7 @@ func (w *Workspace) Users(client *Client, options ...*Options) ([]*User, *NextPa
 	var result []*User
 
 	// Make the request
-	queryOptions := append([]*Options{&Options{Workspace: w.ID}}, options...)
+	queryOptions := append([]*Options{{Workspace: w.ID}}, options...)
 	nextPage, err := client.get("/users", nil, &result, queryOptions...)
 	return result, nextPage, err
 }
