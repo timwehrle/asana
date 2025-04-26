@@ -41,7 +41,6 @@ lint: ## Run linter
 fmt: ## Run formatter
 	@echo "Formatting code..."
 	$(GOFMT) -s -l -e .
-	golangci-lint fmt
 
 .PHONY: audit
 audit: ## Audit code
