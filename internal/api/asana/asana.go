@@ -117,7 +117,11 @@ func (c *Client) get(path string, data, result any, opts ...*Options) (*NextPage
 	}
 	q, err := query.Values(c.DefaultOptions)
 	if err != nil {
-		return nil, errors.Wrapf(err, "%s Unable to marshal DefaultOptions to query parameters", requestID)
+		return nil, errors.Wrapf(
+			err,
+			"%s Unable to marshal DefaultOptions to query parameters",
+			requestID,
+		)
 	}
 
 	// Encode data
@@ -289,7 +293,15 @@ func escapeQuotes(s string) string {
 
 // --------
 
-func (c *Client) postMultipart(path string, result interface{}, field string, r io.ReadCloser, filename string, contentType string, opts ...*Options) error {
+func (c *Client) postMultipart(
+	path string,
+	result interface{},
+	field string,
+	r io.ReadCloser,
+	filename string,
+	contentType string,
+	opts ...*Options,
+) error {
 	// Make request
 	requestID := xid.New()
 	options, err := c.mergeOptions(opts...)
@@ -298,7 +310,14 @@ func (c *Client) postMultipart(path string, result interface{}, field string, r 
 	}
 
 	if IsTrue(options.Debug) {
-		log.Printf("%s POST multipart %s\n%s=%s;ContentType=%s", requestID, path, field, filename, contentType)
+		log.Printf(
+			"%s POST multipart %s\n%s=%s;ContentType=%s",
+			requestID,
+			path,
+			field,
+			filename,
+			contentType,
+		)
 	}
 	defer r.Close()
 
@@ -345,7 +364,12 @@ func (c *Client) postMultipart(path string, result interface{}, field string, r 
 	return err
 }
 
-func (c *Client) parseResponse(resp *http.Response, result interface{}, requestID xid.ID, options *Options) (*Response, error) {
+func (c *Client) parseResponse(
+	resp *http.Response,
+	result interface{},
+	requestID xid.ID,
+	options *Options,
+) (*Response, error) {
 
 	// Get response body
 	defer resp.Body.Close()

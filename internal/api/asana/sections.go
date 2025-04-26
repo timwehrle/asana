@@ -92,7 +92,11 @@ type UpdateSectionRequest struct {
 	InsertBefore string `json:"insert_before,omitempty"`
 }
 
-func (s *Section) Update(client *Client, request *UpdateSectionRequest, opts ...*Options) (*Section, error) {
+func (s *Section) Update(
+	client *Client,
+	request *UpdateSectionRequest,
+	opts ...*Options,
+) (*Section, error) {
 	client.info("Updating section %s", s.ID)
 
 	result := &Section{}

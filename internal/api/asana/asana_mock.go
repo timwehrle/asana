@@ -47,16 +47,34 @@ func MockResponse(status int, body any) (*http.Response, error) {
 
 // NewMockClient creates a new mock client with the given response
 func NewMockClient(status int, body any) (*MockClient, error) {
-	response, err := MockResponse(status, body)
+	responseBody, err := prepareBody(body)
 	if err != nil {
 		return nil, err
 	}
 
 	return &MockClient{
 		DoFunc: func(req *http.Request) (*http.Response, error) {
-			return response, nil
+			return &http.Response{
+				StatusCode: status,
+				Body:       io.NopCloser(bytes.NewBuffer(responseBody)),
+				Header:     make(http.Header),
+			}, nil
 		},
 	}, nil
+}
+
+// prepareBody prepares the body for repeated use
+func prepareBody(body any) ([]byte, error) {
+	switch v := body.(type) {
+	case string:
+		return []byte(v), nil
+	case []byte:
+		return v, nil
+	default:
+		return json.Marshal(map[string]any{
+			"data": body,
+		})
+	}
 }
 
 // AssertRequest provides helper methods to assert request properties

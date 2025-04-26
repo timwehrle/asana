@@ -2,9 +2,10 @@ package asana
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"io"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 // Attachment represents any file attached to a task in Asana,
@@ -84,7 +85,14 @@ func (t *Task) CreateAttachment(client *Client, request *NewAttachment) (*Attach
 	client.trace("Uploading attachment for %q", t.Name)
 
 	result := &Attachment{}
-	err := client.postMultipart(fmt.Sprintf("/tasks/%s/attachments", t.ID), result, "file", request.Reader, request.FileName, request.ContentType)
+	err := client.postMultipart(
+		fmt.Sprintf("/tasks/%s/attachments", t.ID),
+		result,
+		"file",
+		request.Reader,
+		request.FileName,
+		request.ContentType,
+	)
 	if err != nil {
 		return nil, errors.Wrap(err, "Upload attachment")
 	}
@@ -98,7 +106,10 @@ type ExternalAttachmentRequest struct {
 	ResourceSubtype string `json:"resource_subtype"`
 }
 
-func (t *Task) CreateExternalAttachment(client *Client, request *ExternalAttachmentRequest) (*Attachment, error) {
+func (t *Task) CreateExternalAttachment(
+	client *Client,
+	request *ExternalAttachmentRequest,
+) (*Attachment, error) {
 	client.trace("Creating external attachment for %q", t.Name)
 	request.ResourceSubtype = "external"
 

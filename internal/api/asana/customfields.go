@@ -147,7 +147,10 @@ type AddCustomFieldSettingRequest struct {
 	InsertAfter  string `json:"insert_after,omitempty"`
 }
 
-func (p *Project) AddCustomFieldSetting(client *Client, request *AddCustomFieldSettingRequest) (*CustomFieldSetting, error) {
+func (p *Project) AddCustomFieldSetting(
+	client *Client,
+	request *AddCustomFieldSettingRequest,
+) (*CustomFieldSetting, error) {
 	client.trace("Attach custom field %q to project %q", request.CustomField, p.ID)
 
 	// Custom request encoding
@@ -199,7 +202,10 @@ type AddProjectLocalCustomFieldRequest struct {
 	InsertAfter  string                  `json:"insert_after,omitempty"`
 }
 
-func (p *Project) AddProjectLocalCustomField(client *Client, request *AddProjectLocalCustomFieldRequest) (*CustomFieldSetting, error) {
+func (p *Project) AddProjectLocalCustomField(
+	client *Client,
+	request *AddProjectLocalCustomFieldRequest,
+) (*CustomFieldSetting, error) {
 	client.trace("Attach custom field %q to project %q", request.CustomField.Name, p.ID)
 
 	// Custom request encoding
@@ -294,12 +300,19 @@ func (f *CustomField) Fetch(client *Client, options ...*Options) error {
 }
 
 // CustomFields returns the compact records for all custom fields in the workspace
-func (w *Workspace) CustomFields(client *Client, options ...*Options) ([]*CustomField, *NextPage, error) {
+func (w *Workspace) CustomFields(
+	client *Client,
+	options ...*Options,
+) ([]*CustomField, *NextPage, error) {
 	client.trace("Listing custom fields in workspace %s...\n", w.ID)
 	var result []*CustomField
 
 	// Make the request
-	nextPage, err := client.get(fmt.Sprintf("/workspaces/%s/custom_fields", w.ID), nil, &result, options...)
+	nextPage, err := client.get(
+		fmt.Sprintf("/workspaces/%s/custom_fields", w.ID),
+		nil,
+		&result,
+		options...)
 	return result, nextPage, err
 }
 

@@ -210,7 +210,11 @@ func (w *Workspace) Projects(client *Client, options ...*Options) ([]*Project, *
 	var result []*Project
 
 	// Make the request
-	nextPage, err := client.get(fmt.Sprintf("/workspaces/%s/projects", w.ID), nil, &result, options...)
+	nextPage, err := client.get(
+		fmt.Sprintf("/workspaces/%s/projects", w.ID),
+		nil,
+		&result,
+		options...)
 	return result, nextPage, err
 }
 
@@ -220,7 +224,10 @@ type favoritesRequestParams struct {
 }
 
 // FavoriteProjects returns a list of the current user's favorite projects in this workspace
-func (w *Workspace) FavoriteProjects(client *Client, options ...*Options) ([]*Project, *NextPage, error) {
+func (w *Workspace) FavoriteProjects(
+	client *Client,
+	options ...*Options,
+) ([]*Project, *NextPage, error) {
 	client.trace("Listing favorite projects in %q", w.Name)
 
 	var result []*Project
@@ -234,7 +241,11 @@ func (w *Workspace) FavoriteProjects(client *Client, options ...*Options) ([]*Pr
 	if err != nil {
 		return nil, nil, err
 	}
-	nextPage, err := client.get(fmt.Sprintf("/users/%s/favorites", user.ID), query, &result, options...)
+	nextPage, err := client.get(
+		fmt.Sprintf("/users/%s/favorites", user.ID),
+		query,
+		&result,
+		options...)
 	return result, nextPage, err
 }
 

@@ -110,7 +110,7 @@ type Options struct {
 
 	// Filters
 	Workspace string `json:"workspace,omitempty" url:"workspace,omitempty"`
-	Owner     string `json:"owner,omitempty" url:"owner,omitempty"`
+	Owner     string `json:"owner,omitempty"     url:"owner,omitempty"`
 
 	// Request options
 	Debug *bool `json:"-" url:"-"`

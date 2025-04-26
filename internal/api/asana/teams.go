@@ -38,7 +38,11 @@ func (w *Workspace) Teams(client *Client, options ...*Options) ([]*Team, *NextPa
 	var result []*Team
 
 	// Make the request
-	nextPage, err := client.get(fmt.Sprintf("/organizations/%s/teams", w.ID), nil, &result, options...)
+	nextPage, err := client.get(
+		fmt.Sprintf("/organizations/%s/teams", w.ID),
+		nil,
+		&result,
+		options...)
 	return result, nextPage, err
 }
 
