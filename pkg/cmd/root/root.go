@@ -3,6 +3,8 @@ package root
 import (
 	"os"
 
+	"github.com/timwehrle/asana/pkg/cmd/teams"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/timwehrle/asana/pkg/cmd/tags"
 
@@ -68,6 +70,7 @@ func NewCmdRoot(f factory.Factory) (*cobra.Command, error) {
 	cmd.AddCommand(users.NewCmdUsers(f))
 	cmd.AddCommand(config.NewCmdConfig(f))
 	cmd.AddCommand(tags.NewCmdTags(f))
+	cmd.AddCommand(teams.NewCmdTeams(f))
 
 	cmd.SilenceErrors = true
 	cmd.SilenceUsage = true
