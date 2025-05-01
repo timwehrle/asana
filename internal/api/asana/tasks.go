@@ -581,7 +581,11 @@ type SearchTasksQuery struct {
 	SortAscending bool `url:"sort_ascending,omitempty"`
 }
 
-func (w *Workspace) SearchTasks(client *Client, query *SearchTasksQuery, opts ...*Options) ([]*Task, error) {
+func (w *Workspace) SearchTasks(
+	client *Client,
+	query *SearchTasksQuery,
+	opts ...*Options,
+) ([]*Task, error) {
 	client.trace("Searching tasks in %q", w.Name)
 	var results []*Task
 
