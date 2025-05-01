@@ -85,8 +85,3 @@ linters:
 
 issues:
   max-same-issues: 50
-
-formatters:
-  enable:
-    - goimports
-    - golines
