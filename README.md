@@ -96,6 +96,12 @@ asana tasks view # Interactive task viewer with details
 asana tasks update # Interactive task updater
 ```
 
+View tasks with filters:
+
+```shell
+asana tasks search --assignee me,12345678 # Search tasks by assignee and more filter
+```
+
 View the projects in your workspace:
 ```shell
 asana projects list # List all the projects
