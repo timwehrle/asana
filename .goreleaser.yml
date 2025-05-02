@@ -20,7 +20,7 @@ builds:
       - CGO_ENABLED=0
     main: ./cmd/asana
     ldflags:
-      - -s -w -X github.com/timwehrle/asana/internal/version.Version={{ .Version }}
+      - -s -w -X github.com/timwehrle/asana/internal/build.Version={{ .Version }}
     goos:
       - linux
       - windows
