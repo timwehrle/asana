@@ -20,6 +20,7 @@ type SearchOptions struct {
 	Assignee        []string
 	AssigneeNot     []string
 	TagsAll         []string
+	SortAscending   bool
 }
 
 func NewCmdSearch(f factory.Factory, runF func(*SearchOptions) error) *cobra.Command {
@@ -45,13 +46,14 @@ func NewCmdSearch(f factory.Factory, runF func(*SearchOptions) error) *cobra.Com
 	cmd.Flags().StringSliceVarP(&opts.Assignee, "assignee", "a", []string{"me"}, "Comma-separated list of assignee user IDs (e.g., 1234,me)")
 	cmd.Flags().StringSliceVar(&opts.AssigneeNot, "not-assignee", nil, "Comma separated list of user IDs to exclude from the search (e.g., 1234,5678)")
 	cmd.Flags().StringSliceVar(&opts.TagsAll, "tags", nil, "Comma-separated list of tags to include in the search")
+	cmd.Flags().BoolVar(&opts.SortAscending, "sort-asc", false, "Sort results in ascending order")
 
 	return cmd
 }
 
 func runSearch(opts *SearchOptions) error {
-	cs := opts.IO.ColorScheme()
-	ioS := opts.IO
+	io := opts.IO
+	cs := io.ColorScheme()
 
 	cfg, err := opts.Config()
 	if err != nil {
@@ -72,7 +74,7 @@ func runSearch(opts *SearchOptions) error {
 		AssigneeAny:     strings.Join(opts.Assignee, ","),
 		AssigneeNot:     strings.Join(opts.AssigneeNot, ","),
 		TagsAll:         strings.Join(opts.TagsAll, ","),
-		SortAscending:   false,
+		SortAscending:   opts.SortAscending,
 	}
 
 	tasks, err := workspace.SearchTasks(client, query)
@@ -81,14 +83,14 @@ func runSearch(opts *SearchOptions) error {
 	}
 
 	if len(tasks) == 0 {
-		ioS.Println("No tasks found")
+		io.Println("No tasks found")
 		return nil
 	}
 
-	ioS.Printf("\nTasks assigned to %s:\n\n", cs.Bold(strings.Join(opts.Assignee, ", ")))
+	io.Printf("\nTasks assigned to %s:\n\n", cs.Bold(strings.Join(opts.Assignee, ", ")))
 
 	for i, task := range tasks {
-		ioS.Printf("%2d. %s\n", i+1, task.Name)
+		io.Printf("%2d. %s\n", i+1, task.Name)
 	}
 
 	return nil
