@@ -16,9 +16,9 @@ type ColorScheme struct {
 	// Commands and UI Elements
 	Primary   string
 	Secondary string
-	Success   string
-	Warning   string
-	Error     string
+	Success   func(string) string
+	Warning   func(string) string
+	Error     func(string) string
 	Gray      string
 
 	// Special formatting
@@ -112,9 +112,9 @@ func (io *IOStreams) initColorScheme() {
 	io.colorScheme = &ColorScheme{
 		Primary:   ansi.ColorCode("blue"),
 		Secondary: ansi.ColorCode("cyan"),
-		Success:   ansi.ColorCode("green"),
-		Warning:   ansi.ColorCode("yellow"),
-		Error:     ansi.ColorCode("red"),
+		Success:   ansi.ColorFunc("green"),
+		Warning:   ansi.ColorFunc("yellow"),
+		Error:     ansi.ColorFunc("red"),
 		Gray:      ansi.ColorCode("black+h"),
 
 		Bold: func(s string) string {
