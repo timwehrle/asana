@@ -141,8 +141,8 @@ func printUsers(io *iostreams.IOStreams, workspaceName string, users []*asana.Us
 	cs := io.ColorScheme()
 	fmt.Fprintf(io.Out, "\nUsers in workspace %s:\n\n", cs.Bold(workspaceName))
 
-	for _, user := range users {
-		fmt.Fprintf(io.Out, "%s\n", cs.Bold(user.Name))
+	for i, user := range users {
+		fmt.Fprintf(io.Out, "%2d. %s\n", i+1, cs.Bold(user.Name))
 	}
 
 	return nil

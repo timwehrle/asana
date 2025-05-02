@@ -481,3 +481,114 @@ func (c *Client) QueryTasks(query *TaskQuery, opts ...*Options) ([]*Task, *NextP
 	nextPage, err := c.get("/tasks", query, &result, opts...)
 	return result, nextPage, err
 }
+
+type SearchTasksQuery struct {
+	// Performs full-text search on both task name and description
+	Text string `url:"text,omitempty"`
+
+	// Filters results by the task's resource_subtype
+	ResourceSubtype string `url:"resource_subtype,omitempty"`
+
+	// Comma-separated list of user identifiers
+	AssigneeAny string `url:"assignee.any,omitempty"`
+	AssigneeNot string `url:"assignee.not,omitempty"`
+
+	// Comma-separated list of portfolio IDs
+	PortfoliosAny string `url:"portfolios.any,omitempty"`
+
+	// Comma-separated list of project IDs
+	ProjectsAny string `url:"projects.any,omitempty"`
+	ProjectsNot string `url:"project.not,omitempty"`
+	ProjectsAll string `url:"projects.all,omitempty"`
+
+	// Comma-separated list of section or column IDs
+	SectionsAny string `url:"sections.any,omitempty"`
+	SectionsNot string `url:"section.not,omitempty"`
+	SectionsAll string `url:"sections.all,omitempty"`
+
+	// Comma-separated list of tag IDs
+	TagsAny string `url:"tags.any,omitempty"`
+	TagsNot string `url:"tag.not,omitempty"`
+	TagsAll string `url:"tags.all,omitempty"`
+
+	// Comma-separated list of team IDs
+	TeamsAny string `url:"teams.any,omitempty"`
+
+	// Comma-separated list of user identifiers
+	FollowersAny     string `url:"followers.any,omitempty"`
+	FollowersNot     string `url:"followers.not,omitempty"`
+	CreatedByAny     string `url:"created_by.any,omitempty"`
+	CreatedByNot     string `url:"created_by.not,omitempty"`
+	AssignedByAny    string `url:"assigned_by.any,omitempty"`
+	AssignedByNot    string `url:"assigned_by.not,omitempty"`
+	LikedByNot       string `url:"liked_by.not,omitempty"`
+	CommentedOnByNot string `url:"commented_on_by.not,omitempty"`
+
+	// ISO 8601 date string
+	DueOnBefore string `url:"due_on.before,omitempty"`
+	DueOnAfter  string `url:"due_on.after,omitempty"`
+
+	// ISO 8601 date string or null
+	DueOn string `url:"due_on,omitempty"`
+
+	// ISO 8601 datetime string
+	DueAtBefore string `url:"due_at.before,omitempty"`
+	DueAtAfter  string `url:"due_at.after,omitempty"`
+
+	// ISO 8601 date string
+	StartOnBefore string `url:"start_on.before,omitempty"`
+	StartOnAfter  string `url:"start_on.after,omitempty"`
+
+	// ISO 8601 date string or null
+	StartOn string `url:"start_on,omitempty"`
+
+	// ISO 8601 date string
+	CreatedOnBefore string `url:"created_on.before,omitempty"`
+	CreatedOnAfter  string `url:"created_on.after,omitempty"`
+
+	// ISO 8601 date string or null
+	CreatedOn string `url:"created_on,omitempty"`
+
+	// ISO 8601 date string
+	CreatedAtBefore string `url:"created_at.before,omitempty"`
+	CreatedAtAfter  string `url:"created_at.after,omitempty"`
+
+	CompletedOnBefore string `url:"completed_on.before,omitempty"`
+	CompletedOnAfter  string `url:"completed_on.after,omitempty"`
+	CompletedOn       string `url:"completed_on,omitempty"`
+
+	CompletedAtBefore string `url:"completed_at.before,omitempty"`
+	CompletedAtAfter  string `url:"completed_at.after,omitempty"`
+
+	ModifiedOnBefore string `url:"modified_on.before,omitempty"`
+	ModifiedOnAfter  string `url:"modified_on.after,omitempty"`
+	ModifiedOn       string `url:"modified_on,omitempty"`
+
+	ModifiedAtBefore string `url:"modified_at.before,omitempty"`
+	ModifiedAtAfter  string `url:"modified_at.after,omitempty"`
+
+	IsBlocking bool `url:"is_blocking,omitempty"`
+	IsBlocked  bool `url:"is_blocked,omitempty"`
+
+	HasAttachment bool `url:"has_attachment,omitempty"`
+
+	Completed bool `url:"completed,omitempty"`
+
+	IsSubtask bool `url:"is_subtask,omitempty"`
+
+	SortBy string `url:"sort_by,omitempty"`
+
+	SortAscending bool `url:"sort_ascending,omitempty"`
+}
+
+func (w *Workspace) SearchTasks(
+	client *Client,
+	query *SearchTasksQuery,
+	opts ...*Options,
+) ([]*Task, error) {
+	client.trace("Searching tasks in %q", w.Name)
+	var results []*Task
+
+	_, err := client.get(fmt.Sprintf("/workspaces/%s/tasks/search", w.ID), query, &results, opts...)
+	return results, err
+}
