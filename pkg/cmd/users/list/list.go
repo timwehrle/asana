@@ -142,7 +142,7 @@ func printUsers(io *iostreams.IOStreams, workspaceName string, users []*asana.Us
 	fmt.Fprintf(io.Out, "\nUsers in workspace %s:\n\n", cs.Bold(workspaceName))
 
 	for _, user := range users {
-		fmt.Fprintf(io.Out, "%s\n", cs.Bold(user.Name))
+		fmt.Fprintf(io.Out, "%s %s\n", user.ID, cs.Bold(user.Name))
 	}
 
 	return nil

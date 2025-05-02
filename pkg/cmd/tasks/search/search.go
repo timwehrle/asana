@@ -2,18 +2,24 @@ package search
 
 import (
 	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/internal/api/asana"
 	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/iostreams"
+	"strings"
 )
 
 type SearchOptions struct {
 	IO     *iostreams.IOStreams
 	Config func() (*config.Config, error)
 	Client func() (*asana.Client, error)
+
+	Text            string
+	ResourceSubtype string
+	Assignee        []string
+	AssigneeNot     []string
+	TagsAll         []string
 }
 
 func NewCmdSearch(f factory.Factory, runF func(*SearchOptions) error) *cobra.Command {
@@ -34,10 +40,19 @@ func NewCmdSearch(f factory.Factory, runF func(*SearchOptions) error) *cobra.Com
 		},
 	}
 
+	cmd.Flags().StringVarP(&opts.Text, "text", "t", "", "Perform full-text search on task names and descriptions")
+	cmd.Flags().StringVar(&opts.ResourceSubtype, "resource-subtype", "default_task", "Resource subtype to filter tasks (e.g., default_task, milestone)")
+	cmd.Flags().StringSliceVarP(&opts.Assignee, "assignee", "a", []string{"me"}, "Comma-separated list of assignee user IDs (e.g., 1234,me)")
+	cmd.Flags().StringSliceVar(&opts.AssigneeNot, "not-assignee", nil, "Comma separated list of user IDs to exclude from the search (e.g., 1234,5678)")
+	cmd.Flags().StringSliceVar(&opts.TagsAll, "tags", nil, "Comma-separated list of tags to include in the search")
+
 	return cmd
 }
 
 func runSearch(opts *SearchOptions) error {
+	cs := opts.IO.ColorScheme()
+	ioS := opts.IO
+
 	cfg, err := opts.Config()
 	if err != nil {
 		return err
@@ -51,9 +66,12 @@ func runSearch(opts *SearchOptions) error {
 	workspace := cfg.Workspace
 
 	query := &asana.SearchTasksQuery{
+		Text:            opts.Text,
 		SortBy:          "modified_at",
-		ResourceSubtype: "default_task",
-		AssigneeAny:     "me",
+		ResourceSubtype: opts.ResourceSubtype,
+		AssigneeAny:     strings.Join(opts.Assignee, ","),
+		AssigneeNot:     strings.Join(opts.AssigneeNot, ","),
+		TagsAll:         strings.Join(opts.TagsAll, ","),
 		SortAscending:   false,
 	}
 
@@ -63,11 +81,14 @@ func runSearch(opts *SearchOptions) error {
 	}
 
 	if len(tasks) == 0 {
-		opts.IO.Println("No tasks found")
+		ioS.Println("No tasks found")
+		return nil
 	}
 
+	ioS.Printf("\nTasks assigned to %s:\n\n", cs.Bold(strings.Join(opts.Assignee, ", ")))
+
 	for i, task := range tasks {
-		opts.IO.Printf("%2d. %s\n", i+1, task.Name)
+		ioS.Printf("%2d. %s\n", i+1, task.Name)
 	}
 
 	return nil
