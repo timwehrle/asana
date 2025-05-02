@@ -5,8 +5,8 @@ import (
 	"github.com/AlecAivazis/survey/v2/terminal"
 )
 
-var CancelError = errors.New("CancelError")
+var ErrorCancel = errors.New("ErrorCancel")
 
 func IsUserCancellation(err error) bool {
-	return errors.Is(err, CancelError) || errors.Is(err, terminal.InterruptErr)
+	return errors.Is(err, ErrorCancel) || errors.Is(err, terminal.InterruptErr)
 }
