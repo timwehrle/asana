@@ -19,8 +19,9 @@ type ListOptions struct {
 	Config func() (*config.Config, error)
 	Client func() (*asana.Client, error)
 
-	Limit int
-	Sort  string
+	Limit  int
+	Sort   string
+	WithID bool
 }
 
 func NewCmdList(f factory.Factory, runF func(*ListOptions) error) *cobra.Command {
@@ -55,7 +56,8 @@ func NewCmdList(f factory.Factory, runF func(*ListOptions) error) *cobra.Command
 	}
 
 	cmd.Flags().IntVarP(&opts.Limit, "limit", "l", 0, "Limit the number of users to display")
-	cmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Sort users by name (options: asc, desc)")
+	cmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Sort users by name (asc, desc)")
+	cmd.Flags().BoolVar(&opts.WithID, "with-id", false, "Show users with their user IDs")
 
 	return cmd
 }
@@ -80,7 +82,7 @@ func runList(opts *ListOptions) error {
 		return err
 	}
 
-	return printUsers(opts.IO, cfg.Workspace.Name, users)
+	return printUsers(opts.IO, cfg.Workspace.Name, users, opts.WithID)
 }
 
 func sortUsers(users []*asana.User, sortOrder string) error {
@@ -111,7 +113,11 @@ func fetchUsers(client *asana.Client, workspaceID string, limit int) ([]*asana.U
 	}
 
 	users := make([]*asana.User, 0, initialCapacity)
-	options := &asana.Options{Limit: limit}
+	options := &asana.Options{}
+	if limit > 0 {
+		options.Limit = limit
+	}
+
 	workspace := &asana.Workspace{ID: workspaceID}
 
 	for {
@@ -137,12 +143,16 @@ func fetchUsers(client *asana.Client, workspaceID string, limit int) ([]*asana.U
 	return users, nil
 }
 
-func printUsers(io *iostreams.IOStreams, workspaceName string, users []*asana.User) error {
+func printUsers(io *iostreams.IOStreams, workspaceName string, users []*asana.User, showID bool) error {
 	cs := io.ColorScheme()
-	fmt.Fprintf(io.Out, "\nUsers in workspace %s:\n\n", cs.Bold(workspaceName))
+	io.Printf("\nUsers in workspace %s:\n\n", cs.Bold(workspaceName))
 
 	for i, user := range users {
-		fmt.Fprintf(io.Out, "%2d. %s\n", i+1, cs.Bold(user.Name))
+		if showID {
+			io.Printf("%2d. %s (%s)\n", i+1, cs.Bold(user.Name), cs.Gray(user.ID))
+		} else {
+			io.Printf("%2d. %s\n", i+1, cs.Bold(user.Name))
+		}
 	}
 
 	return nil

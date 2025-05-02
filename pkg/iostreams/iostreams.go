@@ -19,7 +19,7 @@ type ColorScheme struct {
 	Success   func(string) string
 	Warning   func(string) string
 	Error     func(string) string
-	Gray      string
+	Gray      func(string) string
 
 	// Special formatting
 	Bold        func(string) string
@@ -115,7 +115,7 @@ func (io *IOStreams) initColorScheme() {
 		Success:   ansi.ColorFunc("green"),
 		Warning:   ansi.ColorFunc("yellow"),
 		Error:     ansi.ColorFunc("red"),
-		Gray:      ansi.ColorCode("black+h"),
+		Gray:      ansi.ColorFunc("black+h"),
 
 		Bold: func(s string) string {
 			if !useColors {
