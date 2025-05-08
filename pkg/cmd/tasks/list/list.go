@@ -40,6 +40,14 @@ type ListOptions struct {
 
 	Sort  SortOption
 	Limit int
+	User  string
+}
+
+func (o *ListOptions) ResolveUser() string {
+	if o.User == "" {
+		return "me"
+	}
+	return o.User
 }
 
 func NewCmdList(f factory.Factory, runF func(*ListOptions) error) *cobra.Command {
@@ -81,6 +89,7 @@ func NewCmdList(f factory.Factory, runF func(*ListOptions) error) *cobra.Command
 	cmd.Flags().
 		StringVarP((*string)(&opts.Sort), "sort", "s", "", "Sort tasks by name, due date, creation date (options: asc, desc, due, due-desc, created-at)")
 	cmd.Flags().IntVarP(&opts.Limit, "limit", "l", 0, "Limit the tasks to display")
+	cmd.Flags().StringVarP(&opts.User, "user", "u", "", "Show the task list of the provided user")
 
 	return cmd
 }
@@ -131,7 +140,7 @@ func fetchTasks(opts *ListOptions, workspaceID string, limit int) ([]*asana.Task
 	}
 
 	query := &asana.TaskQuery{
-		Assignee:       "me",
+		Assignee:       opts.ResolveUser(),
 		Workspace:      workspaceID,
 		CompletedSince: "now",
 	}
