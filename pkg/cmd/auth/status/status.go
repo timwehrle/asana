@@ -31,7 +31,9 @@ type StatusOptions struct {
 
 func NewCmdStatus(f factory.Factory, runF func(*StatusOptions) error) *cobra.Command {
 	opts := &StatusOptions{
-		IO: f.IOStreams,
+		IO:     f.IOStreams,
+		Config: f.Config,
+		Client: f.Client,
 	}
 
 	cmd := &cobra.Command{
