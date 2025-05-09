@@ -8,6 +8,7 @@ import (
 	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/pkg/cmdutils"
 	"github.com/timwehrle/asana/pkg/factory"
+	"github.com/timwehrle/asana/pkg/format"
 	"github.com/timwehrle/asana/pkg/iostreams"
 	"strings"
 )
@@ -54,9 +55,17 @@ func NewCmdSearch(f factory.Factory, runF func(*SearchOptions) error) *cobra.Com
 	cmd := &cobra.Command{
 		Use:   "search",
 		Short: "Search for tasks in your workspace",
-		Example: heredoc.Doc(`
-					$ asana tasks search --type milestone --assignee me --sort-asc
+		Long: heredoc.Doc(`
+					Search for tasks in your Asana workspace with various filters and sorting options.
 
+					This command allows you to search for tasks by text, assignee, creator, tags and more.
+					Results can be sorted according to your preference.
+				`),
+		Example: heredoc.Doc(`
+					# Search for milestone tasks assigned to you
+					$ asana tasks search --type milestone --assignee me --sort-asc
+		
+					# Search for tasks containing "UI refresh" not assigned to specific users
 					$ asana tasks search --query "UI refresh" --exclude-assignee 1234,5678 --tags-all 1234,4567
 				`),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -119,14 +128,20 @@ func runSearch(opts *SearchOptions) error {
 	}
 
 	if len(tasks) == 0 {
-		io.Println("No tasks found")
+		io.Println("No tasks found matching your criteria.")
+		io.Println("- Try broadening your search by removing some filters")
+		io.Println("- Check if the assignee or creator IDs are correct")
+		io.Println("- If searching by text, try using fewer or different keywords")
+		if opts.Type != "default_task" {
+			io.Println(fmt.Sprintf("- Try changing the task type from '%s' to 'default_task'", opts.Type))
+		}
 		return nil
 	}
 
 	io.Printf("\nTasks assigned to %s:\n\n", cs.Bold(strings.Join(opts.Assignee, ", ")))
 
 	for i, task := range tasks {
-		io.Printf("%2d. %s\n", i+1, task.Name)
+		io.Printf("%2d. [%s] %s\n", i+1, format.Date(task.DueOn), task.Name)
 	}
 
 	return nil
