@@ -99,7 +99,7 @@ asana tasks update # Interactive task updater
 View tasks with filters:
 
 ```shell
-asana tasks search --assignee me,12345678 # Search tasks by assignee and more filter
+asana tasks search --assignee me,12345678 # Search tasks by assignee and more filters
 ```
 
 View the projects in your workspace:
@@ -108,10 +108,23 @@ asana projects list # List all the projects
 asana projects list -l 25 --sort desc # List with options
 ```
 
+View the teams in your workspace:
+
+```shell
+asana teams list # List all teams
+```
+
 View the users in your workspace:
 ```shell
 asana users list # List all the users
 asana users list -l 25 --sort desc # List with options
+```
+
+View tags of your workspace:
+
+```shell
+asana tags list # List all tags
+asana tags list --favorite # List tags that you marked as favorite
 ```
 
 For more usage:
