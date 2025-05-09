@@ -3,6 +3,7 @@ package tasks
 import (
 	"errors"
 	"fmt"
+	"github.com/MakeNowJust/heredoc"
 
 	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/internal/prompter"
@@ -40,6 +41,13 @@ func NewCmdTasks(f factory.Factory, runF func(*TasksOptions) error) *cobra.Comma
 		Use:   "tasks",
 		Short: "List tasks of a project",
 		Long:  "Retrieve and display a list of all tasks under a project.",
+		Example: heredoc.Doc(`
+					# List all tasks of a project
+					$ asana project tasks
+
+					# List tasks of a project with a specific section
+					$ asana project tasks --section
+				`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if runF != nil {
 				return runF(opts)
