@@ -2,105 +2,71 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+die() { echo >&2 "Error: $*"; exit 1; }
 command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
-cleanup() {
-  if [ -f "asana.tar.gz" ]; then
-    rm -f asana.tar.gz
-  fi
-}
+# Defaults
+: "${BIN_DIR:=/usr/local/bin}"
+: "${API_URL:=https://api.github.com/repos/timwehrle/asana/releases/latest}"
 
-get_os() {
-  local os
-  os=$(uname -s | tr '[:upper:]' '[:lower:]')
-  case "$os" in
-    linux)
-      echo "Linux"
-      ;;
-    darwin)
-      echo "Darwin"
-      ;;
-    *)
-      echo "Error: Unsupported operating system: $os"
-      exit 1
-      ;;
-  esac
-}
+# Cleanup on exit
+TMPDIR=$(mktemp -d)
+trap 'rm -rf "$TMPDIR"' EXIT
+cd "$TMPDIR"
 
-get_arch() {
-  local arch
-  arch=$(uname -m)
-  case "$arch" in
-    x86_64|amd64)
-      echo "x86_64"
-      ;;
-    aarch64|arm64)
-     echo "arm64"
-     ;;
-   *)
-     echo "Error: Unsupported architecture: $arch"
-     exit 1
-     ;;
-  esac
-}
-
-trap cleanup EXIT
-
-for cmd in curl tar sudo; do
-  if ! command_exists "$cmd"; then
-    echo "Error: Required command '$cmd' is not installed."
-    exit 1
-  fi
+# Prereqs
+for cmd in curl tar; do
+  command_exists "$cmd" || die "'$cmd' is required"
 done
 
-OS=$(get_os)
-ARCH=$(get_arch)
+# Detect OS
+OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+case "$OS" in
+  linux)   OS="Linux"   ;;
+  darwin)  OS="Darwin"  ;;
+  *) die "Unsupported OS: $OS" ;;
+esac
 
+# Detect ARCH
+ARCH_RAW="$(uname -m)"
+case "$ARCH_RAW" in
+  x86_64|amd64) ARCH="x86_64" ;;
+  i386|i686)    ARCH="i386"   ;;
+  armv7l)       ARCH="armv7"  ;;
+  aarch64|arm64)ARCH="arm64"  ;;
+  *) die "Unsupported arch: $ARCH_RAW" ;;
+esac
+
+# Fetch version
 echo "Fetching latest version..."
-if ! VERSION=$(curl -s https://api.github.com/repos/timwehrle/asana/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'); then
-  echo "Error: Unable to fetch latest version from GitHub."
-  exit 1
+if command_exists jq; then
+  TAG=$(curl -fsSL "$API_URL" | jq -r .tag_name)
+else
+  TAG=$(curl -fsSL "$API_URL" | grep -m1 '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
 fi
-
-VERSION="${VERSION#v}"
+VERSION="${TAG#v}"
 
 FILENAME="asana_${OS}_${ARCH}.tar.gz"
-URL="https://github.com/timwehrle/asana/releases/download/v${VERSION}/${FILENAME}"
+DOWNLOAD_URL="https://github.com/timwehrle/asana/releases/download/v${VERSION}/${FILENAME}"
 
-echo "Installing Asana CLI v${VERSION} for ${OS} ${ARCH}..."
+# Download
+echo "Downloading ${FILENAME}..."
+curl -fSL --progress-bar -o asana.tar.gz "$DOWNLOAD_URL" \
+  || die "Download failed. Check https://github.com/timwehrle/asana/releases"
 
-if ! curl -L --progress-bar -o asana.tar.gz "$URL"; then
-  echo "Error: Failed to download Asana CLI. Archive not available for ${OS} ${ARCH}."
-  echo "Available downloads can be found at: https://github.com/timwehrle/asana/releases/tag/v${VERSION}"
-  exit 1
-fi
+# Extract
+tar -xzf asana.tar.gz || die "Failed to extract archive"
 
-if [ ! -f "asana.tar.gz" ]; then
-  echo "Error: Download file not found."
-  exit 1
-fi
+# Install
+echo "Installing Asana CLI v${VERSION} to ${BIN_DIR}..."
+sudo install -m755 asana "$BIN_DIR/asana" || die "Installation failed"
 
-if ! tar -xzf asana.tar.gz; then
-  echo "Error: Failed to extract archive."
-  exit 1
-fi
-
-if [ ! -f "asana" ]; then
-  echo "Error: Binary not found after extraction."
-  exit 1
-fi
-
-if ! sudo mv asana /usr/local/bin; then
-  echo "Error: Failed to install binary."
-  exit 1
-fi
-
+# Verify
 if command_exists asana; then
   echo "✓ Asana CLI v${VERSION} installed successfully!"
-  echo "Run 'asana --help' to get started."
+  echo "  Run 'asana --help' to get started."
 else
-    echo "Error: Installation verification failed."
-    exit 1
+  die "Installation verification failed"
 fi
