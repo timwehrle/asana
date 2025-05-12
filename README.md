@@ -130,6 +130,19 @@ For more usage:
 asana help # Show all available commands
 ```
 
+# Security
+To keep your Asana credentials safe, this CLI uses your system's keyring for secure token storage. 
+This ensures your Personal Access Token is never written to disk in plain text. The keyring integration 
+works across major platforms (macOS, Linux, and Windows), and includes WSL2 support with a setup script provided.
+
+## How to improve Token Security
+While keyrings are a secure option, here are some additional best practices you can consider:
+- **Token Rotation**: Regularly rotate your token and avoid long-lived secrets.
+- **Environment Isolation**: Avoid running this CLI in shared or untrusted environments.
+- **Two-Factor Authentication (2FA)**: Enable 2FA on your Asana account to enhance account-level security.
+
+We are also trying to implement a feature that will remind you to rotate your token every 90 (or so) days.
+
 # Contributing
 
 If something feels off, you see an opportunity to improve performance, or think some
