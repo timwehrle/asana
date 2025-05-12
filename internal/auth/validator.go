@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/timwehrle/asana/internal/api/asana"
-	"github.com/timwehrle/asana/pkg/iostreams"
 )
 
 type AuthenticationError struct {
@@ -24,19 +23,14 @@ func (e AuthenticationError) Unwrap() error {
 }
 
 func ValidateToken(token string) error {
-	cs := iostreams.ColorScheme{}
-
 	client := asana.NewClientWithAccessToken(token)
 
 	user, err := client.CurrentUser()
 	if err != nil {
 		if asana.IsAuthError(err) {
 			return AuthenticationError{
-				Message: fmt.Sprintf(
-					"%s Authentication failed. Please provide a valid token.",
-					cs.ErrorIcon,
-				),
-				Cause: err,
+				Message: "Authentication failed. Please provide a valid token",
+				Cause:   err,
 			}
 		}
 		return AuthenticationError{

@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	ErrMsgNotAuthenticated = "You are not authenticated. Please run `asana auth login` to authenticate."
-	ErrMsgAuthFailed       = "Authentication failed. Please try logging in again."
+	ErrMsgNotAuthenticated = "You are not authenticated. Please run `asana auth login` to authenticate"
+	ErrMsgAuthFailed       = "Authentication failed. Please try logging in again"
 )
 
 func Check() error {
