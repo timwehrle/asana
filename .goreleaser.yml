@@ -64,7 +64,7 @@ brews:
 changelog:
   use: github
   format: "{{.SHA}}: {{.Message}} by @{{.AuthorUsername}}"
-  abbrev: -1
+  abbrev: 7
   sort: asc
   filters:
     exclude:
