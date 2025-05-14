@@ -46,7 +46,7 @@ func NewCmdTasks(f factory.Factory, runF func(*TasksOptions) error) *cobra.Comma
 					$ asana project tasks
 
 					# List tasks of a project with a specific section
-					$ asana project tasks --section
+					$ asana project tasks --sections
 				`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if runF != nil {
@@ -221,10 +221,10 @@ func displayTasksBySection(
 
 		if len(st.tasks) == 0 {
 			fmt.Fprintln(out, "  No tasks in this section")
-		} else {
-			for i, task := range st.tasks {
-				fmt.Fprintf(out, "  %d. %s\n", i+1, task.Name)
-			}
+		}
+
+		for i, task := range st.tasks {
+			fmt.Fprintf(out, "  %d. %s\n", i+1, task.Name)
 		}
 		fmt.Fprintln(out)
 	}
