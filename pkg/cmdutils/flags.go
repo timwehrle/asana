@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 )
 
 // ValidateStringEnum returns an error if val is not one of allowed.
@@ -17,4 +18,14 @@ func ValidateStringEnum(flagName, val string, allowed []string) error {
 	copyAllowed := append([]string(nil), allowed...)
 	sort.Strings(copyAllowed)
 	return fmt.Errorf("invalid value %q for flag --%s; valid values are: %s", val, flagName, strings.Join(copyAllowed, ", "))
+}
+
+func ValidateDate(flagName, val string) error {
+	if val == "" {
+		return nil
+	}
+	if _, err := time.Parse("2006-01-02", val); err != nil {
+		return fmt.Errorf("invalid date for --%s: %q (must be YYYY-MM-DD)", flagName, val)
+	}
+	return nil
 }

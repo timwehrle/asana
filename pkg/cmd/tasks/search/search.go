@@ -28,6 +28,11 @@ type SearchOptions struct {
 	ExcludeCreator  []string
 	Blocked         bool
 	SortBy          string
+	DueOnBefore     string
+	DueOnAfter      string
+	DueOn           string
+	DueAtBefore     string
+	DueAtAfter      string
 }
 
 func (o *SearchOptions) join(ss []string) string {
@@ -69,7 +74,28 @@ func NewCmdSearch(f factory.Factory, runF func(*SearchOptions) error) *cobra.Com
 					$ asana tasks search --query "UI refresh" --exclude-assignee 1234,5678 --tags-all 1234,4567
 				`),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			return cmdutils.ValidateStringEnum("sort-by", opts.SortBy, validSortBy)
+			if err := cmdutils.ValidateStringEnum("sort-by", opts.SortBy, validSortBy); err != nil {
+				return err
+			}
+			if err := cmdutils.ValidateDate("due-on", opts.DueOn); err != nil {
+				return err
+			}
+			if err := cmdutils.ValidateDate("due-on-before", opts.DueOnBefore); err != nil {
+				return err
+			}
+			if err := cmdutils.ValidateDate("due-on-after", opts.DueOnAfter); err != nil {
+				return err
+			}
+			if err := cmdutils.ValidateDate("due-at-before", opts.DueAtBefore); err != nil {
+				return err
+			}
+			if err := cmdutils.ValidateDate("due-at-after", opts.DueAtAfter); err != nil {
+				return err
+			}
+			if opts.DueOn != "" && (opts.DueOnBefore != "" || opts.DueOnAfter != "") {
+				return fmt.Errorf("--due-on cannot be used with --due-on-before or --due-on-after")
+			}
+			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if runF == nil {
@@ -89,6 +115,11 @@ func NewCmdSearch(f factory.Factory, runF func(*SearchOptions) error) *cobra.Com
 	cmd.Flags().StringSliceVar(&opts.CreatorAny, "creator-any", nil, "Comma-separated list of user IDs to include in the search")
 	cmd.Flags().StringSliceVar(&opts.ExcludeCreator, "exclude-creator", nil, "Comma-separated list of user IDs to exclude from the search")
 	cmd.Flags().BoolVar(&opts.Blocked, "is-blocked", false, "Filter to tasks with incomplete dependencies")
+	cmd.Flags().StringVar(&opts.DueOnBefore, "due-on-before", "", "Filter to tasks due before a specific date (YYYY-MM-DD)")
+	cmd.Flags().StringVar(&opts.DueOnAfter, "due-on-after", "", "Filter to tasks due after a specific date (YYYY-MM-DD)")
+	cmd.Flags().StringVar(&opts.DueOn, "due-on", "", "Filter to tasks due on a specific date (YYYY-MM-DD)")
+	cmd.Flags().StringVar(&opts.DueAtBefore, "due-at-before", "", "Filter to tasks due at or before a specific date (YYYY-MM-DD)")
+	cmd.Flags().StringVar(&opts.DueAtAfter, "due-at-after", "", "Filter to tasks due at or after a specific date (YYYY-MM-DD)")
 
 	return cmd
 }
@@ -120,9 +151,18 @@ func runSearch(opts *SearchOptions) error {
 		CreatedByAny:    opts.join(opts.CreatorAny),
 		CreatedByNot:    opts.join(opts.ExcludeCreator),
 		IsBlocked:       opts.Blocked,
+		DueOnBefore:     opts.DueOnBefore,
+		DueOnAfter:      opts.DueOnAfter,
+		DueOn:           opts.DueOn,
+		DueAtBefore:     opts.DueAtBefore,
+		DueAtAfter:      opts.DueAtAfter,
 	}
 
-	tasks, err := workspace.SearchTasks(client, query)
+	options := &asana.Options{
+		Fields: []string{"name", "due_on"},
+	}
+
+	tasks, err := workspace.SearchTasks(client, query, options)
 	if err != nil {
 		return fmt.Errorf("failed searching tasks: %w", err)
 	}
