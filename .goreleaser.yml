@@ -20,7 +20,9 @@ builds:
       - CGO_ENABLED=0
     main: ./cmd/asana
     ldflags:
-      - -s -w -X github.com/timwehrle/asana/internal/build.Version={{ .Version }}
+      - "-s -w \ 
+        -X github.com/timwehrle/asana/internal/build.Version={{ .Version }} \ 
+        -X github.com/timwehrle/asana/internal/build.Date={{ .Date }}"
     goos:
       - linux
       - windows
@@ -33,7 +35,7 @@ builds:
     mod_timestamp: "{{ .CommitTimestamp }}"
 
 archives:
-  - format: tar.gz
+  - formats: ['tar.gz']
     id: tar
     name_template: >-
       {{- .ProjectName }}_
