@@ -249,7 +249,7 @@ func editTaskDescription(
 		},
 	}
 
-	if err := task.Update(client, updateRequest); err != nil {
+	if err = task.Update(client, updateRequest); err != nil {
 		return fmt.Errorf("failed to update task description: %w", err)
 	}
 
