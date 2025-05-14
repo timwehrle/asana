@@ -1,3 +1,5 @@
+<img width="300" height="300" src="https://github.com/user-attachments/assets/12bda636-36af-4d55-837d-f51fbe836ef1" alt="Asana Gopher" />
+
 # Asana CLI
 
 A command-line interface to manage your Asana tasks and projects directly from your terminal.
@@ -48,11 +50,13 @@ If you're running into issues with keyring access on WSL2, there's a simple work
 You can find a detailed explanation here: [https://github.com/XeroAPI/xoauth/issues/25#issuecomment-2364599936](https://github.com/XeroAPI/xoauth/issues/25#issuecomment-2364599936)
 
 To make development smoother, we've also provided a setup script.
-It installs the necessary packages and configures the GNOME keyring automatically. You probably have to do this every time you start your WSL2 environment. 
+It installs the necessary packages and configures the GNOME keyring automatically. You probably have to do this every time you start your WSL2 environment.
+
 ```shell
 chmod +x scripts/setup-wsl-keyring.sh
 ./scripts/setup-wsl-keyring.sh
 ```
+
 After running the script, keyring functionality should be available in your WSL2 environment.
 
 # Getting started
@@ -67,6 +71,7 @@ After running the script, keyring functionality should be available in your WSL2
 3. Follow the prompts to paste your token and select your default workspace.
 
 To check the current status of your authentication and the Asana API:
+
 ```shell
 asana auth status
 ```
@@ -101,6 +106,7 @@ asana tasks search --assignee me,12345678 # Search tasks by assignee and more fi
 ```
 
 View the projects in your workspace:
+
 ```shell
 asana projects list # List all the projects
 asana projects list -l 25 --sort desc # List with options
@@ -113,6 +119,7 @@ asana teams list # List all teams
 ```
 
 View the users in your workspace:
+
 ```shell
 asana users list # List all the users
 asana users list -l 25 --sort desc # List with options
@@ -126,17 +133,21 @@ asana tags list --favorite # List tags that you marked as favorite
 ```
 
 For more usage:
+
 ```shell
 asana help # Show all available commands
 ```
 
 # Security
-To keep your Asana credentials safe, this CLI uses your system's keyring for secure token storage. 
-This ensures your Personal Access Token is never written to disk in plain text. The keyring integration 
+
+To keep your Asana credentials safe, this CLI uses your system's keyring for secure token storage.
+This ensures your Personal Access Token is never written to disk in plain text. The keyring integration
 works across major platforms (macOS, Linux, and Windows), and includes WSL2 support with a setup script provided.
 
 ## How to improve Token Security
+
 While keyrings are a secure option, here are some additional best practices you can consider:
+
 - **Token Rotation**: Regularly rotate your token and avoid long-lived secrets.
 - **Environment Isolation**: Avoid running this CLI in shared or untrusted environments.
 - **Two-Factor Authentication (2FA)**: Enable 2FA on your Asana account to enhance account-level security.
