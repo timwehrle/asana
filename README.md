@@ -1,4 +1,9 @@
-<img width="300" height="300" src="https://github.com/user-attachments/assets/12bda636-36af-4d55-837d-f51fbe836ef1" alt="Asana Gopher" />
+<div align="center">
+ <img width="300" height="300" src="https://github.com/user-attachments/assets/12bda636-36af-4d55-837d-f51fbe836ef1" alt="Asana Gopher" />
+
+_Image from <a href="https://gopherize.me/">https://gopherize.me/</a>_
+
+</div>
 
 # Asana CLI
 
