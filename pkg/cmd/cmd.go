@@ -53,7 +53,7 @@ func Main() ExitCode {
 	}
 
 	rootCmd.PersistentFlags().Bool("help", false, "Show help for command")
-	rootCmd.Flags().Bool("version", false, "Show asana version")
+	rootCmd.Flags().BoolP("version", "v", false, "Show asana version")
 
 	if err := rootCmd.Execute(); err != nil {
 		if cmdutils.IsUserCancellation(err) {
