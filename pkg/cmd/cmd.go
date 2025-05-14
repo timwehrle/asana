@@ -26,7 +26,6 @@ const (
 
 func Main() ExitCode {
 	buildVersion := build.Version
-	buildDate := build.Date
 
 	f := factory.New()
 	stderr := f.IOStreams.ErrOut
@@ -47,7 +46,7 @@ func Main() ExitCode {
 		}
 	}
 
-	rootCmd, err := root.NewCmdRoot(*f, buildVersion, buildDate)
+	rootCmd, err := root.NewCmdRoot(*f, buildVersion)
 	if err != nil {
 		fmt.Fprintf(stderr, "failed to create root command: %s\n", err)
 		return exitError

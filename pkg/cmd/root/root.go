@@ -1,7 +1,6 @@
 package root
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/timwehrle/asana/pkg/cmd/teams"
@@ -21,12 +20,11 @@ import (
 	"github.com/timwehrle/asana/pkg/factory"
 )
 
-func NewCmdRoot(f factory.Factory, buildVersion, buildDate string) (*cobra.Command, error) {
+func NewCmdRoot(f factory.Factory, buildVersion string) (*cobra.Command, error) {
 	cmd := &cobra.Command{
-		Use:     "asana <command> <subcommand> [flags]",
-		Short:   "The Asana CLI tool",
-		Version: fmt.Sprintf("%s (built on %s)", buildVersion, buildDate),
-		Long:    `Work with Asana from the command line.`,
+		Use:   "asana <command> <subcommand> [flags]",
+		Short: "The Asana CLI tool",
+		Long:  `Work with Asana from the command line.`,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// Skip all checks for auth commands
 			if isAuthCommand(os.Args) {
@@ -84,9 +82,10 @@ func NewCmdRoot(f factory.Factory, buildVersion, buildDate string) (*cobra.Comma
 		return showRootUsage(command)
 	})
 
+	cmd.Version = buildVersion
 	cmd.SetVersionTemplate(heredoc.Doc(`
 	asana build {{ .Version }}
-	https://github.com/timwehrle/asana/releases/tag/v{{ .Version }}
+	https://github.com/timwehrle/asana/releases/tag/{{ .Version }}
 	`))
 
 	return cmd, nil

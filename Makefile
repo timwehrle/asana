@@ -2,7 +2,8 @@
 APP_NAME=asana
 BUILD_DIR=build
 VERSION := $(shell git describe --tags --abbrev=0 --always)
-LDFLAGS := -ldflags "-X github.com/timwehrle/asana/internal/version.Version=${VERSION}"
+LDFLAGS := -ldflags "-X github.com/timwehrle/asana/internal/build.Version=${VERSION} \
+					-X github.com/timwehrle/asana/internal/build.Date=${shell date -u +%Y-%m-%dT%H:%M:%SZ}"
 
 # Commands
 GOCMD := go
