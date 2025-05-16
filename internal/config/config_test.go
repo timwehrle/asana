@@ -11,6 +11,8 @@ import (
 	"github.com/timwehrle/asana/internal/api/asana"
 )
 
+const windows = "windows"
+
 func setupTestConfig(t *testing.T) *Config {
 	t.Helper()
 
@@ -148,7 +150,7 @@ func TestConfigDir(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if tt.onlyWindows && runtime.GOOS != "windows" {
+		if tt.onlyWindows && runtime.GOOS != windows {
 			continue
 		}
 
@@ -182,7 +184,7 @@ func TestConfigErrors(t *testing.T) {
 	})
 
 	t.Run("Permission Denied", func(t *testing.T) {
-		if runtime.GOOS == "windows" {
+		if runtime.GOOS == windows {
 			t.Skip("Skipping on Windows")
 		}
 
