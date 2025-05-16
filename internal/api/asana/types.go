@@ -20,7 +20,6 @@ func (d *Date) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements the json.Unmarshaller interface
 func (d *Date) UnmarshalJSON(value []byte) error {
-
 	var dateString string
 	if err := json.Unmarshal(value, &dateString); err != nil {
 		return err

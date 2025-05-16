@@ -370,7 +370,6 @@ func (c *Client) parseResponse(
 	requestID xid.ID,
 	options *Options,
 ) (*Response, error) {
-
 	// Get response body
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)

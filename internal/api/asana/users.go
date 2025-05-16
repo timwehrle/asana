@@ -32,7 +32,6 @@ type User struct {
 
 // CurrentUser gets the currently authorized user
 func (c *Client) CurrentUser() (*User, error) {
-
 	result := &User{}
 
 	_, err := c.get("/users/me", nil, result)

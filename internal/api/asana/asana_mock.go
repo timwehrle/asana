@@ -3,6 +3,7 @@ package asana
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -100,7 +101,7 @@ func (a *AssertRequest) Header(key string) string {
 
 func (a *AssertRequest) Body() (map[string]any, error) {
 	if a.Request.Body == nil {
-		return nil, nil
+		return nil, fmt.Errorf("request body is nil")
 	}
 
 	body, err := io.ReadAll(a.Request.Body)

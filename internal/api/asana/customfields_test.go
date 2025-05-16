@@ -43,5 +43,4 @@ func TestCustomFieldBase_Precision_SerializeZero(t *testing.T) {
 	} else if string(bs) != `{"precision":0,"resource_subtype":""}` {
 		t.Errorf("Expected Precision to be a zero, but saw %v", string(bs))
 	}
-
 }
