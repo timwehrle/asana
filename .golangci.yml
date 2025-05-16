@@ -17,6 +17,34 @@ linters:
     - usestdlibvars
     - govet
     - reassign
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - canonicalheader
+    - copyloopvar
+    - dupl
+    - durationcheck
+    - errcheck
+    - errname
+    - errorlint
+    - exhaustive
+    - exptostd
+    - fatcontext
+    - funcorder
+    - gocheckcompilerdirectives
+    - gochecksumtype
+    - goconst
+    - gocritic
+    - gosec
+    - govet
+    - iface
+    - ineffassign
+    - makezero
+    - mirror
+    - nakedret
+    - unused
+    - whitespace
   settings:
     nolintlint:
       require-explanation: true
