@@ -40,10 +40,8 @@ func TestCustomFieldBase_Precision_SerializeZero(t *testing.T) {
 	cf := &CustomFieldBase{Precision: &val}
 	if bs, err := json.Marshal(cf); err != nil {
 		t.Fatal(err)
-	} else {
-		if string(bs) != `{"precision":0,"resource_subtype":""}` {
-			t.Errorf("Expected Precision to be a zero, but saw %v", string(bs))
-		}
+	} else if string(bs) != `{"precision":0,"resource_subtype":""}` {
+		t.Errorf("Expected Precision to be a zero, but saw %v", string(bs))
 	}
 
 }

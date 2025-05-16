@@ -78,9 +78,7 @@ func NewCmdRoot(f factory.Factory, buildVersion string) (*cobra.Command, error) 
 		showHelp(command, strings, os.Stdout)
 	})
 
-	cmd.SetUsageFunc(func(command *cobra.Command) error {
-		return showRootUsage(command)
-	})
+	cmd.SetUsageFunc(showRootUsage)
 
 	cmd.Version = buildVersion
 	cmd.SetVersionTemplate(heredoc.Doc(`

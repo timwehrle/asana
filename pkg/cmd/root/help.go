@@ -145,7 +145,8 @@ func getParentAliases(cmd *cobra.Command, aliases []string) []string {
 		return aliases
 	}
 
-	parentAliases := append(cmd.Parent().Aliases, cmd.Parent().Name())
+	parentAliases := append([]string{}, cmd.Parent().Aliases...)
+	parentAliases = append(parentAliases, cmd.Parent().Name())
 	sort.Strings(parentAliases)
 
 	combinedAliases := make([]string, 0, len(aliases)*len(parentAliases))

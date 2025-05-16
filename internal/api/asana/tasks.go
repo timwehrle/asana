@@ -373,13 +373,14 @@ func (t *Task) SetParent(client *Client, request *SetParentRequest) error {
 		"parent": request.Parent,
 	}
 
-	if request.InsertAfter == "-" {
+	switch {
+	case request.InsertAfter == "-":
 		m["insert_after"] = nil
-	} else if request.InsertBefore == "-" {
+	case request.InsertBefore == "-":
 		m["insert_before"] = nil
-	} else if request.InsertAfter != "" {
+	case request.InsertAfter != "":
 		m["insert_after"] = request.InsertAfter
-	} else if request.InsertBefore != "" {
+	case request.InsertBefore != "":
 		m["insert_before"] = request.InsertBefore
 	}
 

@@ -132,7 +132,7 @@ type Project struct {
 	// Read-only. Array of Custom Field Settings (in compact form).
 	CustomFieldSettings []*CustomFieldSetting `json:"custom_field_settings,omitempty"`
 
-	// Deprecated in favour of calling the /memberships endpoint
+	// Deprecated: in favour of calling the /memberships endpoint
 	//
 	// Read-only. Array of users who are members of this project.
 	Members []*User `json:"members,omitempty"`
@@ -171,7 +171,7 @@ type Project struct {
 	// exists for projects in organizations.
 	Team *Team `json:"team,omitempty"`
 
-	// Deprecated in favour of PrivacySetting
+	// Deprecated: in favour of PrivacySetting
 	// True if the project is public to the organization. If false, do not
 	// share this project with other users in this organization without
 	// explicitly checking to see if they have access.
