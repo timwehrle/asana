@@ -105,6 +105,62 @@ func (io *IOStreams) ColorScheme() *ColorScheme {
 	return io.colorScheme
 }
 
+// isTerminal returns true if the given file is a terminal
+func isTerminal(f any) bool {
+	if file, ok := f.(*os.File); ok {
+		return isatty.IsTerminal(file.Fd()) || isatty.IsCygwinTerminal(file.Fd())
+	}
+	return false
+}
+
+// ForceColor forces the use of colors in output
+func (io *IOStreams) ForceColor() {
+	io.ColorEnabled = true
+	io.initColorScheme()
+}
+
+// DisableColor disables the use of colors in output
+func (io *IOStreams) DisableColor() {
+	io.ColorEnabled = false
+	io.initColorScheme()
+}
+
+// Color returns a string in the given color if colors are enabled
+func (io *IOStreams) Color(s string, color string) string {
+	if !io.ColorEnabled {
+		return s
+	}
+	return ansi.Color(s, color)
+}
+
+// ColorFromScheme returns a string in the given scheme color if colors are enabled
+func (io *IOStreams) ColorFromScheme(s string, color func(string) string) string {
+	if !io.ColorEnabled {
+		return s
+	}
+	return color(s)
+}
+
+// Printf formats and prints to the configured output
+func (io *IOStreams) Printf(format string, a ...any) (n int, err error) {
+	return fmt.Fprintf(io.Out, format, a...)
+}
+
+// Println prints to the configured output followed by a newline
+func (io *IOStreams) Println(a ...any) (n int, err error) {
+	return fmt.Fprintln(io.Out, a...)
+}
+
+// ErrPrintf formats and prints to the configured error output
+func (io *IOStreams) ErrPrintf(format string, a ...any) (n int, err error) {
+	return fmt.Fprintf(io.ErrOut, format, a...)
+}
+
+// ErrPrintln prints to the configured error output followed by a newline
+func (io *IOStreams) ErrPrintln(a ...any) (n int, err error) {
+	return fmt.Fprintln(io.ErrOut, a...)
+}
+
 // initColorScheme initializes the color scheme based on whether colors are enabled
 func (io *IOStreams) initColorScheme() {
 	useColors := io.ColorEnabled
@@ -166,60 +222,4 @@ func (io *IOStreams) initColorScheme() {
 			return ansi.Color("✕", "red")
 		}(),
 	}
-}
-
-// isTerminal returns true if the given file is a terminal
-func isTerminal(f any) bool {
-	if file, ok := f.(*os.File); ok {
-		return isatty.IsTerminal(file.Fd()) || isatty.IsCygwinTerminal(file.Fd())
-	}
-	return false
-}
-
-// ForceColor forces the use of colors in output
-func (io *IOStreams) ForceColor() {
-	io.ColorEnabled = true
-	io.initColorScheme()
-}
-
-// DisableColor disables the use of colors in output
-func (io *IOStreams) DisableColor() {
-	io.ColorEnabled = false
-	io.initColorScheme()
-}
-
-// Color returns a string in the given color if colors are enabled
-func (io *IOStreams) Color(s string, color string) string {
-	if !io.ColorEnabled {
-		return s
-	}
-	return ansi.Color(s, color)
-}
-
-// ColorFromScheme returns a string in the given scheme color if colors are enabled
-func (io *IOStreams) ColorFromScheme(s string, color func(string) string) string {
-	if !io.ColorEnabled {
-		return s
-	}
-	return color(s)
-}
-
-// Printf formats and prints to the configured output
-func (io *IOStreams) Printf(format string, a ...any) (n int, err error) {
-	return fmt.Fprintf(io.Out, format, a...)
-}
-
-// Println prints to the configured output followed by a newline
-func (io *IOStreams) Println(a ...any) (n int, err error) {
-	return fmt.Fprintln(io.Out, a...)
-}
-
-// ErrPrintf formats and prints to the configured error output
-func (io *IOStreams) ErrPrintf(format string, a ...any) (n int, err error) {
-	return fmt.Fprintf(io.ErrOut, format, a...)
-}
-
-// ErrPrintln prints to the configured error output followed by a newline
-func (io *IOStreams) ErrPrintln(a ...any) (n int, err error) {
-	return fmt.Fprintln(io.ErrOut, a...)
 }

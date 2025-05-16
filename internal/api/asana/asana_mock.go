@@ -14,6 +14,24 @@ type MockClient struct {
 	Requests []*http.Request
 }
 
+// NewMockClient creates a new mock client with the given response
+func NewMockClient(status int, body any) (*MockClient, error) {
+	responseBody, err := prepareBody(body)
+	if err != nil {
+		return nil, err
+	}
+
+	return &MockClient{
+		DoFunc: func(req *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: status,
+				Body:       io.NopCloser(bytes.NewBuffer(responseBody)),
+				Header:     make(http.Header),
+			}, nil
+		},
+	}, nil
+}
+
 func (m *MockClient) Do(req *http.Request) (*http.Response, error) {
 	m.Requests = append(m.Requests, req)
 	return m.DoFunc(req)
@@ -42,24 +60,6 @@ func MockResponse(status int, body any) (*http.Response, error) {
 		StatusCode: status,
 		Body:       io.NopCloser(bytes.NewBuffer(bodyContent)),
 		Header:     make(http.Header),
-	}, nil
-}
-
-// NewMockClient creates a new mock client with the given response
-func NewMockClient(status int, body any) (*MockClient, error) {
-	responseBody, err := prepareBody(body)
-	if err != nil {
-		return nil, err
-	}
-
-	return &MockClient{
-		DoFunc: func(req *http.Request) (*http.Response, error) {
-			return &http.Response{
-				StatusCode: status,
-				Body:       io.NopCloser(bytes.NewBuffer(responseBody)),
-				Header:     make(http.Header),
-			}, nil
-		},
 	}, nil
 }
 
