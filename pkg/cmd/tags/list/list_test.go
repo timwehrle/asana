@@ -1,41 +1,19 @@
 package list
 
 import (
-	"bytes"
 	"github.com/timwehrle/asana/internal/api/asana"
-	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/pkg/factory"
-	"github.com/timwehrle/asana/pkg/iostreams"
+	"net/http"
+	"net/url"
+	"reflect"
+	"strings"
 	"testing"
 )
 
-func makeTestFactory() (factory.Factory, *bytes.Buffer, *bytes.Buffer) {
-	outBuf := &bytes.Buffer{}
-	errBuf := &bytes.Buffer{}
-	ios := &iostreams.IOStreams{In: nil, Out: outBuf, ErrOut: errBuf}
-	fakeConfig := func() (*config.Config, error) {
-		return &config.Config{
-			Workspace: &asana.Workspace{
-				ID:   "W123",
-				Name: "TestWS",
-			},
-		}, nil
-	}
-	fakeClient := func() (*asana.Client, error) {
-		return &asana.Client{}, nil
-	}
-	return factory.Factory{
-		IOStreams: ios,
-		Config:    fakeConfig,
-		Client:    fakeClient,
-		Prompter:  nil,
-	}, outBuf, errBuf
-}
-
 func TestNewCmdList_RunE(t *testing.T) {
-	f, _, _ := makeTestFactory()
-	var sawOpts *ListOptions
+	f, _, _ := factory.NewTestFactory()
 
+	var sawOpts *ListOptions
 	cmd := NewCmdList(f, func(opts *ListOptions) error {
 		sawOpts = opts
 		return nil
@@ -54,5 +32,129 @@ func TestNewCmdList_RunE(t *testing.T) {
 	}
 	if !sawOpts.Favorite {
 		t.Error("Favorite = false; want true")
+	}
+}
+
+type transportFunc func(*http.Request) (*http.Response, error)
+
+func (fn transportFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return fn(req)
+}
+
+func newTestClient(mock *asana.MockClient) *asana.Client {
+	httpClient := &http.Client{
+		Transport: transportFunc(mock.Do),
+	}
+	return asana.NewClient(httpClient)
+}
+
+func TestFetchFavoriteTags(t *testing.T) {
+	tests := []struct {
+		name          string
+		mockStatus    int
+		mockBody      any
+		wantErr       bool
+		wantTags      []*asana.Tag
+		wantPath      string
+		wantQueryVals url.Values
+	}{
+		{
+			name:       "success",
+			mockStatus: 200,
+			mockBody: []*asana.Tag{
+				{
+					ID: "T1",
+					TagBase: asana.TagBase{
+						Name: "TagOne",
+					},
+				},
+				{
+					ID: "T2",
+					TagBase: asana.TagBase{
+						Name: "TagTwo",
+					},
+				},
+			},
+			wantErr: false,
+			wantTags: []*asana.Tag{
+				{
+					ID: "T1",
+					TagBase: asana.TagBase{
+						Name: "TagOne",
+					},
+				},
+				{
+					ID: "T2",
+					TagBase: asana.TagBase{
+						Name: "TagTwo",
+					},
+				},
+			},
+			wantPath: "/api/1.0/users/me/favorites",
+			wantQueryVals: url.Values{
+				"resource_type": []string{"tag"},
+				"workspace":     []string{"W123"},
+			},
+		},
+		{
+			name:       "server error",
+			mockStatus: 500,
+			mockBody:   "oops",
+			wantErr:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mock, err := asana.NewMockClient(tt.mockStatus, tt.mockBody)
+			if err != nil {
+				t.Fatalf("NewMockClient: %v", err)
+			}
+			client := newTestClient(mock)
+			ws := &asana.Workspace{ID: "W123"}
+
+			got, err := fetchFavoriteTags(client, ws)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("expected error, got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if !reflect.DeepEqual(got, tt.wantTags) {
+				t.Errorf("tags = %#v; want %#v", got, tt.wantTags)
+			}
+
+			last := mock.GetLastRequest()
+			if got, want := last.Method(), http.MethodGet; got != want {
+				t.Errorf("Method = %q; want %q", got, want)
+			}
+			if got, want := last.Path(), tt.wantPath; got != want {
+				t.Errorf("Path = %q; want %q", got, want)
+			}
+			for key, vals := range tt.wantQueryVals {
+				if qv := last.Query()[key]; !reflect.DeepEqual(qv, vals) {
+					t.Errorf("query[%q] = %v; want %v", key, qv, vals)
+				}
+			}
+		})
+	}
+}
+
+func TestFetchFavoriteTags_ErrorPathWrapped(t *testing.T) {
+	mock, _ := asana.NewMockClient(500, "fail")
+	client := newTestClient(mock)
+	ws := &asana.Workspace{ID: "W500"}
+
+	_, err := fetchFavoriteTags(client, ws)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "failed fetching favorite tags") {
+		t.Errorf("error did not wrap correctly: %v", err)
 	}
 }
