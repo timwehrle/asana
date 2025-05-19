@@ -10,6 +10,7 @@ import (
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/format"
 	"github.com/timwehrle/asana/pkg/iostreams"
+	"strings"
 	"time"
 )
 
@@ -74,10 +75,17 @@ func runCreate(opts *CreateOptions) error {
 		return err
 	}
 
+	// Prompt for task description
+	description, err := addDescription(opts)
+	if err != nil {
+		return err
+	}
+
 	req := &asana.CreateTaskRequest{
 		TaskBase: asana.TaskBase{
 			Name:  name,
 			DueOn: dueDate,
+			Notes: description,
 		},
 		Workspace: cfg.Workspace.ID,
 		Assignee:  assignee.ID,
@@ -119,9 +127,21 @@ func getDueDate(opts *CreateOptions) (*asana.Date, error) {
 		return nil, fmt.Errorf("failed to read due date: %w", err)
 	}
 
-	due, err := convert.ToDate(input, time.DateOnly)
-	if err != nil {
-		return nil, fmt.Errorf("invalid due date %q: %w", input, err)
+	var due *asana.Date
+	if input != "" {
+		due, err = convert.ToDate(input, time.DateOnly)
+		if err != nil {
+			return nil, fmt.Errorf("invalid due date %q: %w", input, err)
+		}
 	}
 	return due, nil
+}
+
+func addDescription(opts *CreateOptions) (string, error) {
+	description, err := opts.Prompter.Editor("Enter task description: ", "")
+	if err != nil {
+		return "", fmt.Errorf("failed to read task description: %w", err)
+	}
+
+	return strings.TrimSpace(description), nil
 }
