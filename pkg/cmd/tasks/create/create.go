@@ -83,6 +83,11 @@ func runCreate(opts *CreateOptions) error {
 		return err
 	}
 
+	project, err := getProject(opts, cfg.Workspace.ID, client)
+	if err != nil {
+		return err
+	}
+
 	req := &asana.CreateTaskRequest{
 		TaskBase: asana.TaskBase{
 			Name:  name,
@@ -91,6 +96,9 @@ func runCreate(opts *CreateOptions) error {
 		},
 		Workspace: cfg.Workspace.ID,
 		Assignee:  assignee.ID,
+
+		// Currently only one project is supported
+		Projects: []string{project.ID},
 	}
 	if err := req.Validate(); err != nil {
 		return fmt.Errorf("task validation failed: %w", err)
@@ -146,4 +154,22 @@ func addDescription(opts *CreateOptions) (string, error) {
 	}
 
 	return strings.TrimSpace(description), nil
+}
+
+func getProject(opts *CreateOptions, workspaceID string, client *asana.Client) (*asana.Project, error) {
+	ws := &asana.Workspace{ID: workspaceID}
+	projects, err := ws.AllProjects(client)
+	if err != nil {
+		return nil, fmt.Errorf("cannot fetch projects: %w", err)
+	}
+
+	names := format.MapToStrings(projects, func(p *asana.Project) string {
+		return p.Name
+	})
+
+	selected, err := opts.Prompter.Select("Select project: ", names)
+	if err != nil {
+		return nil, fmt.Errorf("project selection failed: %w", err)
+	}
+	return projects[selected], nil
 }
