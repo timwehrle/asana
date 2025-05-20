@@ -45,6 +45,8 @@ func NewCmdCreate(f factory.Factory, runF func(*CreateOptions) error) *cobra.Com
 }
 
 func runCreate(opts *CreateOptions) error {
+	cs := opts.IO.ColorScheme()
+
 	cfg, err := opts.Config()
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
@@ -99,7 +101,7 @@ func runCreate(opts *CreateOptions) error {
 		return fmt.Errorf("error creating task: %w", err)
 	}
 
-	opts.IO.Printf("Created task %q with due date %s\n", task.Name, format.Date(task.DueOn))
+	opts.IO.Printf("%s Created task %q with due date %s\n", cs.SuccessIcon, task.Name, strings.ToLower(format.Date(task.DueOn)))
 	return nil
 }
 
