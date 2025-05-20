@@ -20,7 +20,7 @@ func TestFormatItems(t *testing.T) {
 		{name: "item2"},
 	}
 
-	result := format.Items(items, func(m *mockStruct) string {
+	result := format.MapToStrings(items, func(m *mockStruct) string {
 		return m.name
 	})
 
@@ -28,7 +28,7 @@ func TestFormatItems(t *testing.T) {
 	assert.Empty(
 		t,
 		0,
-		len(format.Items([]*mockStruct{}, func(m *mockStruct) string { return m.name })),
+		len(format.MapToStrings([]*mockStruct{}, func(m *mockStruct) string { return m.name })),
 	)
 }
 
@@ -41,15 +41,15 @@ func TestFormatList(t *testing.T) {
 	}{
 		{
 			name:     "normal list",
-			prefix:   "Items: ",
+			prefix:   "MapToStrings: ",
 			items:    []string{"one", "two"},
-			expected: "Items: one, two",
+			expected: "MapToStrings: one, two",
 		},
 		{
 			name:     "empty list",
-			prefix:   "Items: ",
+			prefix:   "MapToStrings: ",
 			items:    []string{},
-			expected: "Items: None",
+			expected: "MapToStrings: None",
 		},
 		{
 			name:     "single item",

@@ -11,12 +11,12 @@ import (
 	"github.com/timwehrle/asana/pkg/iostreams"
 )
 
-func Items[T any](items []*T, nameFunc func(*T) string) []string {
-	names := make([]string, len(items))
+func MapToStrings[T any](items []*T, fn func(*T) string) []string {
+	out := make([]string, len(items))
 	for i, item := range items {
-		names[i] = nameFunc(item)
+		out[i] = fn(item)
 	}
-	return names
+	return out
 }
 
 func List(prefix string, items []string) string {
@@ -27,20 +27,20 @@ func List(prefix string, items []string) string {
 }
 
 func Tasks(tasks []*asana.Task) []string {
-	return Items(tasks, func(t *asana.Task) string {
+	return MapToStrings(tasks, func(t *asana.Task) string {
 		return fmt.Sprintf("[%s] %s", Date(t.DueOn), t.Name)
 	})
 }
 
 func Projects(projects []*asana.Project) string {
-	names := Items(projects, func(p *asana.Project) string {
+	names := MapToStrings(projects, func(p *asana.Project) string {
 		return p.Name
 	})
 	return List("Projects: ", names)
 }
 
 func Tags(tags []*asana.Tag) string {
-	names := Items(tags, func(t *asana.Tag) string {
+	names := MapToStrings(tags, func(t *asana.Tag) string {
 		return t.Name
 	})
 	return List("Tags: ", names)
