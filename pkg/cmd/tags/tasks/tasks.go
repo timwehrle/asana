@@ -17,6 +17,8 @@ type TasksOptions struct {
 	Prompter prompter.Prompter
 	Config   func() (*config.Config, error)
 	Client   func() (*asana.Client, error)
+
+	ID string
 }
 
 func NewCmdTasks(f factory.Factory, runF func(*TasksOptions) error) *cobra.Command {
@@ -36,7 +38,16 @@ func NewCmdTasks(f factory.Factory, runF func(*TasksOptions) error) *cobra.Comma
 		Example: heredoc.Doc(`
 				# List all tasks with the selected tag
 				$ asana tags tasks
+
+				# List all tasks with a given tag
+				$ asana tags tasks --id 1234
 			`),
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			if len(opts.ID) < 4 {
+				return fmt.Errorf("ID should be longer than 4")
+			}
+			return nil
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if runF != nil {
 				return runF(opts)
@@ -45,6 +56,8 @@ func NewCmdTasks(f factory.Factory, runF func(*TasksOptions) error) *cobra.Comma
 			return runTasks(opts)
 		},
 	}
+
+	cmd.Flags().StringVar(&opts.ID, "id", "", "Specify a tag ID")
 
 	return cmd
 }
@@ -62,9 +75,19 @@ func runTasks(opts *TasksOptions) error {
 		return fmt.Errorf("failed to initialize Asana client: %w", err)
 	}
 
-	tag, err := getTag(opts, cfg.Workspace.ID, client)
+	var tag *asana.Tag
+	if opts.ID == "" {
+		tag, err = getTag(opts, cfg.Workspace.ID, client)
+		if err != nil {
+			return err
+		}
+	} else {
+		tag = &asana.Tag{ID: opts.ID}
+	}
+
+	err = tag.Fetch(client)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to fetch tag: %w", err)
 	}
 
 	tasks, _, err := tag.Tasks(client)
@@ -96,6 +119,7 @@ func getTag(opts *TasksOptions, workspaceID string, client *asana.Client) (*asan
 		return tag.Name
 	})
 
+	// TODO: Implement multiselection of tags since tasks can be assigned to more than one tag
 	selected, err := opts.Prompter.Select("Select a tag: ", names)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select a tag: %w", err)
