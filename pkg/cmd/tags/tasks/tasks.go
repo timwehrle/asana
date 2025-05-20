@@ -31,7 +31,11 @@ func NewCmdTasks(f factory.Factory, runF func(*TasksOptions) error) *cobra.Comma
 		Use:   "tasks",
 		Short: "List tasks with a given tag",
 		Long: heredoc.Doc(`
-				This command lists tasks with a given tag.
+				List all tasks associated with a selected tag in your Asana workspace.
+			`),
+		Example: heredoc.Doc(`
+				# List all tasks with the selected tag
+				$ asana tags tasks
 			`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if runF != nil {

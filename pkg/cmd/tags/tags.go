@@ -9,7 +9,7 @@ import (
 
 func NewCmdTags(f factory.Factory) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "tags",
+		Use:   "tags <subcommand>",
 		Short: "Manage your Asana tags",
 		Long:  "Perform operations related to your Asana tags.",
 	}
