@@ -3,6 +3,7 @@ package tags
 import (
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/pkg/cmd/tags/list"
+	"github.com/timwehrle/asana/pkg/cmd/tags/tasks"
 	"github.com/timwehrle/asana/pkg/factory"
 )
 
@@ -14,6 +15,7 @@ func NewCmdTags(f factory.Factory) *cobra.Command {
 	}
 
 	cmd.AddCommand(list.NewCmdList(f, nil))
+	cmd.AddCommand(tasks.NewCmdTasks(f, nil))
 
 	return cmd
 }
