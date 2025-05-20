@@ -593,3 +593,13 @@ func (w *Workspace) SearchTasks(
 	_, err := client.get(fmt.Sprintf("/workspaces/%s/tasks/search", w.ID), query, &results, opts...)
 	return results, err
 }
+
+// Tasks returns the compact task records for all tasks with the given tag.
+// Tasks can have more than one tag at a time.
+func (t *Tag) Tasks(c *Client, opts ...*Options) ([]*Task, *NextPage, error) {
+	c.trace("Searching tasks in %q", t.Name)
+	var results []*Task
+
+	nextPage, err := c.get(fmt.Sprintf("/tags/%s/tasks", t.ID), nil, &results, opts...)
+	return results, nextPage, err
+}
