@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sync"
+	"time"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/viper"
@@ -16,6 +17,7 @@ import (
 type Config struct {
 	Username  string           `mapstructure:"username"`
 	Workspace *asana.Workspace `mapstructure:"workspace"`
+	CreatedAt time.Time        `mapstructure:"created_at"`
 	mu        sync.RWMutex
 }
 
@@ -94,6 +96,7 @@ func (c *Config) Save() error {
 
 	viper.Set("username", c.Username)
 	viper.Set("workspace", c.Workspace)
+	viper.Set("created_at", time.Now().Format(time.RFC3339))
 
 	if err := viper.WriteConfig(); err != nil {
 		if errors.As(err, &errConfigFileNotFound) {
