@@ -20,8 +20,8 @@ builds:
       - CGO_ENABLED=0
     main: ./cmd/asana
     ldflags:
-      - "-s -w \ 
-        -X github.com/timwehrle/asana/internal/build.Version={{ .Version }} \ 
+      - "-s -w \
+        -X github.com/timwehrle/asana/internal/build.Version={{ .Version }} \
         -X github.com/timwehrle/asana/internal/build.Date={{ .Date }}"
     goos:
       - linux
@@ -35,7 +35,7 @@ builds:
     mod_timestamp: "{{ .CommitTimestamp }}"
 
 archives:
-  - formats: ['tar.gz']
+  - formats: ["tar.gz"]
     id: tar
     name_template: >-
       {{- .ProjectName }}_
@@ -46,7 +46,7 @@ archives:
       {{- if .Arm }}v{{ .Arm }}{{ end -}}
     format_overrides:
       - goos: windows
-        formats: ['zip']
+        formats: ["zip"]
 
 brews:
   - name: asana
@@ -92,10 +92,9 @@ changelog:
       order: 5
     - title: "Other updates"
       order: 999
-  
+
 checksum:
   name_template: "checksums.txt"
-
 
 nfpms:
   - license: MIT
