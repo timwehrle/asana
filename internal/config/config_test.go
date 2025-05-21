@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -30,7 +31,8 @@ func TestConfig(t *testing.T) {
 
 	t.Run("Save and load config", func(t *testing.T) {
 		cfg := &Config{
-			Username: "testuser",
+			CreatedAt: time.Now(),
+			Username:  "testuser",
 			Workspace: &asana.Workspace{
 				ID:   "123",
 				Name: "TestWorkspace",

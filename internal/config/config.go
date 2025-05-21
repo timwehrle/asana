@@ -17,7 +17,7 @@ import (
 type Config struct {
 	Username  string           `mapstructure:"username"`
 	Workspace *asana.Workspace `mapstructure:"workspace"`
-	CreatedAt time.Time        `mapstructure:"created_at"`
+	CreatedAt time.Time        `yaml:"created_at"`
 	mu        sync.RWMutex
 }
 
