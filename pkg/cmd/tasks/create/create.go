@@ -189,8 +189,8 @@ func getProject(opts *CreateOptions, workspaceID string, client *asana.Client) (
 	return projects[selected], nil
 }
 
-func getSection(opts *CreateOptions, projectId string, client *asana.Client) (*asana.Section, error) {
-	project := &asana.Project{ID: projectId}
+func getSection(opts *CreateOptions, projectID string, client *asana.Client) (*asana.Section, error) {
+	project := &asana.Project{ID: projectID}
 	sections, _, err := project.Sections(client)
 	if err != nil {
 		return nil, fmt.Errorf("cannot fetch sections: %w", err)
