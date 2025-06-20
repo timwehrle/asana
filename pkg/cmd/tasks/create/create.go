@@ -83,7 +83,14 @@ func runCreate(opts *CreateOptions) error {
 		return err
 	}
 
+	// Prompt for project
 	project, err := getProject(opts, cfg.Workspace.ID, client)
+	if err != nil {
+		return err
+	}
+
+	// Prompt for section
+	section, err := getSection(opts, project.ID, client)
 	if err != nil {
 		return err
 	}
@@ -99,6 +106,14 @@ func runCreate(opts *CreateOptions) error {
 
 		// Currently only one project is supported
 		Projects: []string{project.ID},
+
+		// Both project and section ID are expected
+		Memberships: []*asana.CreateMembership{
+			{
+				Project: project.ID,
+				Section: section.ID,
+			},
+		},
 	}
 	if err := req.Validate(); err != nil {
 		return fmt.Errorf("task validation failed: %w", err)
@@ -172,4 +187,22 @@ func getProject(opts *CreateOptions, workspaceID string, client *asana.Client) (
 		return nil, fmt.Errorf("project selection failed: %w", err)
 	}
 	return projects[selected], nil
+}
+
+func getSection(opts *CreateOptions, projectId string, client *asana.Client) (*asana.Section, error) {
+	project := &asana.Project{ID: projectId}
+	sections, _, err := project.Sections(client)
+	if err != nil {
+		return nil, fmt.Errorf("cannot fetch sections: %w", err)
+	}
+
+	names := format.MapToStrings(sections, func(p *asana.Section) string {
+		return p.Name
+	})
+
+	selected, err := opts.Prompter.Select("Select section: ", names)
+	if err != nil {
+		return nil, fmt.Errorf("section selection failed: %w", err)
+	}
+	return sections[selected], nil
 }
