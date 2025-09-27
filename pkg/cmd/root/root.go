@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/timwehrle/asana/pkg/cmd/teams"
+	"github.com/timwehrle/asana/pkg/cmd/timer"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/timwehrle/asana/pkg/cmd/tags"
@@ -70,6 +71,7 @@ func NewCmdRoot(f factory.Factory, buildVersion string) (*cobra.Command, error) 
 	cmd.AddCommand(config.NewCmdConfig(f))
 	cmd.AddCommand(tags.NewCmdTags(f))
 	cmd.AddCommand(teams.NewCmdTeams(f))
+	cmd.AddCommand(timer.NewCmdTimer(f))
 
 	cmd.SilenceErrors = true
 	cmd.SilenceUsage = true

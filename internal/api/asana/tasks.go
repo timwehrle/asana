@@ -603,3 +603,34 @@ func (t *Tag) Tasks(c *Client, opts ...*Options) ([]*Task, *NextPage, error) {
 	nextPage, err := c.get(fmt.Sprintf("/tags/%s/tasks", t.ID), nil, &results, opts...)
 	return results, nextPage, err
 }
+
+type TimeTrackingEntry struct {
+	ID              string `json:"gid,omitempty"`
+	ResourceType    string `json:"resource_type,omitempty"`
+	DurationMinutes int    `json:"duration_minutes,omitempty"`
+	EnteredOn       string `json:"entered_on,omitempty"`
+	AttributableTo  struct {
+		ID           string `json:"gid,omitempty"`
+		ResourceType string `json:"resource_type,omitempty"`
+		Name         string `json:"name,omitempty"`
+	}
+	CreatedBy struct {
+		ID           string `json:"gid,omitempty"`
+		ResourceType string `json:"resource_type,omitempty"`
+		Name         string `json:"name,omitempty"`
+	}
+	Task           *Task      `json:"task,omitempty"`
+	CreatedAt      *time.Time `json:"created_at,omitempty"`
+	ApprovalStatus string     `json:"approval_status,omitempty"`
+	BillableStatus string     `json:"billable_status,omitempty"`
+	Description    string     `json:"description,omitempty"`
+}
+
+func (t *Task) GetTimeTrackingEntries(c *Client, opts ...*Options) ([]*TimeTrackingEntry, *NextPage, error) {
+	c.trace("Listing time tracking entries for %q", t.Name)
+
+	var results []*TimeTrackingEntry
+
+	nextPage, err := c.get(fmt.Sprintf("/tasks/%s/time_tracking_entries", t.ID), nil, &results, opts...)
+	return results, nextPage, err
+}

@@ -131,3 +131,29 @@ func Dedent(s string) string {
 	}
 	return strings.TrimSuffix(buffer.String(), "\n")
 }
+
+func Duration(minutes int) string {
+	hours := minutes / 60
+	mins := minutes % 60
+
+	var parts []string
+	if hours > 0 {
+		if hours == 1 {
+			parts = append(parts, "1 hour")
+		} else {
+			parts = append(parts, fmt.Sprintf("%d hours", hours))
+		}
+	}
+	if mins > 0 {
+		if mins == 1 {
+			parts = append(parts, "1 minute")
+		} else {
+			parts = append(parts, fmt.Sprintf("%d minutes", mins))
+		}
+	}
+
+	if len(parts) == 0 {
+		return "0 minutes"
+	}
+	return strings.Join(parts, " ")
+}
