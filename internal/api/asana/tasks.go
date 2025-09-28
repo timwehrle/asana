@@ -614,11 +614,7 @@ type TimeTrackingEntry struct {
 		ResourceType string `json:"resource_type,omitempty"`
 		Name         string `json:"name,omitempty"`
 	}
-	CreatedBy struct {
-		ID           string `json:"gid,omitempty"`
-		ResourceType string `json:"resource_type,omitempty"`
-		Name         string `json:"name,omitempty"`
-	}
+	CreatedBy      *User      `json:"created_by,omitempty"`
 	Task           *Task      `json:"task,omitempty"`
 	CreatedAt      *time.Time `json:"created_at,omitempty"`
 	ApprovalStatus string     `json:"approval_status,omitempty"`

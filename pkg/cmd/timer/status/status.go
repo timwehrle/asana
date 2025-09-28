@@ -64,7 +64,9 @@ func runStatus(opts *StatusOptions) error {
 		return err
 	}
 
-	entries, _, err := task.GetTimeTrackingEntries(client)
+	entries, _, err := task.GetTimeTrackingEntries(client, &asana.Options{
+		Fields: []string{"created_by.name", "created_by.gid", "duration_minutes"},
+	})
 	if err != nil {
 		return fmt.Errorf("failed to get time tracking entries: %w", err)
 	}
@@ -74,9 +76,11 @@ func runStatus(opts *StatusOptions) error {
 		return nil
 	}
 
+	io.Printf("\nTracked time entries on task %s:\n", cs.Bold(task.Name))
 	for _, entry := range entries {
-		io.Printf("\nYou have tracked %s on task %q.\n\n", cs.Bold(format.Duration(entry.DurationMinutes)), task.Name)
+		io.Printf("\n- %s tracked %s", entry.CreatedBy.Name, cs.Bold(format.Duration(entry.DurationMinutes)))
 	}
+	io.Printf("\n\n")
 
 	return nil
 }
