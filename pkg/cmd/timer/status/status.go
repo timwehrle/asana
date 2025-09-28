@@ -2,6 +2,8 @@ package status
 
 import (
 	"fmt"
+	"sort"
+	"time"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -65,7 +67,7 @@ func runStatus(opts *StatusOptions) error {
 	}
 
 	entries, _, err := task.GetTimeTrackingEntries(client, &asana.Options{
-		Fields: []string{"created_by.name", "created_by.gid", "duration_minutes"},
+		Fields: []string{"created_by.name", "created_by.gid", "duration_minutes", "entered_on"},
 	})
 	if err != nil {
 		return fmt.Errorf("failed to get time tracking entries: %w", err)
@@ -76,12 +78,34 @@ func runStatus(opts *StatusOptions) error {
 		return nil
 	}
 
-	io.Printf("\nTracked time entries on task %s:\n", cs.Bold(task.Name))
+	grouped := make(map[*asana.Date][]*asana.TimeTrackingEntry)
+	totalMinutes := 0
 	for _, entry := range entries {
-		io.Printf("\n- %s tracked %s", entry.CreatedBy.Name, cs.Bold(format.Duration(entry.DurationMinutes)))
+		grouped[entry.EnteredOn] = append(grouped[entry.EnteredOn], entry)
+		totalMinutes += entry.DurationMinutes
 	}
-	io.Printf("\n\n")
 
+	dates := make([]*asana.Date, 0, len(grouped))
+	for d := range grouped {
+		dates = append(dates, d)
+	}
+
+	sort.Slice(dates, func(i, j int) bool {
+		return time.Time(*dates[i]).After(time.Time(*dates[j]))
+	})
+
+	io.Printf("\nTracked time entries on task %s:\n", cs.Bold(task.Name))
+	for _, d := range dates {
+		io.Printf("\n[%s]\n", format.Date(d))
+		for _, entry := range grouped[d] {
+			io.Printf("- %s tracked %s\n",
+				entry.CreatedBy.Name,
+				cs.Bold(format.Duration(entry.DurationMinutes)),
+			)
+		}
+	}
+
+	io.Printf("\nTotal tracked time: %s\n", cs.Bold(format.Duration(totalMinutes)))
 	return nil
 }
 

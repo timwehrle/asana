@@ -608,7 +608,7 @@ type TimeTrackingEntry struct {
 	ID              string `json:"gid,omitempty"`
 	ResourceType    string `json:"resource_type,omitempty"`
 	DurationMinutes int    `json:"duration_minutes,omitempty"`
-	EnteredOn       string `json:"entered_on,omitempty"`
+	EnteredOn       *Date  `json:"entered_on,omitempty"`
 	AttributableTo  struct {
 		ID           string `json:"gid,omitempty"`
 		ResourceType string `json:"resource_type,omitempty"`
