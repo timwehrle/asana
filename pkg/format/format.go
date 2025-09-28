@@ -100,6 +100,20 @@ func Date(date *asana.Date) string {
 	return parsedDate.Format("Jan 02, 2006")
 }
 
+func HumanDate(t time.Time) string {
+	today := time.Now().Truncate(24 * time.Hour)
+	d := t.Truncate(24 * time.Hour)
+
+	switch {
+	case d.Equal(today):
+		return "Today"
+	case d.Equal(today.AddDate(0, 0, -1)):
+		return "Yesterday"
+	default:
+		return d.Format("Jan 02, 2006")
+	}
+}
+
 func Indent(s, prefix string) string {
 	if len(strings.TrimSpace(s)) == 0 {
 		return s
