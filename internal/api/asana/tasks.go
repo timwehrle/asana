@@ -158,12 +158,12 @@ type CreateTaskRequest struct {
 	Assignee  string   `json:"assignee,omitempty"`  // User to which this task is assigned, or null if the task is unassigned.
 	Followers []string `json:"followers,omitempty"` // Array of users following this task.
 
-	Workspace    string                 `json:"workspace,omitempty"`
-	Parent       string                 `json:"parent,omitempty"`
-	Projects     []string               `json:"projects,omitempty"`
-	Memberships  []*CreateMembership    `json:"memberships,omitempty"`
-	Tags         []string               `json:"tags,omitempty"`
-	CustomFields map[string]interface{} `json:"custom_fields,omitempty"`
+	Workspace    string              `json:"workspace,omitempty"`
+	Parent       string              `json:"parent,omitempty"`
+	Projects     []string            `json:"projects,omitempty"`
+	Memberships  []*CreateMembership `json:"memberships,omitempty"`
+	Tags         []string            `json:"tags,omitempty"`
+	CustomFields map[string]any      `json:"custom_fields,omitempty"`
 }
 
 type CreateMembership struct {
@@ -174,9 +174,9 @@ type CreateMembership struct {
 type UpdateTaskRequest struct {
 	TaskBase
 
-	Assignee     string                 `json:"assignee,omitempty"`  // User to which this task is assigned, or null if the task is unassigned.
-	Followers    []string               `json:"followers,omitempty"` // Array of users following this task.
-	CustomFields map[string]interface{} `json:"custom_fields,omitempty"`
+	Assignee     string         `json:"assignee,omitempty"`  // User to which this task is assigned, or null if the task is unassigned.
+	Followers    []string       `json:"followers,omitempty"` // Array of users following this task.
+	CustomFields map[string]any `json:"custom_fields,omitempty"`
 }
 
 // Task is the basic object around which many operations in Asana are
@@ -629,4 +629,18 @@ func (t *Task) GetTimeTrackingEntries(c *Client, opts ...*Options) ([]*TimeTrack
 
 	nextPage, err := c.get(fmt.Sprintf("/tasks/%s/time_tracking_entries", t.ID), nil, &results, opts...)
 	return results, nextPage, err
+}
+
+type CreateTimeTrackingEntryRequest struct {
+	DurationMinutes int    `json:"duration_minutes,omitempty"`
+	EnteredOn       *Date  `json:"entered_on,omitempty"`
+	AttributableTo  string `json:"attributable_to,omitempty"`
+}
+
+func (t *Task) CreateTimeTrackingEntry(c *Client, request *CreateTimeTrackingEntryRequest, opts ...*Options) (*TimeTrackingEntry, error) {
+	c.info("Creating time tracking entry for task %q", t.Name)
+
+	var result *TimeTrackingEntry
+	err := c.post(fmt.Sprintf("/tasks/%s/time_tracking_entries", t.ID), request, &result, opts...)
+	return result, err
 }

@@ -33,9 +33,10 @@ func NewCmdStatus(f factory.Factory, runF func(*StatusOptions) error) *cobra.Com
 
 	cmd := &cobra.Command{
 		Use:   "status",
-		Short: "Show the current tracked time of the selected task",
+		Short: "Show tracked time for a task",
 		Long: heredoc.Doc(`
-				Show the total time tracked for a selected task in your Asana workspace.
+				Display all time entries logged on a selected Asana task, grouped by date,
+				along with the total tracked time.
 			`),
 		Example: heredoc.Doc(`
 				# Show the tracked time of a selected task
@@ -50,6 +51,12 @@ func NewCmdStatus(f factory.Factory, runF func(*StatusOptions) error) *cobra.Com
 	}
 
 	return cmd
+}
+
+type GroupedEntries struct {
+	Date    time.Time
+	Label   string
+	Entries []*asana.TimeTrackingEntry
 }
 
 func runStatus(opts *StatusOptions) error {
@@ -74,39 +81,66 @@ func runStatus(opts *StatusOptions) error {
 	}
 
 	if len(entries) == 0 {
-		io.Println("No time tracked yet for this task.")
+		io.Println("No time entries found for this task.")
 		return nil
 	}
 
-	grouped := make(map[*asana.Date][]*asana.TimeTrackingEntry)
-	totalMinutes := 0
-	for _, entry := range entries {
-		grouped[entry.EnteredOn] = append(grouped[entry.EnteredOn], entry)
-		totalMinutes += entry.DurationMinutes
+	groups, total, err := groupEntries(entries)
+	if err != nil {
+		return err
 	}
 
-	dates := make([]*asana.Date, 0, len(grouped))
-	for d := range grouped {
-		dates = append(dates, d)
-	}
-
-	sort.Slice(dates, func(i, j int) bool {
-		return time.Time(*dates[i]).After(time.Time(*dates[j]))
-	})
-
-	io.Printf("\nTracked time entries on task %s:\n", cs.Bold(task.Name))
-	for _, d := range dates {
-		io.Printf("\n[%s]\n", format.Date(d))
-		for _, entry := range grouped[d] {
-			io.Printf("- %s tracked %s\n",
+	io.Printf("\nTime entries for task: %s\n", cs.Bold(task.Name))
+	for _, g := range groups {
+		io.Printf("\n[%s]\n", g.Label)
+		for _, entry := range g.Entries {
+			io.Printf(" • %s — %s\n",
 				entry.CreatedBy.Name,
 				cs.Bold(format.Duration(entry.DurationMinutes)),
 			)
 		}
 	}
 
-	io.Printf("\nTotal tracked time: %s\n", cs.Bold(format.Duration(totalMinutes)))
+	io.Printf("\nTotal: %s\n", cs.Bold(format.Duration(total)))
 	return nil
+}
+
+func groupEntries(entries []*asana.TimeTrackingEntry) ([]GroupedEntries, int, error) {
+	m := map[string]*GroupedEntries{}
+	total := 0
+
+	for _, e := range entries {
+		if e.EnteredOn == nil {
+			continue
+		}
+
+		key := time.Time(*e.EnteredOn).Format("2006-01-02")
+		t, err := time.Parse("2006-01-02", key)
+		if err != nil {
+			return nil, 0, fmt.Errorf("invalid entered_on date: %w", err)
+		}
+
+		if _, ok := m[key]; !ok {
+			m[key] = &GroupedEntries{
+				Date:  t,
+				Label: format.HumanDate(t),
+			}
+		}
+
+		m[key].Entries = append(m[key].Entries, e)
+		total += e.DurationMinutes
+	}
+
+	groups := make([]GroupedEntries, 0, len(m))
+	for _, g := range m {
+		groups = append(groups, *g)
+	}
+
+	sort.Slice(groups, func(i, j int) bool {
+		return groups[i].Date.After(groups[j].Date)
+	})
+
+	return groups, total, nil
 }
 
 func selectTask(opts *StatusOptions, c *asana.Client) (*asana.Task, error) {
@@ -132,7 +166,7 @@ func selectTask(opts *StatusOptions, c *asana.Client) (*asana.Task, error) {
 	}
 
 	taskNames := format.Tasks(tasks)
-	index, err := opts.Prompter.Select("Select the task to see the time of:", taskNames)
+	index, err := opts.Prompter.Select("Select a task to view tracked time:", taskNames)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select task: %w", err)
 	}
