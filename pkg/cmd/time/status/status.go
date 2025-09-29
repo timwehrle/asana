@@ -114,8 +114,8 @@ func groupEntries(entries []*asana.TimeTrackingEntry) ([]GroupedEntries, int, er
 			continue
 		}
 
-		key := time.Time(*e.EnteredOn).Format("2006-01-02")
-		t, err := time.Parse("2006-01-02", key)
+		key := time.Time(*e.EnteredOn).Format(time.DateOnly)
+		t, err := time.Parse(time.DateOnly, key)
 		if err != nil {
 			return nil, 0, fmt.Errorf("invalid entered_on date: %w", err)
 		}

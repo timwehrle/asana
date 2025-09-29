@@ -107,7 +107,7 @@ func promptDate(opts *CreateOptions) (*asana.Date, error) {
 		return &today, nil
 	}
 
-	return convert.ToDate(input, "2006-01-02")
+	return convert.ToDate(input, time.DateOnly)
 }
 
 func selectTask(opts *CreateOptions, c *asana.Client) (*asana.Task, error) {
