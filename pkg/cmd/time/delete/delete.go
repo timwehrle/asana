@@ -5,27 +5,23 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/internal/api/asana"
-	"github.com/timwehrle/asana/internal/config"
-	"github.com/timwehrle/asana/internal/prompter"
+	"github.com/timwehrle/asana/pkg/cmdutils"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/format"
-	"github.com/timwehrle/asana/pkg/iostreams"
 )
 
 type DeleteOptions struct {
-	IO       *iostreams.IOStreams
-	Prompter prompter.Prompter
-
-	Config func() (*config.Config, error)
-	Client func() (*asana.Client, error)
+	cmdutils.BaseOptions
 }
 
 func NewCmdDelete(f factory.Factory, runF func(*DeleteOptions) error) *cobra.Command {
 	opts := &DeleteOptions{
-		IO:       f.IOStreams,
-		Prompter: f.Prompter,
-		Config:   f.Config,
-		Client:   f.Client,
+		BaseOptions: cmdutils.BaseOptions{
+			IO:       f.IOStreams,
+			Prompter: f.Prompter,
+			Config:   f.Config,
+			Client:   f.Client,
+		},
 	}
 
 	cmd := &cobra.Command{
@@ -52,7 +48,7 @@ func runDelete(opts *DeleteOptions) error {
 		return err
 	}
 
-	task, err := selectTask(opts, client)
+	task, err := cmdutils.SelectTask(&opts.BaseOptions, client)
 	if err != nil {
 		return err
 	}
@@ -86,40 +82,4 @@ func runDelete(opts *DeleteOptions) error {
 	io.Printf("%s Deleted time entry of %s created by %s\n", cs.SuccessIcon, format.Duration(selectedEntry.DurationMinutes), selectedEntry.CreatedBy.Name)
 
 	return nil
-}
-
-func selectTask(opts *DeleteOptions, c *asana.Client) (*asana.Task, error) {
-	cfg, err := opts.Config()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get config: %w", err)
-	}
-
-	tasks, _, err := c.QueryTasks(&asana.TaskQuery{
-		Assignee:       "me",
-		Workspace:      cfg.Workspace.ID,
-		CompletedSince: "now",
-	}, &asana.Options{
-		Fields: []string{"name", "due_on"},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to query tasks: %w", err)
-	}
-
-	if len(tasks) == 0 {
-		opts.IO.Println("No tasks found.")
-		return nil, nil
-	}
-
-	taskNames := format.Tasks(tasks)
-	index, err := opts.Prompter.Select("Select a task to view tracked time:", taskNames)
-	if err != nil {
-		return nil, fmt.Errorf("failed to select task: %w", err)
-	}
-
-	selectedTask := tasks[index]
-	if err := selectedTask.Fetch(c); err != nil {
-		return nil, fmt.Errorf("failed to fetch task details: %w", err)
-	}
-
-	return selectedTask, nil
 }
