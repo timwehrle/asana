@@ -100,6 +100,20 @@ func Date(date *asana.Date) string {
 	return parsedDate.Format("Jan 02, 2006")
 }
 
+func HumanDate(t time.Time) string {
+	today := time.Now().Truncate(24 * time.Hour)
+	d := t.Truncate(24 * time.Hour)
+
+	switch {
+	case d.Equal(today):
+		return "Today"
+	case d.Equal(today.AddDate(0, 0, -1)):
+		return "Yesterday"
+	default:
+		return d.Format("Jan 02, 2006")
+	}
+}
+
 func Indent(s, prefix string) string {
 	if len(strings.TrimSpace(s)) == 0 {
 		return s
@@ -130,4 +144,30 @@ func Dedent(s string) string {
 		fmt.Fprintln(&buffer, strings.TrimPrefix(line, strings.Repeat(" ", minIndent)))
 	}
 	return strings.TrimSuffix(buffer.String(), "\n")
+}
+
+func Duration(minutes int) string {
+	hours := minutes / 60
+	mins := minutes % 60
+
+	var parts []string
+	if hours > 0 {
+		if hours == 1 {
+			parts = append(parts, "1 hour")
+		} else {
+			parts = append(parts, fmt.Sprintf("%d hours", hours))
+		}
+	}
+	if mins > 0 {
+		if mins == 1 {
+			parts = append(parts, "1 minute")
+		} else {
+			parts = append(parts, fmt.Sprintf("%d minutes", mins))
+		}
+	}
+
+	if len(parts) == 0 {
+		return "0 minutes"
+	}
+	return strings.Join(parts, " ")
 }
