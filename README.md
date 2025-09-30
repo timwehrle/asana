@@ -110,6 +110,19 @@ View tasks with filters:
 asana tasks search --assignee me,12345678 # Search tasks by assignee and more filters
 ```
 
+Log, check and delete time entries on your tasks:
+
+```shell
+# Create a new time entry
+asana time create -m 23 --date 2025-01-06
+
+# Check time entries
+asana time status
+
+# Delete a time entry
+asana time delete
+```
+
 View the projects in your workspace:
 
 ```shell
