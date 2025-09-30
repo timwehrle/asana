@@ -30,7 +30,6 @@ builds:
     goarch:
       - "386"
       - amd64
-      - arm
       - arm64
     mod_timestamp: "{{ .CommitTimestamp }}"
 
@@ -48,8 +47,14 @@ archives:
       - goos: windows
         formats: ["zip"]
 
-brews:
+homebrew_casks:
   - name: asana
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/asana"]
+          end
     homepage: "https://github.com/timwehrle/asana"
     description: "A command-line interface for managing Asana directly from your terminal."
     license: "MIT"
