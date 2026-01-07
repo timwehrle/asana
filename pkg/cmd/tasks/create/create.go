@@ -21,9 +21,12 @@ type CreateOptions struct {
 	Config   func() (*config.Config, error)
 	Client   func() (*asana.Client, error)
 
-	Name     string
-	Assignee string
-	Due      string
+	Name        string
+	Assignee    string
+	Due         string
+	Description string
+	Project     string
+	Section     string
 }
 
 func NewCmdCreate(f factory.Factory, runF func(*CreateOptions) error) *cobra.Command {
@@ -49,6 +52,9 @@ func NewCmdCreate(f factory.Factory, runF func(*CreateOptions) error) *cobra.Com
 	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Task name")
 	cmd.Flags().StringVarP(&opts.Assignee, "assignee", "a", "", "Assignee name or 'me'")
 	cmd.Flags().StringVarP(&opts.Due, "due", "d", "", "Due date (YYYY-MM-DD, 'today', 'tomorrow')")
+	cmd.Flags().StringVarP(&opts.Description, "description", "m", "", "Task description")
+	cmd.Flags().StringVarP(&opts.Project, "project", "p", "", "Project name")
+	cmd.Flags().StringVarP(&opts.Section, "section", "s", "", "Section name")
 
 	return cmd
 }
@@ -65,6 +71,7 @@ func runCreate(opts *CreateOptions) error {
 		return fmt.Errorf("failed to initialize Asana client: %w", err)
 	}
 
+	// Get or prompt for task name
 	name := opts.Name
 	if name == "" {
 		name, err = opts.Prompter.Input("Enter task name: ", "")
@@ -76,25 +83,27 @@ func runCreate(opts *CreateOptions) error {
 		return fmt.Errorf("task name cannot be empty")
 	}
 
-	// Prompt for assignee
-	assignee, err := selectAssignee(opts, cfg.Workspace.ID, client)
+	// Get or prompt for assignee
+	assignee, err := getOrSelectAssignee(opts, cfg, client)
 	if err != nil {
 		return err
 	}
 
-	// Prompt for due date
-	dueDate, err := getDueDate(opts)
+	// Get or prompt for due date
+	dueDate, err := getOrPromptDueDate(opts)
 	if err != nil {
 		return err
 	}
 
-	var description string
-	shouldPromptForDescription, err := opts.Prompter.Confirm("Add description?", "No")
-	if err == nil && shouldPromptForDescription {
-		description, err = addDescription(opts)
-	}
-	if err != nil {
-		return err
+	description := opts.Description
+	if description == "" {
+		shouldPromptForDescription, err := opts.Prompter.Confirm("Add description?", "No")
+		if err == nil && shouldPromptForDescription {
+			description, err = addDescription(opts)
+		}
+		if err != nil {
+			return err
+		}
 	}
 
 	// Prompt for project
@@ -150,11 +159,54 @@ func runCreate(opts *CreateOptions) error {
 	return nil
 }
 
-func selectAssignee(opts *CreateOptions, workspaceID string, client *asana.Client) (*asana.User, error) {
-	ws := &asana.Workspace{ID: workspaceID}
+func getOrSelectAssignee(opts *CreateOptions, cfg *config.Config, client *asana.Client) (*asana.User, error) {
+	ws := &asana.Workspace{ID: cfg.Workspace.ID}
 	users, _, err := ws.Users(client)
 	if err != nil {
 		return nil, fmt.Errorf("cannot fetch users: %w", err)
+	}
+
+	// If flag provided
+	if opts.Assignee != "" {
+		// Handle 'me' shorthand
+		if strings.ToLower(opts.Assignee) == "me" {
+			if cfg.UserID == "" {
+				currentUser, err := client.CurrentUser()
+				if err != nil {
+					return nil, fmt.Errorf("failed to fetch current user: %w", err)
+				}
+				for _, user := range users {
+					if user.ID == currentUser.ID {
+						return user, nil
+					}
+				}
+				return nil, fmt.Errorf("could not find current user in workspace")
+			} else {
+				for _, user := range users {
+					if user.ID == cfg.UserID {
+						return user, nil
+					}
+				}
+				return nil, fmt.Errorf("could not find current user in workspace")
+			}
+		}
+
+		// Try to match by name
+		assigneeLower := strings.ToLower(opts.Assignee)
+		for _, user := range users {
+			if strings.ToLower(user.Name) == assigneeLower {
+				return user, nil
+			}
+		}
+
+		// Try to match by ID
+		for _, user := range users {
+			if user.ID == opts.Assignee {
+				return user, nil
+			}
+		}
+
+		return nil, fmt.Errorf("assignee %q not found in workspace", opts.Assignee)
 	}
 
 	names := format.MapToStrings(users, func(u *asana.User) string {
@@ -168,7 +220,7 @@ func selectAssignee(opts *CreateOptions, workspaceID string, client *asana.Clien
 	return users[selected], nil
 }
 
-func getDueDate(opts *CreateOptions) (*asana.Date, error) {
+func getOrPromptDueDate(opts *CreateOptions) (*asana.Date, error) {
 	input := opts.Due
 	if input == "" {
 		var err error

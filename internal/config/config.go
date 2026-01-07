@@ -16,6 +16,7 @@ import (
 
 type Config struct {
 	Username  string           `mapstructure:"username"`
+	UserID    string           `mapstructure:"user_id"`
 	Workspace *asana.Workspace `mapstructure:"workspace"`
 	CreatedAt time.Time        `yaml:"created_at"`
 	mu        sync.RWMutex
@@ -95,6 +96,7 @@ func (c *Config) Save() error {
 	}
 
 	viper.Set("username", c.Username)
+	viper.Set("user_id", c.UserID)
 	viper.Set("workspace", c.Workspace)
 	viper.Set("created_at", time.Now().Format(time.RFC3339))
 

@@ -194,6 +194,7 @@ func runLogin(opts *LoginOptions) error {
 
 	cfg := &config.Config{
 		Username:  user.Name,
+		UserID:    user.ID,
 		Workspace: selectedWorkspace,
 	}
 
