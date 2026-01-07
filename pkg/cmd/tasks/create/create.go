@@ -170,6 +170,8 @@ func getOrSelectAssignee(opts *CreateOptions, cfg *config.Config, client *asana.
 	if opts.Assignee != "" {
 		// Handle 'me' shorthand
 		if strings.ToLower(opts.Assignee) == "me" {
+			// If no user ID in config, fetch current user
+			// This is needed because the user id may not be stored in config yet
 			if cfg.UserID == "" {
 				currentUser, err := client.CurrentUser()
 				if err != nil {
