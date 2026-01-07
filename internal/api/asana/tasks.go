@@ -283,6 +283,9 @@ type Task struct {
 	// Read-only. Array of resources referencing tasks that depend on this task.
 	// The objects contain only the ID of the dependent.
 	Dependents []*Task `json:"dependents,omitempty"`
+
+	// A url that points directly to the object within Asana.
+	PermalinkURL string `json:"permalink_url,omitempty"`
 }
 
 // Fetch loads the full details for this Task
