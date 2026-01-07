@@ -53,8 +53,6 @@ func NewCmdCreate(f factory.Factory, runF func(*CreateOptions) error) *cobra.Com
 	cmd.Flags().StringVarP(&opts.Assignee, "assignee", "a", "", "Assignee name or 'me'")
 	cmd.Flags().StringVarP(&opts.Due, "due", "d", "", "Due date (YYYY-MM-DD, 'today', 'tomorrow')")
 	cmd.Flags().StringVarP(&opts.Description, "description", "m", "", "Task description")
-	cmd.Flags().StringVarP(&opts.Project, "project", "p", "", "Project name")
-	cmd.Flags().StringVarP(&opts.Section, "section", "s", "", "Section name")
 
 	return cmd
 }
