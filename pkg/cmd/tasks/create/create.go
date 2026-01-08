@@ -25,8 +25,6 @@ type CreateOptions struct {
 	Assignee    string
 	Due         string
 	Description string
-	Project     string
-	Section     string
 }
 
 func NewCmdCreate(f factory.Factory, runF func(*CreateOptions) error) *cobra.Command {
