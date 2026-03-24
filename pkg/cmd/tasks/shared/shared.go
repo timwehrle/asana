@@ -21,12 +21,49 @@ const (
 var validOutputModes = []string{OutputJSON, OutputText}
 
 type TaskOutput struct {
-	GID          string `json:"gid"`
-	Name         string `json:"name,omitempty"`
-	Notes        string `json:"notes,omitempty"`
-	Completed    bool   `json:"completed"`
-	DueOn        string `json:"due_on,omitempty"`
-	PermalinkURL string `json:"permalink_url,omitempty"`
+	GID          string                  `json:"gid"`
+	Name         string                  `json:"name,omitempty"`
+	Notes        string                  `json:"notes,omitempty"`
+	Completed    bool                    `json:"completed"`
+	DueOn        string                  `json:"due_on,omitempty"`
+	PermalinkURL string                  `json:"permalink_url,omitempty"`
+	Dependencies []TaskDependencyOutput  `json:"dependencies,omitempty"`
+	CustomFields []TaskCustomFieldOutput `json:"custom_fields,omitempty"`
+	Memberships  []TaskMembershipOutput  `json:"memberships,omitempty"`
+}
+
+type TaskMembershipOutput struct {
+	Project *TaskResourceOutput `json:"project,omitempty"`
+	Section *TaskResourceOutput `json:"section,omitempty"`
+}
+
+type TaskResourceOutput struct {
+	GID  string `json:"gid"`
+	Name string `json:"name,omitempty"`
+}
+
+type TaskDependencyOutput struct {
+	GID       string `json:"gid"`
+	Name      string `json:"name,omitempty"`
+	Completed bool   `json:"completed"`
+}
+
+type TaskCustomFieldOutput struct {
+	GID             string                `json:"gid"`
+	Name            string                `json:"name,omitempty"`
+	Type            string                `json:"type,omitempty"`
+	TextValue       *string               `json:"text_value"`
+	NumberValue     *float64              `json:"number_value"`
+	BooleanValue    *bool                 `json:"boolean_value"`
+	DisplayValue    *string               `json:"display_value"`
+	EnumValue       *TaskEnumValueOutput  `json:"enum_value"`
+	MultiEnumValues []TaskEnumValueOutput `json:"multi_enum_values,omitempty"`
+}
+
+type TaskEnumValueOutput struct {
+	GID   string `json:"gid"`
+	Name  string `json:"name,omitempty"`
+	Color string `json:"color,omitempty"`
 }
 
 type TaskListOutput struct {
@@ -87,6 +124,88 @@ func ToTaskOutput(task *asana.Task) TaskOutput {
 	}
 	if task.DueOn != nil {
 		out.DueOn = time.Time(*task.DueOn).Format(time.DateOnly)
+	}
+	if len(task.Dependencies) > 0 {
+		out.Dependencies = make([]TaskDependencyOutput, 0, len(task.Dependencies))
+		for _, dependency := range task.Dependencies {
+			if dependency == nil {
+				continue
+			}
+
+			dependencyOut := TaskDependencyOutput{
+				GID:  dependency.ID,
+				Name: dependency.Name,
+			}
+			if dependency.Completed != nil {
+				dependencyOut.Completed = *dependency.Completed
+			}
+
+			out.Dependencies = append(out.Dependencies, dependencyOut)
+		}
+	}
+	if len(task.CustomFields) > 0 {
+		out.CustomFields = make([]TaskCustomFieldOutput, 0, len(task.CustomFields))
+		for _, field := range task.CustomFields {
+			if field == nil {
+				continue
+			}
+
+			fieldOut := TaskCustomFieldOutput{
+				GID:          field.ID,
+				Name:         field.Name,
+				Type:         string(field.ResourceSubtype),
+				TextValue:    field.TextValue,
+				NumberValue:  field.NumberValue,
+				BooleanValue: field.BooleanValue,
+				DisplayValue: field.DisplayValue,
+			}
+			if field.EnumValue != nil {
+				fieldOut.EnumValue = &TaskEnumValueOutput{
+					GID:   field.EnumValue.ID,
+					Name:  field.EnumValue.Name,
+					Color: field.EnumValue.Color,
+				}
+			}
+			if len(field.MultiEnumValues) > 0 {
+				fieldOut.MultiEnumValues = make([]TaskEnumValueOutput, 0, len(field.MultiEnumValues))
+				for _, value := range field.MultiEnumValues {
+					if value == nil {
+						continue
+					}
+					fieldOut.MultiEnumValues = append(fieldOut.MultiEnumValues, TaskEnumValueOutput{
+						GID:   value.ID,
+						Name:  value.Name,
+						Color: value.Color,
+					})
+				}
+			}
+
+			out.CustomFields = append(out.CustomFields, fieldOut)
+		}
+	}
+	if len(task.Memberships) > 0 {
+		out.Memberships = make([]TaskMembershipOutput, 0, len(task.Memberships))
+		for _, membership := range task.Memberships {
+			if membership == nil {
+				continue
+			}
+
+			membershipOut := TaskMembershipOutput{}
+			if membership.Project != nil {
+				membershipOut.Project = &TaskResourceOutput{
+					GID:  membership.Project.ID,
+					Name: membership.Project.Name,
+				}
+			}
+			if membership.Section != nil {
+				membershipOut.Section = &TaskResourceOutput{
+					GID:  membership.Section.ID,
+					Name: membership.Section.Name,
+				}
+			}
+
+			out.Memberships = append(out.Memberships, membershipOut)
+		}
 	}
 
 	return out

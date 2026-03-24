@@ -9,6 +9,7 @@ import (
 	"github.com/timwehrle/asana/internal/api/asana"
 	"github.com/timwehrle/asana/internal/config"
 	"github.com/timwehrle/asana/internal/prompter"
+	taskshared "github.com/timwehrle/asana/pkg/cmd/tasks/shared"
 	"github.com/timwehrle/asana/pkg/convert"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/format"
@@ -29,6 +30,8 @@ type CreateOptions struct {
 	ProjectID   string
 	SectionID   string
 	SectionName string
+	DependsOnID string
+	Output      string
 }
 
 func NewCmdCreate(f factory.Factory, runF func(*CreateOptions) error) *cobra.Command {
@@ -59,11 +62,17 @@ func NewCmdCreate(f factory.Factory, runF func(*CreateOptions) error) *cobra.Com
 	cmd.Flags().StringVar(&opts.ProjectID, "project", "", "Project GID to add the task to")
 	cmd.Flags().StringVar(&opts.SectionID, "section", "", "Section GID to place the task into")
 	cmd.Flags().StringVar(&opts.SectionName, "section-name", "", "Section name to place the task into")
+	cmd.Flags().StringVar(&opts.DependsOnID, "depends-on", "", "Task GID that the newly created task should depend on")
+	cmd.Flags().StringVar(&opts.Output, "output", taskshared.OutputText, "Output format: text or json")
 
 	return cmd
 }
 
 func runCreate(opts *CreateOptions) error {
+	if err := taskshared.ValidateOutputMode("output", opts.Output); err != nil {
+		return err
+	}
+
 	cs := opts.IO.ColorScheme()
 
 	cfg, err := opts.Config()
@@ -143,6 +152,20 @@ func runCreate(opts *CreateOptions) error {
 	task, err := client.CreateTask(req)
 	if err != nil {
 		return fmt.Errorf("error creating task: %w", err)
+	}
+
+	if opts.DependsOnID != "" {
+		if err := task.AddDependencies(client, &asana.AddDependenciesRequest{
+			Dependencies: []string{opts.DependsOnID},
+		}); err != nil {
+			return fmt.Errorf("error adding dependency %s to task %s: %w", opts.DependsOnID, task.ID, err)
+		}
+	}
+
+	if taskshared.NormalizeOutputMode(opts.Output) == taskshared.OutputJSON {
+		return taskshared.WriteJSON(opts.IO.Out, map[string]taskshared.TaskOutput{
+			"task": taskshared.ToTaskOutput(task),
+		})
 	}
 
 	opts.IO.Printf("%s Created task %s\n", cs.SuccessIcon, cs.Bold(task.Name))

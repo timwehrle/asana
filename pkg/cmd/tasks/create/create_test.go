@@ -1,6 +1,7 @@
 package create
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
@@ -40,6 +41,8 @@ func TestNewCmdCreate_RunE(t *testing.T) {
 		"--parent", "T123",
 		"--project", "P123",
 		"--section-name", "Backlog",
+		"--depends-on", "D123",
+		"--output", "json",
 	})
 
 	if err := cmd.Execute(); err != nil {
@@ -70,6 +73,12 @@ func TestNewCmdCreate_RunE(t *testing.T) {
 	}
 	if sawOpts.SectionName != "Backlog" {
 		t.Errorf("SectionName = %q; want %q", sawOpts.SectionName, "Backlog")
+	}
+	if sawOpts.DependsOnID != "D123" {
+		t.Errorf("DependsOnID = %q; want %q", sawOpts.DependsOnID, "D123")
+	}
+	if sawOpts.Output != "json" {
+		t.Errorf("Output = %q; want %q", sawOpts.Output, "json")
 	}
 }
 
@@ -285,5 +294,121 @@ func TestRunCreate_SectionNameRequiresProject(t *testing.T) {
 	err := runCreate(opts)
 	if err == nil || !strings.Contains(err.Error(), "--project") {
 		t.Fatalf("expected --project guidance error, got %v", err)
+	}
+}
+
+func TestRunCreate_JSONOutput(t *testing.T) {
+	io, _, out, _ := iostreams.Test()
+
+	client := newTestClient(func(req *http.Request) (*http.Response, error) {
+		switch req.Method + " " + req.URL.Path {
+		case "GET /api/1.0/users":
+			return asana.MockResponse(http.StatusOK, []*asana.User{
+				{ID: "U1", Name: "Alice"},
+			})
+		case "POST /api/1.0/tasks":
+			return asana.MockResponse(http.StatusCreated, map[string]any{
+				"gid":           "T999",
+				"name":          "Subtask",
+				"notes":         "Details",
+				"completed":     false,
+				"permalink_url": "https://example.com/tasks/T999",
+			})
+		default:
+			t.Fatalf("unexpected request: %s %s", req.Method, req.URL.Path)
+			return nil, nil
+		}
+	})
+
+	opts := &CreateOptions{
+		IO: io,
+		Config: func() (*config.Config, error) {
+			return &config.Config{Workspace: &asana.Workspace{ID: "W123"}, UserID: "U1"}, nil
+		},
+		Client:      func() (*asana.Client, error) { return client, nil },
+		Name:        "Subtask",
+		Assignee:    "me",
+		Due:         "2026-03-24",
+		Description: "Details",
+		ParentID:    "PARENT1",
+		Output:      "json",
+	}
+
+	if err := runCreate(opts); err != nil {
+		t.Fatal(err)
+	}
+
+	var payload struct {
+		Task struct {
+			GID          string `json:"gid"`
+			Name         string `json:"name"`
+			Notes        string `json:"notes"`
+			PermalinkURL string `json:"permalink_url"`
+		} `json:"task"`
+	}
+	if err := json.Unmarshal(out.Bytes(), &payload); err != nil {
+		t.Fatalf("stdout is not valid JSON: %v\n%s", err, out.String())
+	}
+	if payload.Task.GID != "T999" {
+		t.Fatalf("gid = %q; want %q", payload.Task.GID, "T999")
+	}
+	if payload.Task.Name != "Subtask" {
+		t.Fatalf("name = %q; want %q", payload.Task.Name, "Subtask")
+	}
+	if payload.Task.Notes != "Details" {
+		t.Fatalf("notes = %q; want %q", payload.Task.Notes, "Details")
+	}
+}
+
+func TestRunCreate_AddsDependency(t *testing.T) {
+	io, _, _, _ := iostreams.Test()
+
+	var dependencyBody map[string]any
+	client := newTestClient(func(req *http.Request) (*http.Response, error) {
+		switch req.Method + " " + req.URL.Path {
+		case "GET /api/1.0/users":
+			return asana.MockResponse(http.StatusOK, []*asana.User{
+				{ID: "U1", Name: "Alice"},
+			})
+		case "POST /api/1.0/tasks":
+			return asana.MockResponse(http.StatusCreated, map[string]any{
+				"gid":           "T222",
+				"name":          "Subtask 2",
+				"permalink_url": "https://example.com/tasks/T222",
+			})
+		case "POST /api/1.0/tasks/T222/addDependencies":
+			payload, err := (&asana.AssertRequest{Request: req}).Body()
+			if err != nil {
+				t.Fatalf("Body(): %v", err)
+			}
+			dependencyBody = payload["data"].(map[string]any)
+			return asana.MockResponse(http.StatusOK, map[string]any{})
+		default:
+			t.Fatalf("unexpected request: %s %s", req.Method, req.URL.Path)
+			return nil, nil
+		}
+	})
+
+	opts := &CreateOptions{
+		IO: io,
+		Config: func() (*config.Config, error) {
+			return &config.Config{Workspace: &asana.Workspace{ID: "W123"}, UserID: "U1"}, nil
+		},
+		Client:      func() (*asana.Client, error) { return client, nil },
+		Name:        "Subtask 2",
+		Assignee:    "me",
+		Due:         "2026-03-24",
+		Description: "Details",
+		ParentID:    "PARENT1",
+		DependsOnID: "T111",
+	}
+
+	if err := runCreate(opts); err != nil {
+		t.Fatal(err)
+	}
+
+	dependencies := dependencyBody["dependencies"].([]any)
+	if len(dependencies) != 1 || dependencies[0] != "T111" {
+		t.Fatalf("dependencies = %v; want [T111]", dependencies)
 	}
 }

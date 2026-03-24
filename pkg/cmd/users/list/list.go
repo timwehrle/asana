@@ -57,7 +57,7 @@ func NewCmdList(f factory.Factory, runF func(*ListOptions) error) *cobra.Command
 
 	cmd.Flags().IntVarP(&opts.Limit, "limit", "l", 0, "Limit the number of users to display")
 	cmd.Flags().StringVarP(&opts.Sort, "sort", "s", "", "Sort users by name (asc, desc)")
-	cmd.Flags().BoolVar(&opts.WithID, "with-id", false, "Show users with their user IDs")
+	cmd.Flags().BoolVar(&opts.WithID, "with-id", false, "Deprecated: user IDs are shown by default")
 
 	return cmd
 }
@@ -148,11 +148,7 @@ func printUsers(io *iostreams.IOStreams, workspaceName string, users []*asana.Us
 	io.Printf("\nUsers in workspace %s:\n\n", cs.Bold(workspaceName))
 
 	for i, user := range users {
-		if showID {
-			io.Printf("%2d. %s (%s)\n", i+1, cs.Bold(user.Name), cs.Gray(user.ID))
-		} else {
-			io.Printf("%2d. %s\n", i+1, cs.Bold(user.Name))
-		}
+		io.Printf("%2d. %s (%s)\n", i+1, cs.Bold(user.Name), cs.Gray(fmt.Sprintf("id: %s/%s", user.ID, user.ID)))
 	}
 
 	return nil
