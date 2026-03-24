@@ -3,6 +3,8 @@ package auth
 import (
 	"context"
 	"fmt"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/zalando/go-keyring"
@@ -12,6 +14,8 @@ var (
 	service = "asana"
 	user    = "user"
 )
+
+const asanaPATEnv = "ASANA_PAT"
 
 func Set(secret string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -39,6 +43,7 @@ func Get() (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
+	envToken := strings.TrimSpace(os.Getenv(asanaPATEnv))
 	resultCh := make(chan string, 1)
 	errCh := make(chan error, 1)
 
@@ -55,10 +60,19 @@ func Get() (string, error) {
 
 	select {
 	case secret := <-resultCh:
+		if strings.TrimSpace(secret) == "" && envToken != "" {
+			return envToken, nil
+		}
 		return secret, nil
 	case err := <-errCh:
+		if envToken != "" {
+			return envToken, nil
+		}
 		return "", fmt.Errorf("failed to get secret: %w", err)
 	case <-ctx.Done():
+		if envToken != "" {
+			return envToken, nil
+		}
 		return "", fmt.Errorf("timeout while trying to get secret in keyring")
 	}
 }
