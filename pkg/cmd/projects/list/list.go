@@ -101,10 +101,14 @@ func runList(opts *ListOptions) error {
 		fmt.Fprintln(opts.IO.Out, "No projects found")
 	}
 	for i, project := range projects {
-		fmt.Fprintf(opts.IO.Out, "%d. %s\n", i+1, cs.Bold(project.Name))
+		fmt.Fprintf(opts.IO.Out, "%d. %s\n", i+1, cs.Bold(formatProjectLabel(project)))
 	}
 
 	return nil
+}
+
+func formatProjectLabel(project *asana.Project) string {
+	return fmt.Sprintf("%s (id: %s/%s)", project.Name, project.ID, project.ID)
 }
 
 func fetchFavoriteProjects(

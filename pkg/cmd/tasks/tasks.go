@@ -2,8 +2,10 @@ package tasks
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/timwehrle/asana/pkg/cmd/tasks/comments"
 	"github.com/timwehrle/asana/pkg/cmd/tasks/create"
 	"github.com/timwehrle/asana/pkg/cmd/tasks/list"
+	"github.com/timwehrle/asana/pkg/cmd/tasks/move"
 	"github.com/timwehrle/asana/pkg/cmd/tasks/search"
 	"github.com/timwehrle/asana/pkg/cmd/tasks/update"
 	"github.com/timwehrle/asana/pkg/cmd/tasks/view"
@@ -23,6 +25,8 @@ func NewCmdTasks(f factory.Factory) *cobra.Command {
 	cmd.AddCommand(update.NewCmdUpdate(f, nil))
 	cmd.AddCommand(search.NewCmdSearch(f, nil))
 	cmd.AddCommand(create.NewCmdCreate(f, nil))
+	cmd.AddCommand(comments.NewCmdComments(f))
+	cmd.AddCommand(move.NewCmdMove(f, nil))
 
 	return cmd
 }

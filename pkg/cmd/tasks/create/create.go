@@ -25,6 +25,10 @@ type CreateOptions struct {
 	Assignee    string
 	Due         string
 	Description string
+	ParentID    string
+	ProjectID   string
+	SectionID   string
+	SectionName string
 }
 
 func NewCmdCreate(f factory.Factory, runF func(*CreateOptions) error) *cobra.Command {
@@ -51,6 +55,10 @@ func NewCmdCreate(f factory.Factory, runF func(*CreateOptions) error) *cobra.Com
 	cmd.Flags().StringVarP(&opts.Assignee, "assignee", "a", "", "Assignee name or 'me'")
 	cmd.Flags().StringVarP(&opts.Due, "due", "d", "", "Due date (YYYY-MM-DD, 'today', 'tomorrow')")
 	cmd.Flags().StringVarP(&opts.Description, "description", "m", "", "Task description")
+	cmd.Flags().StringVar(&opts.ParentID, "parent", "", "Parent task GID to create this task as a subtask")
+	cmd.Flags().StringVar(&opts.ProjectID, "project", "", "Project GID to add the task to")
+	cmd.Flags().StringVar(&opts.SectionID, "section", "", "Section GID to place the task into")
+	cmd.Flags().StringVar(&opts.SectionName, "section-name", "", "Section name to place the task into")
 
 	return cmd
 }
@@ -79,6 +87,11 @@ func runCreate(opts *CreateOptions) error {
 		return fmt.Errorf("task name cannot be empty")
 	}
 
+	project, section, err := resolveProjectAndSection(opts, cfg.Workspace.ID, client)
+	if err != nil {
+		return err
+	}
+
 	// Get or prompt for assignee
 	assignee, err := getOrSelectAssignee(opts, cfg, client)
 	if err != nil {
@@ -102,18 +115,6 @@ func runCreate(opts *CreateOptions) error {
 		}
 	}
 
-	// Prompt for project
-	project, err := getProject(opts, cfg.Workspace.ID, client)
-	if err != nil {
-		return err
-	}
-
-	// Prompt for section
-	section, err := getSection(opts, project.ID, client)
-	if err != nil {
-		return err
-	}
-
 	req := &asana.CreateTaskRequest{
 		TaskBase: asana.TaskBase{
 			Name:  name,
@@ -122,17 +123,18 @@ func runCreate(opts *CreateOptions) error {
 		},
 		Workspace: cfg.Workspace.ID,
 		Assignee:  assignee.ID,
-
-		// Currently only one project is supported
-		Projects: []string{project.ID},
-
-		// Both project and section ID are expected
-		Memberships: []*asana.CreateMembership{
+		Parent:    opts.ParentID,
+	}
+	if project != nil {
+		req.Projects = []string{project.ID}
+	}
+	if project != nil && section != nil {
+		req.Memberships = []*asana.CreateMembership{
 			{
 				Project: project.ID,
 				Section: section.ID,
 			},
-		},
+		}
 	}
 	if err := req.Validate(); err != nil {
 		return fmt.Errorf("task validation failed: %w", err)
@@ -255,6 +257,51 @@ func addDescription(opts *CreateOptions) (string, error) {
 	return strings.TrimSpace(description), nil
 }
 
+func resolveProjectAndSection(
+	opts *CreateOptions,
+	workspaceID string,
+	client *asana.Client,
+) (*asana.Project, *asana.Section, error) {
+	if opts.SectionID != "" && opts.SectionName != "" {
+		return nil, nil, fmt.Errorf("--section and --section-name are mutually exclusive")
+	}
+	if opts.ProjectID == "" && (opts.SectionID != "" || opts.SectionName != "") {
+		return nil, nil, fmt.Errorf("--project is required when using --section or --section-name")
+	}
+
+	if opts.ProjectID != "" {
+		project := &asana.Project{ID: opts.ProjectID}
+		var section *asana.Section
+		var err error
+
+		switch {
+		case opts.SectionID != "":
+			section = &asana.Section{ID: opts.SectionID}
+		case opts.SectionName != "":
+			section, err = getSectionByName(project.ID, opts.SectionName, client)
+			if err != nil {
+				return nil, nil, err
+			}
+		}
+
+		return project, section, nil
+	}
+
+	if opts.ParentID != "" {
+		return nil, nil, nil
+	}
+
+	project, err := getProject(opts, workspaceID, client)
+	if err != nil {
+		return nil, nil, err
+	}
+	section, err := getSection(opts, project.ID, client)
+	if err != nil {
+		return nil, nil, err
+	}
+	return project, section, nil
+}
+
 func getProject(opts *CreateOptions, workspaceID string, client *asana.Client) (*asana.Project, error) {
 	ws := &asana.Workspace{ID: workspaceID}
 	projects, err := ws.AllProjects(client)
@@ -271,6 +318,22 @@ func getProject(opts *CreateOptions, workspaceID string, client *asana.Client) (
 		return nil, fmt.Errorf("project selection failed: %w", err)
 	}
 	return projects[selected], nil
+}
+
+func getSectionByName(projectID string, sectionName string, client *asana.Client) (*asana.Section, error) {
+	project := &asana.Project{ID: projectID}
+	sections, _, err := project.Sections(client)
+	if err != nil {
+		return nil, fmt.Errorf("cannot fetch sections: %w", err)
+	}
+
+	for _, section := range sections {
+		if strings.EqualFold(strings.TrimSpace(section.Name), strings.TrimSpace(sectionName)) {
+			return section, nil
+		}
+	}
+
+	return nil, fmt.Errorf("section %q not found in project %s", sectionName, projectID)
 }
 
 func getSection(opts *CreateOptions, projectID string, client *asana.Client) (*asana.Section, error) {

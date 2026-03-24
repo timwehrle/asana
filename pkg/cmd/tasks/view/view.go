@@ -8,6 +8,7 @@ import (
 	"github.com/timwehrle/asana/internal/prompter"
 
 	"github.com/MakeNowJust/heredoc"
+	taskshared "github.com/timwehrle/asana/pkg/cmd/tasks/shared"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/format"
 	"github.com/timwehrle/asana/pkg/iostreams"
@@ -22,6 +23,8 @@ type ViewOptions struct {
 
 	Config func() (*config.Config, error)
 	Client func() (*asana.Client, error)
+	TaskID string
+	Output string
 }
 
 func NewCmdView(f factory.Factory, runF func(*ViewOptions) error) *cobra.Command {
@@ -37,7 +40,8 @@ func NewCmdView(f factory.Factory, runF func(*ViewOptions) error) *cobra.Command
 		Short: "View details of a specific task",
 		Example: heredoc.Doc(`
 				$ asana tasks view
-				$ asana ts view`),
+				$ asana ts view
+				$ asana tasks view --task 12001234 --output json`),
 		Long: heredoc.Doc(`
 				Display detailed information about a specific task, allowing you to
 				analyze and manage it effectively.`),
@@ -49,17 +53,46 @@ func NewCmdView(f factory.Factory, runF func(*ViewOptions) error) *cobra.Command
 			return viewRun(opts)
 		},
 	}
+	cmd.Flags().StringVar(&opts.TaskID, "task", "", "Task GID to view directly without prompting")
+	cmd.Flags().StringVar(&opts.TaskID, "task-id", "", "Task GID to view directly without prompting")
+	cmd.Flags().StringVar(&opts.Output, "output", taskshared.OutputText, "Output format: text or json")
 
 	return cmd
 }
 
 func viewRun(opts *ViewOptions) error {
-	cfg, err := opts.Config()
+	if err := taskshared.ValidateOutputMode("output", opts.Output); err != nil {
+		return err
+	}
+
+	if opts.TaskID == "" {
+		if err := taskshared.EnsureInteractiveAllowed(opts.IO, "--task <gid>"); err != nil {
+			return err
+		}
+	}
+
+	client, err := opts.Client()
 	if err != nil {
 		return err
 	}
 
-	client, err := opts.Client()
+	if opts.TaskID != "" {
+		task, err := taskshared.FetchTaskByID(client, opts.TaskID, []string{
+			"name",
+			"notes",
+			"completed",
+			"due_on",
+			"permalink_url",
+			"projects.name",
+			"tags.name",
+		})
+		if err != nil {
+			return err
+		}
+		return printTask(opts.IO, task, opts.Output)
+	}
+
+	cfg, err := opts.Config()
 	if err != nil {
 		return err
 	}
@@ -80,12 +113,7 @@ func viewRun(opts *ViewOptions) error {
 		return err
 	}
 
-	err = displayDetails(client, selectedTask, opts.IO)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return printTask(opts.IO, selectedTask, opts.Output)
 }
 
 func prompt(allTasks []*asana.Task, prompter prompter.Prompter) (*asana.Task, error) {
@@ -105,13 +133,14 @@ func prompt(allTasks []*asana.Task, prompter prompter.Prompter) (*asana.Task, er
 	return allTasks[index], nil
 }
 
-func displayDetails(client *asana.Client, task *asana.Task, io *iostreams.IOStreams) error {
-	cs := io.ColorScheme()
-
-	err := task.Fetch(client)
-	if err != nil {
-		return err
+func printTask(io *iostreams.IOStreams, task *asana.Task, output string) error {
+	if taskshared.NormalizeOutputMode(output) == taskshared.OutputJSON {
+		return taskshared.WriteJSON(io.Out, map[string]taskshared.TaskOutput{
+			"task": taskshared.ToTaskOutput(task),
+		})
 	}
+
+	cs := io.ColorScheme()
 
 	fmt.Fprintf(
 		io.Out,

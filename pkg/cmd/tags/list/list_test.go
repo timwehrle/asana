@@ -73,6 +73,56 @@ func TestRunList_ClientError(t *testing.T) {
 	}
 }
 
+func TestRunList_IncludesTagIDsInOutput(t *testing.T) {
+	io, _, out, _ := iostreams.Test()
+
+	mock, err := asana.NewMockClient(http.StatusOK, []*asana.Tag{
+		{
+			ID: "1213736174197282",
+			TagBase: asana.TagBase{
+				Name: "Agents",
+			},
+		},
+		{
+			ID: "1213736174197283",
+			TagBase: asana.TagBase{
+				Name: "Backend",
+			},
+		},
+	})
+	if err != nil {
+		t.Fatalf("NewMockClient: %v", err)
+	}
+
+	opts := &ListOptions{
+		IO: io,
+		Config: func() (*config.Config, error) {
+			return &config.Config{
+				Workspace: &asana.Workspace{
+					ID:   "W123",
+					Name: "TestWS",
+				},
+			}, nil
+		},
+		Client:   func() (*asana.Client, error) { return newTestClient(mock), nil },
+		Favorite: true,
+	}
+
+	if err := runList(opts); err != nil {
+		t.Fatalf("runList: %v", err)
+	}
+
+	got := out.String()
+	for _, want := range []string{
+		"Agents (id: 1213736174197282/1213736174197282)",
+		"Backend (id: 1213736174197283/1213736174197283)",
+	} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("output missing %q:\n%s", want, got)
+		}
+	}
+}
+
 type transportFunc func(*http.Request) (*http.Response, error)
 
 func (fn transportFunc) RoundTrip(req *http.Request) (*http.Response, error) {

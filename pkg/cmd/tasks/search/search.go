@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/internal/api/asana"
 	"github.com/timwehrle/asana/internal/config"
+	taskshared "github.com/timwehrle/asana/pkg/cmd/tasks/shared"
 	"github.com/timwehrle/asana/pkg/cmdutils"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/format"
@@ -33,6 +34,10 @@ type SearchOptions struct {
 	DueOn           string
 	DueAtBefore     string
 	DueAtAfter      string
+	Output          string
+	IncompleteOnly  bool
+	Limit           int
+	PageOffset      string
 }
 
 func (o *SearchOptions) join(ss []string) string {
@@ -72,10 +77,19 @@ func NewCmdSearch(f factory.Factory, runF func(*SearchOptions) error) *cobra.Com
 		
 					# Search for tasks containing "UI refresh" not assigned to specific users
 					$ asana tasks search --query "UI refresh" --exclude-assignee 1234,5678 --tags-all 1234,4567
+
+					# Search incomplete tasks for automation and return JSON
+					$ asana tasks search --query "Agents" --incomplete --output json --limit 10
 				`),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if err := cmdutils.ValidateStringEnum("sort-by", opts.SortBy, validSortBy); err != nil {
 				return err
+			}
+			if err := taskshared.ValidateOutputMode("output", opts.Output); err != nil {
+				return err
+			}
+			if opts.Limit < 0 {
+				return fmt.Errorf("invalid limit: %d", opts.Limit)
 			}
 			if err := cmdutils.ValidateDate("due-on", opts.DueOn); err != nil {
 				return err
@@ -120,6 +134,10 @@ func NewCmdSearch(f factory.Factory, runF func(*SearchOptions) error) *cobra.Com
 	cmd.Flags().StringVar(&opts.DueOn, "due-on", "", "Filter to tasks due on a specific date (YYYY-MM-DD)")
 	cmd.Flags().StringVar(&opts.DueAtBefore, "due-at-before", "", "Filter to tasks due at or before a specific date (YYYY-MM-DD)")
 	cmd.Flags().StringVar(&opts.DueAtAfter, "due-at-after", "", "Filter to tasks due at or after a specific date (YYYY-MM-DD)")
+	cmd.Flags().StringVar(&opts.Output, "output", taskshared.OutputText, "Output format: text or json")
+	cmd.Flags().BoolVar(&opts.IncompleteOnly, "incomplete", false, "Filter to incomplete tasks only")
+	cmd.Flags().IntVarP(&opts.Limit, "limit", "l", 0, "Limit the number of results returned")
+	cmd.Flags().StringVar(&opts.PageOffset, "page-offset", "", "Pagination cursor returned from a previous search")
 
 	return cmd
 }
@@ -157,14 +175,32 @@ func runSearch(opts *SearchOptions) error {
 		DueAtBefore:     opts.DueAtBefore,
 		DueAtAfter:      opts.DueAtAfter,
 	}
-
-	options := &asana.Options{
-		Fields: []string{"name", "due_on"},
+	if opts.IncompleteOnly {
+		query.Completed = asana.Bool(false)
 	}
 
-	tasks, err := workspace.SearchTasks(client, query, options)
+	options := &asana.Options{
+		Fields: []string{"name", "completed", "due_on", "permalink_url"},
+		Limit:  opts.Limit,
+		Offset: opts.PageOffset,
+	}
+
+	tasks, nextPage, err := workspace.SearchTasks(client, query, options)
 	if err != nil {
 		return fmt.Errorf("failed searching tasks: %w", err)
+	}
+
+	if taskshared.NormalizeOutputMode(opts.Output) == taskshared.OutputJSON {
+		payload := taskshared.TaskListOutput{
+			Tasks: make([]taskshared.TaskOutput, 0, len(tasks)),
+		}
+		if nextPage != nil {
+			payload.NextPageOffset = nextPage.Offset
+		}
+		for _, task := range tasks {
+			payload.Tasks = append(payload.Tasks, taskshared.ToTaskOutput(task))
+		}
+		return taskshared.WriteJSON(io.Out, payload)
 	}
 
 	if len(tasks) == 0 {

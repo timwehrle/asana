@@ -11,6 +11,8 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/internal/api/asana"
+	taskshared "github.com/timwehrle/asana/pkg/cmd/tasks/shared"
+	"github.com/timwehrle/asana/pkg/cmdutils"
 	"github.com/timwehrle/asana/pkg/convert"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/format"
@@ -44,8 +46,17 @@ type UpdateOptions struct {
 	IO       *iostreams.IOStreams
 	Prompter prompter.Prompter
 
-	Config func() (*config.Config, error)
-	Client func() (*asana.Client, error)
+	Config           func() (*config.Config, error)
+	Client           func() (*asana.Client, error)
+	TaskID           string
+	NewName          string
+	Notes            string
+	NotesFile        string
+	PrependNotes     string
+	PrependNotesFile string
+	Complete         bool
+	DueOn            string
+	Output           string
 }
 
 func NewCmdUpdate(f factory.Factory, runF func(*UpdateOptions) error) *cobra.Command {
@@ -63,7 +74,17 @@ func NewCmdUpdate(f factory.Factory, runF func(*UpdateOptions) error) *cobra.Com
 		Args:  cobra.NoArgs,
 		Example: heredoc.Doc(`
 			$ asana tasks update
-			$ asana ts update`),
+			$ asana ts update
+			$ asana tasks update --task 12001234 --prepend-notes "Branch: codex/my-branch\n\n" --output json`),
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			if err := taskshared.ValidateOutputMode("output", opts.Output); err != nil {
+				return err
+			}
+			if err := validateDirectUpdateOptions(opts); err != nil {
+				return err
+			}
+			return nil
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if runF != nil {
 				return runF(opts)
@@ -72,11 +93,55 @@ func NewCmdUpdate(f factory.Factory, runF func(*UpdateOptions) error) *cobra.Com
 			return runUpdate(opts)
 		},
 	}
+	cmd.Flags().StringVar(&opts.TaskID, "task", "", "Task GID to update directly without prompting")
+	cmd.Flags().StringVar(&opts.TaskID, "task-id", "", "Task GID to update directly without prompting")
+	cmd.Flags().StringVar(&opts.NewName, "name", "", "New task name")
+	cmd.Flags().StringVar(&opts.Notes, "notes", "", "Replace the task description")
+	cmd.Flags().StringVar(&opts.NotesFile, "notes-file", "", "Replace the task description with file contents")
+	cmd.Flags().StringVar(&opts.PrependNotes, "prepend-notes", "", "Prepend text to the existing task description")
+	cmd.Flags().StringVar(&opts.PrependNotesFile, "prepend-notes-file", "", "Prepend file contents to the existing task description")
+	cmd.Flags().BoolVar(&opts.Complete, "complete", false, "Mark the task as completed")
+	cmd.Flags().StringVar(&opts.DueOn, "due-on", "", "Set the task due date (YYYY-MM-DD)")
+	cmd.Flags().StringVar(&opts.Output, "output", taskshared.OutputText, "Output format: text or json")
 
 	return cmd
 }
 
 func runUpdate(opts *UpdateOptions) error {
+	if err := validateDirectUpdateOptions(opts); err != nil {
+		return err
+	}
+
+	if hasDirectUpdateFlags(opts) {
+		if opts.TaskID == "" {
+			return fmt.Errorf("non-interactive updates require --task <gid>")
+		}
+		return runDirectUpdate(opts)
+	}
+
+	if opts.TaskID != "" {
+		if err := taskshared.EnsureInteractiveAllowed(opts.IO, "an action flag such as --notes, --prepend-notes, --name, --complete, or --due-on"); err != nil {
+			return err
+		}
+
+		task, err := fetchTaskForUpdate(opts)
+		if err != nil {
+			return err
+		}
+		action, err := selectAction(opts)
+		if err != nil {
+			return err
+		}
+		if err := performAction(opts, task, action); err != nil {
+			return fmt.Errorf("failed to perform action: %w", err)
+		}
+		return nil
+	}
+
+	if err := taskshared.EnsureInteractiveAllowed(opts.IO, "--task <gid> with an action flag"); err != nil {
+		return err
+	}
+
 	task, err := selectTask(opts)
 	if err != nil {
 		return err
@@ -92,6 +157,32 @@ func runUpdate(opts *UpdateOptions) error {
 	}
 
 	return nil
+}
+
+func validateDirectUpdateOptions(opts *UpdateOptions) error {
+	if err := cmdutils.ValidateDate("due-on", opts.DueOn); err != nil {
+		return err
+	}
+	if opts.Notes != "" && opts.NotesFile != "" {
+		return fmt.Errorf("--notes and --notes-file are mutually exclusive")
+	}
+	if opts.PrependNotes != "" && opts.PrependNotesFile != "" {
+		return fmt.Errorf("--prepend-notes and --prepend-notes-file are mutually exclusive")
+	}
+	if (opts.Notes != "" || opts.NotesFile != "") && (opts.PrependNotes != "" || opts.PrependNotesFile != "") {
+		return fmt.Errorf("replace and prepend note operations are mutually exclusive")
+	}
+	return nil
+}
+
+func hasDirectUpdateFlags(opts *UpdateOptions) bool {
+	return opts.NewName != "" ||
+		opts.Notes != "" ||
+		opts.NotesFile != "" ||
+		opts.PrependNotes != "" ||
+		opts.PrependNotesFile != "" ||
+		opts.Complete ||
+		opts.DueOn != ""
 }
 
 func selectTask(opts *UpdateOptions) (*asana.Task, error) {
@@ -133,6 +224,23 @@ func selectTask(opts *UpdateOptions) (*asana.Task, error) {
 	}
 
 	return selectedTask, nil
+}
+
+func fetchTaskForUpdate(opts *UpdateOptions) (*asana.Task, error) {
+	client, err := opts.Client()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Asana client: %w", err)
+	}
+
+	return taskshared.FetchTaskByID(client, opts.TaskID, []string{
+		"name",
+		"notes",
+		"completed",
+		"due_on",
+		"permalink_url",
+		"projects.name",
+		"tags.name",
+	})
 }
 
 func selectAction(opts *UpdateOptions) (UpdateAction, error) {
@@ -178,6 +286,98 @@ func performAction(opts *UpdateOptions, task *asana.Task, action UpdateAction) e
 	}
 }
 
+func runDirectUpdate(opts *UpdateOptions) error {
+	task, err := fetchTaskForUpdate(opts)
+	if err != nil {
+		return err
+	}
+
+	client, err := opts.Client()
+	if err != nil {
+		return fmt.Errorf("failed to create Asana client: %w", err)
+	}
+
+	request, updatedFields, err := buildDirectUpdateRequest(opts, task)
+	if err != nil {
+		return err
+	}
+	if len(updatedFields) == 0 {
+		return fmt.Errorf("non-interactive updates require at least one action flag")
+	}
+
+	if err := task.Update(client, request); err != nil {
+		return fmt.Errorf("failed to update task: %w", err)
+	}
+
+	if taskshared.NormalizeOutputMode(opts.Output) == taskshared.OutputJSON {
+		return taskshared.WriteJSON(opts.IO.Out, taskshared.TaskUpdateOutput{
+			Task:          taskshared.ToTaskOutput(task),
+			UpdatedFields: updatedFields,
+		})
+	}
+
+	fmt.Fprintf(opts.IO.Out, "%s Task updated\n", opts.IO.ColorScheme().SuccessIcon)
+	return nil
+}
+
+func buildDirectUpdateRequest(opts *UpdateOptions, task *asana.Task) (*asana.UpdateTaskRequest, []string, error) {
+	request := &asana.UpdateTaskRequest{}
+	updatedFields := make([]string, 0, 4)
+
+	if opts.NewName != "" {
+		request.Name = opts.NewName
+		updatedFields = append(updatedFields, "name")
+	}
+
+	notes, notesField, err := resolveNotesUpdate(opts, task.Notes)
+	if err != nil {
+		return nil, nil, err
+	}
+	if notesField != "" {
+		request.Notes = notes
+		updatedFields = append(updatedFields, notesField)
+	}
+
+	if opts.Complete {
+		request.Completed = asana.Bool(true)
+		updatedFields = append(updatedFields, "completed")
+	}
+
+	if opts.DueOn != "" {
+		dueOn, err := convert.ToDate(opts.DueOn, time.DateOnly)
+		if err != nil {
+			return nil, nil, fmt.Errorf("invalid date format: %w", err)
+		}
+		request.DueOn = dueOn
+		updatedFields = append(updatedFields, "due_on")
+	}
+
+	return request, updatedFields, nil
+}
+
+func resolveNotesUpdate(opts *UpdateOptions, existingNotes string) (string, string, error) {
+	switch {
+	case opts.Notes != "":
+		return opts.Notes, "notes", nil
+	case opts.NotesFile != "":
+		content, err := taskshared.ReadFile(opts.NotesFile)
+		if err != nil {
+			return "", "", err
+		}
+		return content, "notes", nil
+	case opts.PrependNotes != "":
+		return taskshared.PrependNotes(opts.PrependNotes, existingNotes), "notes", nil
+	case opts.PrependNotesFile != "":
+		content, err := taskshared.ReadFile(opts.PrependNotesFile)
+		if err != nil {
+			return "", "", err
+		}
+		return taskshared.PrependNotes(content, existingNotes), "notes", nil
+	default:
+		return "", "", nil
+	}
+}
+
 func completeTask(client *asana.Client, task *asana.Task, cs *iostreams.ColorScheme) error {
 	completed := true
 	updateRequest := &asana.UpdateTaskRequest{
@@ -209,6 +409,7 @@ func editTaskName(
 	newName = strings.TrimSpace(newName)
 	if newName == task.Name {
 		fmt.Fprintf(opts.IO.Out, "%s No changes made to task name\n", cs.WarningIcon)
+		return nil
 	}
 
 	updateRequest := &asana.UpdateTaskRequest{

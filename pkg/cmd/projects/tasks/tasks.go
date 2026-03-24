@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/timwehrle/asana/internal/api/asana"
 	"github.com/timwehrle/asana/pkg/cmd/projects/shared"
+	taskshared "github.com/timwehrle/asana/pkg/cmd/tasks/shared"
 	"github.com/timwehrle/asana/pkg/factory"
 	"github.com/timwehrle/asana/pkg/iostreams"
 )
@@ -23,6 +24,7 @@ type TasksOptions struct {
 	Client func() (*asana.Client, error)
 
 	WithSections bool
+	ID           string
 }
 
 type sectionTasks struct {
@@ -47,6 +49,9 @@ func NewCmdTasks(f factory.Factory, runF func(*TasksOptions) error) *cobra.Comma
 
 					# List tasks of a project with a specific section
 					$ asana project tasks --sections
+
+					# List tasks of a known project without interactive selection
+					$ asana project tasks --id 1213743909130953 --sections
 				`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if runF != nil {
@@ -58,23 +63,44 @@ func NewCmdTasks(f factory.Factory, runF func(*TasksOptions) error) *cobra.Comma
 	}
 
 	cmd.Flags().BoolVarP(&opts.WithSections, "sections", "s", false, "Group tasks by sections")
+	cmd.Flags().StringVar(&opts.ID, "id", "", "Specify a project ID")
 	return cmd
 }
 
 func runTasks(opts *TasksOptions) error {
-	cfg, err := opts.Config()
-	if err != nil {
-		return err
-	}
+	var client *asana.Client
+	var project *asana.Project
+	if opts.ID != "" {
+		var err error
+		client, err = opts.Client()
+		if err != nil {
+			return err
+		}
 
-	client, err := opts.Client()
-	if err != nil {
-		return err
-	}
+		project = &asana.Project{ID: opts.ID}
+		if err := project.Fetch(client, &asana.Options{Fields: []string{"name"}}); err != nil {
+			return fmt.Errorf("failed to fetch project %s: %w", opts.ID, err)
+		}
+	} else {
+		if err := taskshared.EnsureInteractiveAllowed(opts.IO, "--id <project-gid>"); err != nil {
+			return err
+		}
 
-	project, err := selectProject(opts, client, cfg.Workspace.ID)
-	if err != nil {
-		return err
+		var err error
+		client, err = opts.Client()
+		if err != nil {
+			return err
+		}
+
+		cfg, err := opts.Config()
+		if err != nil {
+			return err
+		}
+
+		project, err = selectProject(opts, client, cfg.Workspace.ID)
+		if err != nil {
+			return err
+		}
 	}
 
 	if opts.WithSections {
@@ -195,7 +221,7 @@ func displayTasks(opts *TasksOptions, project *asana.Project, tasks []*asana.Tas
 	}
 
 	for i, task := range tasks {
-		fmt.Fprintf(out, "%d. %s\n", i+1, cs.Bold(task.Name))
+		fmt.Fprintf(out, "%d. %s (id: %s)\n", i+1, cs.Bold(task.Name), task.ID)
 	}
 
 	return nil
@@ -216,15 +242,17 @@ func displayTasksBySection(
 		return nil
 	}
 
+	index := 1
 	for _, st := range sections {
-		fmt.Fprintf(out, "%s:\n", cs.Bold(st.section.Name))
+		fmt.Fprintf(out, "=== %s ===\n", cs.Bold(fmt.Sprintf("%s (id: %s)", st.section.Name, st.section.ID)))
 
 		if len(st.tasks) == 0 {
 			fmt.Fprintln(out, "  No tasks in this section")
 		}
 
-		for i, task := range st.tasks {
-			fmt.Fprintf(out, "  %d. %s\n", i+1, task.Name)
+		for _, task := range st.tasks {
+			fmt.Fprintf(out, "  %d. %s (id: %s)\n", index, task.Name, task.ID)
+			index++
 		}
 		fmt.Fprintln(out)
 	}

@@ -83,10 +83,14 @@ func runList(opts *ListOptions) error {
 		fmt.Fprintln(opts.IO.Out, "No tags found")
 	}
 	for i, t := range tags {
-		fmt.Fprintf(opts.IO.Out, "%d. %s\n", i+1, cs.Bold(t.Name))
+		fmt.Fprintf(opts.IO.Out, "%d. %s\n", i+1, cs.Bold(formatTagLabel(t)))
 	}
 
 	return nil
+}
+
+func formatTagLabel(tag *asana.Tag) string {
+	return fmt.Sprintf("%s (id: %s/%s)", tag.Name, tag.ID, tag.ID)
 }
 
 func fetchFavoriteTags(client *asana.Client, workspace *asana.Workspace) ([]*asana.Tag, error) {

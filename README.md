@@ -42,6 +42,20 @@ go install github.com/timwehrle/asana/cmd/asana@latest
 curl -sSL https://raw.githubusercontent.com/timwehrle/asana/main/scripts/install.sh | bash
 ```
 
+## Local Development Install
+
+To install the locally built binary into `~/bin` and update your shell config:
+
+```shell
+./scripts/install-local.sh
+```
+
+To rebuild from source and reinstall the local binary in one step:
+
+```shell
+./scripts/update-local.sh
+```
+
 ## Homebrew Installation
 
 ```shell
@@ -102,12 +116,18 @@ asana tasks list # List all your tasks
 asana tasks list --sort due-desc # Sort tasks by descending due date
 asana tasks view # Interactive task viewer with details
 asana tasks update # Interactive task updater
+asana tasks view --task 12001234 --output json # Non-interactive task view by GID
+asana tasks update --task 12001234 --prepend-notes "Branch: codex/my-branch\n\n" # Non-interactive task update
+asana tasks comments list --task 12001234 --output json # Read comments on a specific task
+asana tasks comments add --task 12001234 --text "Can you clarify the spec?" --mention-creator # Add a comment and tag the creator
+asana tasks move --task 12001234 --project 12009999 --section-name "Backlog" # Move a task into a triage section
 ```
 
 View tasks with filters:
 
 ```shell
 asana tasks search --assignee me,12345678 # Search tasks by assignee and more filters
+asana tasks search --query "Agents" --incomplete --output json --limit 10 # Automation-friendly JSON search
 ```
 
 Log, check and delete time entries on your tasks:

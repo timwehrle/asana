@@ -206,6 +206,9 @@ type Task struct {
 	// Read-only. The time at which this object was created.
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 
+	// Read-only. The user who created the task.
+	CreatedBy *User `json:"created_by,omitempty"`
+
 	// Read-only. The time at which this object was last modified.
 	//
 	// Note: This does not currently reflect any changes in associations such
@@ -357,6 +360,14 @@ func (t *Task) RemoveProject(client *Client, projectID string) error {
 
 	err := client.post(fmt.Sprintf("/tasks/%s/removeProject", t.ID), m, nil)
 	return err
+}
+
+func (t *Task) AddFollowers(client *Client, followers []string) error {
+	client.trace("Adding followers to task %q", t.ID)
+
+	return client.post(fmt.Sprintf("/tasks/%s/addFollowers", t.ID), map[string]any{
+		"followers": followers,
+	}, nil)
 }
 
 // SetParentRequest changes the parent of a task. Each task may only be a subtask of a single parent, or no parent task at all.
@@ -576,7 +587,7 @@ type SearchTasksQuery struct {
 
 	HasAttachment bool `url:"has_attachment,omitempty"`
 
-	Completed bool `url:"completed,omitempty"`
+	Completed *bool `url:"completed,omitempty"`
 
 	IsSubtask bool `url:"is_subtask,omitempty"`
 
@@ -589,12 +600,12 @@ func (w *Workspace) SearchTasks(
 	client *Client,
 	query *SearchTasksQuery,
 	opts ...*Options,
-) ([]*Task, error) {
+) ([]*Task, *NextPage, error) {
 	client.trace("Searching tasks in %q", w.Name)
 	var results []*Task
 
-	_, err := client.get(fmt.Sprintf("/workspaces/%s/tasks/search", w.ID), query, &results, opts...)
-	return results, err
+	nextPage, err := client.get(fmt.Sprintf("/workspaces/%s/tasks/search", w.ID), query, &results, opts...)
+	return results, nextPage, err
 }
 
 // Tasks returns the compact task records for all tasks with the given tag.
