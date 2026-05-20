@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> I archived this repository because I no longer use Asana and don't have the time to maintain it.
+
 <div align="center">
  <img width="300" height="300" src="https://github.com/user-attachments/assets/12bda636-36af-4d55-837d-f51fbe836ef1" alt="Asana Gopher" />
 
